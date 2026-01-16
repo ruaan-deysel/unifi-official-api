@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from .client import UniFiProtectClient
 from .models import (
+    NVR,
     Camera,
     CameraState,
     CameraType,
@@ -13,7 +14,6 @@ from .models import (
     Light,
     LightMode,
     LiveView,
-    NVR,
     RecordingMode,
     Sensor,
     SensorType,
@@ -21,6 +21,7 @@ from .models import (
 )
 
 __all__ = [
+    "NVR",
     "Camera",
     "CameraState",
     "CameraType",
@@ -30,7 +31,6 @@ __all__ = [
     "Light",
     "LightMode",
     "LiveView",
-    "NVR",
     "RecordingMode",
     "Sensor",
     "SensorType",

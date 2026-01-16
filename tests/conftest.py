@@ -3,10 +3,8 @@
 from __future__ import annotations
 
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from aiohttp import ClientSession
 from aioresponses import aioresponses
 
 from unifi_official_api import ApiKeyAuth

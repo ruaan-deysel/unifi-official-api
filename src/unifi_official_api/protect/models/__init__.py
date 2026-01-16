@@ -3,14 +3,15 @@
 from __future__ import annotations
 
 from .camera import Camera, CameraState, CameraType, RecordingMode, VideoMode
-from .sensor import Sensor, SensorType
-from .light import Light, LightMode
 from .chime import Chime
-from .nvr import NVR
-from .liveview import LiveView
 from .event import Event, EventType
+from .light import Light, LightMode
+from .liveview import LiveView
+from .nvr import NVR
+from .sensor import Sensor, SensorType
 
 __all__ = [
+    "NVR",
     "Camera",
     "CameraState",
     "CameraType",
@@ -20,7 +21,6 @@ __all__ = [
     "Light",
     "LightMode",
     "LiveView",
-    "NVR",
     "RecordingMode",
     "Sensor",
     "SensorType",

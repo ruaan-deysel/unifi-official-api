@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from .devices import DevicesEndpoint
 from .clients import ClientsEndpoint
-from .networks import NetworksEndpoint
-from .wifi import WifiEndpoint
-from .sites import SitesEndpoint
+from .devices import DevicesEndpoint
 from .firewall import FirewallEndpoint
+from .networks import NetworksEndpoint
+from .sites import SitesEndpoint
+from .wifi import WifiEndpoint
 
 __all__ = [
     "ClientsEndpoint",

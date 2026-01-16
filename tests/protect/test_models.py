@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from unifi_official_api.protect import (
+    NVR,
     Camera,
     CameraState,
     Chime,
@@ -13,7 +14,6 @@ from unifi_official_api.protect import (
     Light,
     LightMode,
     LiveView,
-    NVR,
     RecordingMode,
     Sensor,
 )
@@ -183,8 +183,8 @@ class TestEventModel:
         event = Event.model_validate({
             "id": "event-123",
             "type": "motion",
-            "start": datetime(2024, 1, 1, 12, 0, 0, tzinfo=timezone.utc),
-            "end": datetime(2024, 1, 1, 12, 0, 30, tzinfo=timezone.utc),
+            "start": datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
+            "end": datetime(2024, 1, 1, 12, 0, 30, tzinfo=UTC),
         })
         assert event.duration == 30.0
 
@@ -193,6 +193,6 @@ class TestEventModel:
         event = Event.model_validate({
             "id": "event-123",
             "type": "motion",
-            "start": datetime(2024, 1, 1, 12, 0, 0, tzinfo=timezone.utc),
+            "start": datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
         })
         assert event.duration is None

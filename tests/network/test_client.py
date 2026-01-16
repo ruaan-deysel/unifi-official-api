@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import Any
 
-import pytest
 from aioresponses import aioresponses
 
 from unifi_official_api import ApiKeyAuth

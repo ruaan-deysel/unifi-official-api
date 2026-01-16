@@ -94,7 +94,7 @@ disallow_incomplete_defs = true
 
 [tool.ruff]
 target-version = "py311"
-line-length = 88
+line-length = 100
 src = ["src", "tests"]
 
 [tool.ruff.lint]
@@ -108,9 +108,7 @@ select = [
     "UP",     # pyupgrade
     "ARG",    # flake8-unused-arguments
     "SIM",    # flake8-simplify
-    "TCH",    # flake8-type-checking
     "PTH",    # flake8-use-pathlib
-    "ERA",    # eradicate
     "PL",     # Pylint
     "RUF",    # Ruff-specific
     "ASYNC",  # flake8-async
@@ -118,6 +116,7 @@ select = [
 ignore = [
     "PLR0913",  # Too many arguments
     "PLR2004",  # Magic value comparison
+    "RUF022",   # __all__ not sorted (we group by category)
 ]
 
 [tool.ruff.lint.isort]

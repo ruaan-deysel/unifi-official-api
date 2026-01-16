@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import logging
 from abc import ABC, abstractmethod
 from http import HTTPStatus
@@ -187,7 +186,7 @@ class BaseUniFiClient(ABC):
             raise UniFiConnectionError(
                 f"Failed to connect to {url}: {err}"
             ) from err
-        except asyncio.TimeoutError as err:
+        except TimeoutError as err:
             raise UniFiTimeoutError(
                 f"Request to {url} timed out"
             ) from err

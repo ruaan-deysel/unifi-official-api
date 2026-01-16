@@ -168,7 +168,6 @@ class UniFiProtectClient(BaseUniFiClient):
             UniFiConnectionError: If connection fails.
             UniFiTimeoutError: If request times out.
         """
-        import asyncio
 
         session = await self._ensure_session()
         url = self._build_url(path)
@@ -194,7 +193,7 @@ class UniFiProtectClient(BaseUniFiClient):
             raise UniFiConnectionError(
                 f"Failed to connect to {url}: {err}"
             ) from err
-        except asyncio.TimeoutError as err:
+        except TimeoutError as err:
             raise UniFiTimeoutError(
                 f"Request to {url} timed out"
             ) from err
