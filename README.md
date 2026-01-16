@@ -14,16 +14,36 @@ Async Python library for the official UniFi Network and Protect APIs.
 - **Comprehensive**: Supports both UniFi Network and UniFi Protect
 - **Home Assistant ready**: Designed for integration with Home Assistant and other automation platforms
 
+## Requirements
+
+> **Python 3.11 or higher is required.**
+
+- Python 3.11, 3.12, or 3.13
+- UniFi API Key from [developer.ui.com](https://developer.ui.com)
+
 ## Installation
 
 ```bash
 pip install unifi-official-api
 ```
 
-## Requirements
+### Optional Dependencies
 
-- Python 3.11 or higher
-- UniFi API Key from [developer.ui.com](https://developer.ui.com)
+Install with optional dependency groups for development:
+
+```bash
+# Install with test dependencies
+pip install unifi-official-api[test]
+
+# Install with linting/type checking tools
+pip install unifi-official-api[lint]
+
+# Install with documentation tools
+pip install unifi-official-api[docs]
+
+# Install all development dependencies
+pip install unifi-official-api[dev]
+```
 
 ## Quick Start
 

@@ -29,8 +29,8 @@ Example:
 
 from __future__ import annotations
 
+from ._version import __version__
 from .auth import ApiKeyAuth, ApiKeyType, LocalAuth
-from .const import LIBRARY_VERSION
 from .exceptions import (
     UniFiAuthenticationError,
     UniFiConnectionError,
@@ -41,8 +41,6 @@ from .exceptions import (
     UniFiTimeoutError,
     UniFiValidationError,
 )
-
-__version__ = LIBRARY_VERSION
 
 __all__ = [
     # Version

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Final
 
+from ._version import __version__
+
 # API Base URLs
 NETWORK_API_BASE_URL: Final[str] = "https://api.ui.com"
 PROTECT_API_BASE_URL: Final[str] = "https://api.ui.com"
@@ -19,9 +21,8 @@ DEFAULT_CONNECT_TIMEOUT: Final[int] = 10
 # Rate limiting
 DEFAULT_RATE_LIMIT_RETRY_AFTER: Final[int] = 60
 
-# User agent
-LIBRARY_VERSION: Final[str] = "0.1.0"
-USER_AGENT: Final[str] = f"unifi-official-api/{LIBRARY_VERSION}"
+# User agent - uses version from single source of truth
+USER_AGENT: Final[str] = f"unifi-official-api/{__version__}"
 
 # HTTP Headers
 HEADER_CONTENT_TYPE: Final[str] = "Content-Type"

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "unifi-official-api"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Async Python library for the official UniFi Network and Protect APIs"
 readme = "README.md"
 license = "MIT"
@@ -44,15 +44,32 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = [
+# Testing dependencies
+test = [
     "pytest>=8.0.0",
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=4.1.0",
     "aioresponses>=0.7.6",
+]
+# Linting and type checking
+lint = [
     "mypy>=1.8.0",
     "ruff>=0.2.0",
+]
+# Documentation
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.5.0",
+    "mkdocstrings[python]>=0.24.0",
+]
+# All development dependencies
+dev = [
+    "unifi-official-api[test,lint,docs]",
     "pre-commit>=3.6.0",
 ]
+
+[tool.hatch.version]
+path = "src/unifi_official_api/_version.py"
 
 [project.urls]
 Documentation = "https://github.com/ruaan-deysel/unifi-official-api#readme"
