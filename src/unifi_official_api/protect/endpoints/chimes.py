@@ -21,7 +21,7 @@ class ChimesEndpoint:
         """
         self._client = client
 
-    async def list(self, host_id: str, site_id: str) -> list[Chime]:
+    async def get_all(self, host_id: str, site_id: str) -> list[Chime]:
         """List all chimes.
 
         Args:

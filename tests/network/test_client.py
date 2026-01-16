@@ -91,7 +91,7 @@ class TestDevicesEndpoint:
         )
 
         async with UniFiNetworkClient(auth=auth) as client:
-            devices = await client.devices.list(host_id)
+            devices = await client.devices.get_all(host_id)
             assert len(devices) == 1
             assert devices[0].id == "device-123"
             assert devices[0].mac == "00:11:22:33:44:55"
@@ -133,7 +133,7 @@ class TestClientsEndpoint:
         )
 
         async with UniFiNetworkClient(auth=auth) as client:
-            clients = await client.clients.list(host_id)
+            clients = await client.clients.get_all(host_id)
             assert len(clients) == 1
             assert clients[0].id == "client-123"
             assert clients[0].display_name == "Test Device"

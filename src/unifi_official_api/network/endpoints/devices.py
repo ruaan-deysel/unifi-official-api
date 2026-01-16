@@ -21,7 +21,7 @@ class DevicesEndpoint:
         """
         self._client = client
 
-    async def list(
+    async def get_all(
         self,
         host_id: str,
         site_id: str | None = None,

@@ -122,6 +122,9 @@ ignore = [
 [tool.ruff.lint.isort]
 known-first-party = ["unifi_official_api"]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["PLC0415"]  # Allow imports in test functions
+
 [tool.coverage.run]
 source = ["src/unifi_official_api"]
 branch = true

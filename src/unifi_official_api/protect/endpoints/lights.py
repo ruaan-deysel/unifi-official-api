@@ -21,7 +21,7 @@ class LightsEndpoint:
         """
         self._client = client
 
-    async def list(self, host_id: str, site_id: str) -> list[Light]:
+    async def get_all(self, host_id: str, site_id: str) -> list[Light]:
         """List all lights.
 
         Args:

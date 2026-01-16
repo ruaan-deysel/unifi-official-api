@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -37,8 +38,8 @@ class Light(BaseModel):
     is_pir_motion_detected: bool = Field(default=False, alias="isPirMotionDetected")
     is_dark: bool = Field(default=False, alias="isDark")
     light_mode: LightMode = Field(default=LightMode.OFF, alias="lightMode")
-    light_on_settings: dict | None = Field(default=None, alias="lightOnSettings")
-    light_device_settings: dict | None = Field(default=None, alias="lightDeviceSettings")
+    light_on_settings: dict[str, Any] | None = Field(default=None, alias="lightOnSettings")
+    light_device_settings: dict[str, Any] | None = Field(default=None, alias="lightDeviceSettings")
     brightness: int | None = None
     led_level: int | None = Field(default=None, alias="ledLevel")
     pir_sensitivity: int | None = Field(default=None, alias="pirSensitivity")

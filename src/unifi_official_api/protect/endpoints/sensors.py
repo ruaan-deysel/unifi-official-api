@@ -21,7 +21,7 @@ class SensorsEndpoint:
         """
         self._client = client
 
-    async def list(self, host_id: str, site_id: str) -> list[Sensor]:
+    async def get_all(self, host_id: str, site_id: str) -> list[Sensor]:
         """List all sensors.
 
         Args:

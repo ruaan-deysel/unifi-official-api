@@ -21,7 +21,7 @@ class SitesEndpoint:
         """
         self._client = client
 
-    async def list(self, host_id: str) -> list[Site]:
+    async def get_all(self, host_id: str) -> list[Site]:
         """List all sites.
 
         Args:

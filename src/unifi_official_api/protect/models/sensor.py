@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -46,7 +47,7 @@ class Sensor(BaseModel):
     light_value: float | None = Field(default=None, alias="lightValue")
     motion_sensitivity: int | None = Field(default=None, alias="motionSensitivity")
     open_status_led_enabled: bool = Field(default=True, alias="openStatusLedEnabled")
-    alarm_settings: dict | None = Field(default=None, alias="alarmSettings")
+    alarm_settings: dict[str, Any] | None = Field(default=None, alias="alarmSettings")
     mount_type: str | None = Field(default=None, alias="mountType")
 
     model_config = {"populate_by_name": True, "extra": "allow"}

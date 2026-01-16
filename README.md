@@ -63,15 +63,15 @@ async def main():
         host_id = hosts[0]["id"]
 
         # List all sites
-        sites = await client.sites.list(host_id)
+        sites = await client.sites.get_all(host_id)
 
         # List all devices
-        devices = await client.devices.list(host_id)
+        devices = await client.devices.get_all(host_id)
         for device in devices:
             print(f"Device: {device.name} ({device.mac})")
 
         # List connected clients
-        clients = await client.clients.list(host_id)
+        clients = await client.clients.get_all(host_id)
         for client_info in clients:
             print(f"Client: {client_info.display_name} - {client_info.ip}")
 
@@ -95,7 +95,7 @@ async def main():
         site_id = "your-site-id"
 
         # List all cameras
-        cameras = await client.cameras.list(host_id, site_id)
+        cameras = await client.cameras.get_all(host_id, site_id)
         for camera in cameras:
             print(f"Camera: {camera.name} - Recording: {camera.is_recording}")
 
@@ -155,7 +155,7 @@ from unifi_official_api import (
 )
 
 try:
-    devices = await client.devices.list(host_id)
+    devices = await client.devices.get_all(host_id)
 except UniFiAuthenticationError:
     print("Invalid API key")
 except UniFiConnectionError:

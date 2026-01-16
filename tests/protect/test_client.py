@@ -56,7 +56,7 @@ class TestCamerasEndpoint:
         )
 
         async with UniFiProtectClient(auth=auth) as client:
-            cameras = await client.cameras.list(host_id, site_id)
+            cameras = await client.cameras.get_all(host_id, site_id)
             assert len(cameras) == 1
             assert cameras[0].id == "camera-123"
             assert cameras[0].name == "Front Door"
@@ -102,7 +102,7 @@ class TestSensorsEndpoint:
         )
 
         async with UniFiProtectClient(auth=auth) as client:
-            sensors = await client.sensors.list(host_id, site_id)
+            sensors = await client.sensors.get_all(host_id, site_id)
             assert len(sensors) == 1
             assert sensors[0].id == "sensor-123"
             assert sensors[0].is_opened is False

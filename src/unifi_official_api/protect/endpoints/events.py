@@ -22,7 +22,7 @@ class EventsEndpoint:
         """
         self._client = client
 
-    async def list(
+    async def get_all(
         self,
         host_id: str,
         site_id: str,
@@ -164,7 +164,7 @@ class EventsEndpoint:
         Returns:
             List of motion events.
         """
-        return await self.list(
+        return await self.get_all(
             host_id,
             site_id,
             start=start,
@@ -197,7 +197,7 @@ class EventsEndpoint:
         Returns:
             List of smart detect events.
         """
-        return await self.list(
+        return await self.get_all(
             host_id,
             site_id,
             start=start,

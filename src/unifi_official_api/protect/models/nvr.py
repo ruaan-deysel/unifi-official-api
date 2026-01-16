@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -53,7 +54,7 @@ class NVR(BaseModel):
         default=None, alias="recordingRetentionDays"
     )
     enable_automatic_backups: bool = Field(default=False, alias="enableAutomaticBackups")
-    feature_flags: dict | None = Field(default=None, alias="featureFlags")
+    feature_flags: dict[str, Any] | None = Field(default=None, alias="featureFlags")
 
     model_config = {"populate_by_name": True, "extra": "allow"}
 
