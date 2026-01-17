@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from ..models import Camera, RecordingMode
+from ..models.files import RTSPSStream, TalkbackSession
 
 if TYPE_CHECKING:
     from ..client import UniFiProtectClient
@@ -257,3 +258,211 @@ class CamerasEndpoint:
         path = f"/ea/hosts/{host_id}/sites/{site_id}/cameras/{camera_id}/ptz/goto/{preset_id}"
         await self._client._post(path)
         return True
+
+    async def ptz_patrol_start(
+        self,
+        host_id: str,
+        site_id: str,
+        camera_id: str,
+        slot: int,
+    ) -> bool:
+        """Start PTZ patrol.
+
+        Args:
+            host_id: The host ID.
+            site_id: The site ID.
+            camera_id: The camera ID.
+            slot: Patrol slot number (0-4).
+
+        Returns:
+            True if successful.
+        """
+        if not 0 <= slot <= 4:
+            raise ValueError("Slot must be between 0 and 4")
+        path = f"/ea/hosts/{host_id}/sites/{site_id}/cameras/{camera_id}/ptz/patrol/start/{slot}"
+        await self._client._post(path)
+        return True
+
+    async def ptz_patrol_stop(
+        self,
+        host_id: str,
+        site_id: str,
+        camera_id: str,
+    ) -> bool:
+        """Stop active PTZ patrol.
+
+        Args:
+            host_id: The host ID.
+            site_id: The site ID.
+            camera_id: The camera ID.
+
+        Returns:
+            True if successful.
+        """
+        path = f"/ea/hosts/{host_id}/sites/{site_id}/cameras/{camera_id}/ptz/patrol/stop"
+        await self._client._post(path)
+        return True
+
+    async def create_rtsps_stream(
+        self,
+        host_id: str,
+        site_id: str,
+        camera_id: str,
+    ) -> RTSPSStream:
+        """Create RTSPS stream for camera.
+
+        Args:
+            host_id: The host ID.
+            site_id: The site ID.
+            camera_id: The camera ID.
+
+        Returns:
+            RTSPS stream configuration.
+        """
+        path = f"/ea/hosts/{host_id}/sites/{site_id}/cameras/{camera_id}/rtsps-stream"
+        response = await self._client._post(path)
+
+        if isinstance(response, dict):
+            data = response.get("data", response)
+            if isinstance(data, dict):
+                return RTSPSStream.model_validate(data)
+        raise ValueError("Failed to create RTSPS stream")
+
+    async def get_rtsps_stream(
+        self,
+        host_id: str,
+        site_id: str,
+        camera_id: str,
+    ) -> RTSPSStream:
+        """Get RTSPS stream configuration.
+
+        Args:
+            host_id: The host ID.
+            site_id: The site ID.
+            camera_id: The camera ID.
+
+        Returns:
+            RTSPS stream configuration.
+        """
+        path = f"/ea/hosts/{host_id}/sites/{site_id}/cameras/{camera_id}/rtsps-stream"
+        response = await self._client._get(path)
+
+        if isinstance(response, dict):
+            data = response.get("data", response)
+            if isinstance(data, dict):
+                return RTSPSStream.model_validate(data)
+        raise ValueError("RTSPS stream not found")
+
+    async def delete_rtsps_stream(
+        self,
+        host_id: str,
+        site_id: str,
+        camera_id: str,
+    ) -> bool:
+        """Delete RTSPS stream.
+
+        Args:
+            host_id: The host ID.
+            site_id: The site ID.
+            camera_id: The camera ID.
+
+        Returns:
+            True if successful.
+        """
+        path = f"/ea/hosts/{host_id}/sites/{site_id}/cameras/{camera_id}/rtsps-stream"
+        await self._client._delete(path)
+        return True
+
+    async def create_talkback_session(
+        self,
+        host_id: str,
+        site_id: str,
+        camera_id: str,
+    ) -> TalkbackSession:
+        """Create a talkback (two-way audio) session.
+
+        Args:
+            host_id: The host ID.
+            site_id: The site ID.
+            camera_id: The camera ID.
+
+        Returns:
+            Talkback session configuration with URL and audio settings.
+        """
+        path = f"/ea/hosts/{host_id}/sites/{site_id}/cameras/{camera_id}/talkback-session"
+        response = await self._client._post(path)
+
+        if isinstance(response, dict):
+            data = response.get("data", response)
+            if isinstance(data, dict):
+                return TalkbackSession.model_validate(data)
+        raise ValueError("Failed to create talkback session")
+
+    async def disable_mic_permanently(
+        self,
+        host_id: str,
+        site_id: str,
+        camera_id: str,
+    ) -> Camera:
+        """Permanently disable camera microphone.
+
+        This action cannot be undone.
+
+        Args:
+            host_id: The host ID.
+            site_id: The site ID.
+            camera_id: The camera ID.
+
+        Returns:
+            The updated camera with microphone disabled.
+        """
+        path = f"/ea/hosts/{host_id}/sites/{site_id}/cameras/{camera_id}/disable-mic-permanently"
+        response = await self._client._post(path)
+
+        if isinstance(response, dict):
+            data = response.get("data", response)
+            if isinstance(data, dict):
+                return Camera.model_validate(data)
+        raise ValueError("Failed to disable microphone")
+
+    async def set_hdr_mode(
+        self,
+        host_id: str,
+        site_id: str,
+        camera_id: str,
+        mode: str,
+    ) -> Camera:
+        """Set camera HDR mode.
+
+        Args:
+            host_id: The host ID.
+            site_id: The site ID.
+            camera_id: The camera ID.
+            mode: HDR mode (auto, on, off).
+
+        Returns:
+            The updated camera.
+        """
+        if mode not in ("auto", "on", "off"):
+            raise ValueError("HDR mode must be 'auto', 'on', or 'off'")
+        return await self.update(host_id, site_id, camera_id, hdrType=mode)
+
+    async def set_video_mode(
+        self,
+        host_id: str,
+        site_id: str,
+        camera_id: str,
+        mode: str,
+    ) -> Camera:
+        """Set camera video mode.
+
+        Args:
+            host_id: The host ID.
+            site_id: The site ID.
+            camera_id: The camera ID.
+            mode: Video mode (default, highFps, sport, slowShutter, etc).
+
+        Returns:
+            The updated camera.
+        """
+        return await self.update(host_id, site_id, camera_id, videoMode=mode)

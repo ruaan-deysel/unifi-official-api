@@ -1,0 +1,639 @@
+"""Tests for new Protect API endpoints (viewers, application, camera additions)."""
+
+from __future__ import annotations
+
+import pytest
+from aioresponses import aioresponses
+
+from unifi_official_api import ApiKeyAuth
+from unifi_official_api.protect import UniFiProtectClient
+from unifi_official_api.protect.models import FileType
+
+
+class TestViewersEndpoint:
+    """Tests for viewers endpoint."""
+
+    @pytest.fixture
+    def auth(self) -> ApiKeyAuth:
+        """Create test auth."""
+        return ApiKeyAuth(api_key="test-api-key")
+
+    async def test_viewers_get_all(self, auth: ApiKeyAuth) -> None:
+        """Test listing viewers."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/viewers",
+                payload={
+                    "data": [
+                        {
+                            "id": "viewer-1",
+                            "modelKey": "viewer",
+                            "state": "CONNECTED",
+                            "name": "Living Room Viewer",
+                            "mac": "aa:bb:cc:dd:ee:ff",
+                            "streamLimit": 4,
+                        }
+                    ]
+                },
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                viewers = await client.viewers.get_all("host-123", "site-1")
+                assert len(viewers) == 1
+                assert viewers[0].name == "Living Room Viewer"
+                assert viewers[0].is_connected is True
+
+    async def test_viewers_get_all_empty(self, auth: ApiKeyAuth) -> None:
+        """Test listing viewers with empty response."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/viewers",
+                payload={"data": []},
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                viewers = await client.viewers.get_all("host-123", "site-1")
+                assert viewers == []
+
+    async def test_viewers_get(self, auth: ApiKeyAuth) -> None:
+        """Test getting a specific viewer."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/viewers/viewer-1",
+                payload={
+                    "data": {
+                        "id": "viewer-1",
+                        "modelKey": "viewer",
+                        "state": "CONNECTED",
+                        "name": "Living Room Viewer",
+                        "mac": "aa:bb:cc:dd:ee:ff",
+                        "streamLimit": 4,
+                    }
+                },
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                viewer = await client.viewers.get("host-123", "site-1", "viewer-1")
+                assert viewer.id == "viewer-1"
+                assert viewer.display_name == "Living Room Viewer"
+
+    async def test_viewers_get_not_found(self, auth: ApiKeyAuth) -> None:
+        """Test getting a viewer that doesn't exist."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/viewers/viewer-999",
+                payload={"data": []},
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                with pytest.raises(ValueError, match="not found"):
+                    await client.viewers.get("host-123", "site-1", "viewer-999")
+
+    async def test_viewers_update(self, auth: ApiKeyAuth) -> None:
+        """Test updating a viewer."""
+        with aioresponses() as m:
+            m.patch(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/viewers/viewer-1",
+                payload={
+                    "data": {
+                        "id": "viewer-1",
+                        "modelKey": "viewer",
+                        "state": "CONNECTED",
+                        "name": "Updated Viewer",
+                        "mac": "aa:bb:cc:dd:ee:ff",
+                        "streamLimit": 4,
+                    }
+                },
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                viewer = await client.viewers.update(
+                    "host-123", "site-1", "viewer-1", name="Updated Viewer"
+                )
+                assert viewer.name == "Updated Viewer"
+
+    async def test_viewers_update_failed(self, auth: ApiKeyAuth) -> None:
+        """Test updating a viewer failure."""
+        with aioresponses() as m:
+            m.patch(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/viewers/viewer-1",
+                payload={"data": []},
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                with pytest.raises(ValueError, match="Failed"):
+                    await client.viewers.update("host-123", "site-1", "viewer-1", name="Test")
+
+    async def test_viewers_set_liveview(self, auth: ApiKeyAuth) -> None:
+        """Test setting a viewer's liveview."""
+        with aioresponses() as m:
+            m.patch(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/viewers/viewer-1",
+                payload={
+                    "data": {
+                        "id": "viewer-1",
+                        "modelKey": "viewer",
+                        "state": "CONNECTED",
+                        "name": "Viewer",
+                        "mac": "aa:bb:cc:dd:ee:ff",
+                        "liveview": "lv-1",
+                        "streamLimit": 4,
+                    }
+                },
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                viewer = await client.viewers.set_liveview(
+                    "host-123", "site-1", "viewer-1", "lv-1"
+                )
+                assert viewer.liveview == "lv-1"
+
+
+class TestApplicationEndpoint:
+    """Tests for application endpoint."""
+
+    @pytest.fixture
+    def auth(self) -> ApiKeyAuth:
+        """Create test auth."""
+        return ApiKeyAuth(api_key="test-api-key")
+
+    async def test_application_get_info(self, auth: ApiKeyAuth) -> None:
+        """Test getting application info."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/meta/info",
+                payload={"data": {"applicationVersion": "6.2.83"}},
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                info = await client.application.get_info("host-123", "site-1")
+                assert info.application_version == "6.2.83"
+
+    async def test_application_get_info_failed(self, auth: ApiKeyAuth) -> None:
+        """Test getting application info failure."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/meta/info",
+                payload={"data": []},
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                with pytest.raises(ValueError, match="Failed"):
+                    await client.application.get_info("host-123", "site-1")
+
+    async def test_application_get_files(self, auth: ApiKeyAuth) -> None:
+        """Test getting files."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/files/animations",
+                payload={
+                    "data": [
+                        {
+                            "name": "file-1",
+                            "type": "animations",
+                            "originalName": "logo.gif",
+                            "path": "/files/logo.gif",
+                        }
+                    ]
+                },
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                files = await client.application.get_files("host-123", "site-1")
+                assert len(files) == 1
+                assert files[0].original_name == "logo.gif"
+
+    async def test_application_get_files_empty(self, auth: ApiKeyAuth) -> None:
+        """Test getting files with empty response."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/files/animations",
+                payload={"data": []},
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                files = await client.application.get_files("host-123", "site-1")
+                assert files == []
+
+    async def test_application_upload_file(self, auth: ApiKeyAuth) -> None:
+        """Test uploading a file."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/files/animations",
+                payload={
+                    "data": {
+                        "name": "file-new",
+                        "type": "animations",
+                        "originalName": "new.gif",
+                        "path": "/files/new.gif",
+                    }
+                },
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                file = await client.application.upload_file(
+                    "host-123",
+                    "site-1",
+                    file_data=b"GIF89a...",
+                    filename="new.gif",
+                    content_type="image/gif",
+                    file_type=FileType.ANIMATIONS,
+                )
+                assert file.original_name == "new.gif"
+
+    async def test_application_upload_file_failed(self, auth: ApiKeyAuth) -> None:
+        """Test uploading a file failure."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/files/animations",
+                payload={"data": []},
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                with pytest.raises(ValueError, match="Failed"):
+                    await client.application.upload_file(
+                        "host-123", "site-1", file_data=b"...", filename="test.gif"
+                    )
+
+    async def test_application_trigger_alarm_webhook(self, auth: ApiKeyAuth) -> None:
+        """Test triggering alarm webhook."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/alarm-manager/webhook/trigger-1",
+                status=204,
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                result = await client.application.trigger_alarm_webhook(
+                    "host-123", "site-1", "trigger-1"
+                )
+                assert result is True
+
+    async def test_application_trigger_alarm_webhook_no_id(self, auth: ApiKeyAuth) -> None:
+        """Test triggering alarm webhook without trigger ID."""
+        async with UniFiProtectClient(auth=auth) as client:
+            with pytest.raises(ValueError, match="Trigger ID is required"):
+                await client.application.trigger_alarm_webhook("host-123", "site-1", "")
+
+
+class TestCameraNewMethods:
+    """Tests for new camera endpoint methods."""
+
+    @pytest.fixture
+    def auth(self) -> ApiKeyAuth:
+        """Create test auth."""
+        return ApiKeyAuth(api_key="test-api-key")
+
+    async def test_camera_ptz_patrol_start(self, auth: ApiKeyAuth) -> None:
+        """Test starting PTZ patrol."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/cameras/cam-1/ptz/patrol/start/0",
+                status=204,
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                result = await client.cameras.ptz_patrol_start(
+                    "host-123", "site-1", "cam-1", slot=0
+                )
+                assert result is True
+
+    async def test_camera_ptz_patrol_start_invalid_slot(self, auth: ApiKeyAuth) -> None:
+        """Test starting PTZ patrol with invalid slot."""
+        async with UniFiProtectClient(auth=auth) as client:
+            with pytest.raises(ValueError, match="Slot must be between 0 and 4"):
+                await client.cameras.ptz_patrol_start("host-123", "site-1", "cam-1", slot=5)
+
+    async def test_camera_ptz_patrol_stop(self, auth: ApiKeyAuth) -> None:
+        """Test stopping PTZ patrol."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/cameras/cam-1/ptz/patrol/stop",
+                status=204,
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                result = await client.cameras.ptz_patrol_stop("host-123", "site-1", "cam-1")
+                assert result is True
+
+    async def test_camera_create_rtsps_stream(self, auth: ApiKeyAuth) -> None:
+        """Test creating RTSPS stream."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/cameras/cam-1/rtsps-stream",
+                payload={"data": {"url": "rtsps://192.168.1.1:7441/stream", "channel": 0}},
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                stream = await client.cameras.create_rtsps_stream(
+                    "host-123", "site-1", "cam-1"
+                )
+                assert stream.url == "rtsps://192.168.1.1:7441/stream"
+
+    async def test_camera_create_rtsps_stream_failed(self, auth: ApiKeyAuth) -> None:
+        """Test creating RTSPS stream failure."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/cameras/cam-1/rtsps-stream",
+                payload={"data": []},
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                with pytest.raises(ValueError, match="Failed"):
+                    await client.cameras.create_rtsps_stream("host-123", "site-1", "cam-1")
+
+    async def test_camera_get_rtsps_stream(self, auth: ApiKeyAuth) -> None:
+        """Test getting RTSPS stream."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/cameras/cam-1/rtsps-stream",
+                payload={"data": {"url": "rtsps://192.168.1.1:7441/stream", "channel": 0}},
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                stream = await client.cameras.get_rtsps_stream("host-123", "site-1", "cam-1")
+                assert stream.url == "rtsps://192.168.1.1:7441/stream"
+
+    async def test_camera_get_rtsps_stream_not_found(self, auth: ApiKeyAuth) -> None:
+        """Test getting RTSPS stream that doesn't exist."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/cameras/cam-1/rtsps-stream",
+                payload={"data": []},
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                with pytest.raises(ValueError, match="not found"):
+                    await client.cameras.get_rtsps_stream("host-123", "site-1", "cam-1")
+
+    async def test_camera_delete_rtsps_stream(self, auth: ApiKeyAuth) -> None:
+        """Test deleting RTSPS stream."""
+        with aioresponses() as m:
+            m.delete(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/cameras/cam-1/rtsps-stream",
+                status=204,
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                result = await client.cameras.delete_rtsps_stream(
+                    "host-123", "site-1", "cam-1"
+                )
+                assert result is True
+
+    async def test_camera_create_talkback_session(self, auth: ApiKeyAuth) -> None:
+        """Test creating talkback session."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/cameras/cam-1/talkback-session",
+                payload={
+                    "data": {
+                        "url": "rtp://192.168.1.1:7004",
+                        "codec": "opus",
+                        "samplingRate": 24000,
+                        "bitsPerSample": 16,
+                    }
+                },
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                session = await client.cameras.create_talkback_session(
+                    "host-123", "site-1", "cam-1"
+                )
+                assert session.url == "rtp://192.168.1.1:7004"
+                assert session.codec == "opus"
+
+    async def test_camera_create_talkback_session_failed(self, auth: ApiKeyAuth) -> None:
+        """Test creating talkback session failure."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/cameras/cam-1/talkback-session",
+                payload={"data": []},
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                with pytest.raises(ValueError, match="Failed"):
+                    await client.cameras.create_talkback_session(
+                        "host-123", "site-1", "cam-1"
+                    )
+
+    async def test_camera_disable_mic_permanently(self, auth: ApiKeyAuth) -> None:
+        """Test disabling camera microphone permanently."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/cameras/cam-1/disable-mic-permanently",
+                payload={
+                    "data": {
+                        "id": "cam-1",
+                        "mac": "aa:bb:cc:dd:ee:ff",
+                        "isMicEnabled": False,
+                    }
+                },
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                camera = await client.cameras.disable_mic_permanently(
+                    "host-123", "site-1", "cam-1"
+                )
+                assert camera.id == "cam-1"
+
+    async def test_camera_disable_mic_permanently_failed(self, auth: ApiKeyAuth) -> None:
+        """Test disabling camera microphone failure."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/cameras/cam-1/disable-mic-permanently",
+                payload={"data": []},
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                with pytest.raises(ValueError, match="Failed"):
+                    await client.cameras.disable_mic_permanently(
+                        "host-123", "site-1", "cam-1"
+                    )
+
+    async def test_camera_set_hdr_mode(self, auth: ApiKeyAuth) -> None:
+        """Test setting HDR mode."""
+        with aioresponses() as m:
+            m.patch(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/cameras/cam-1",
+                payload={"data": {"id": "cam-1", "mac": "aa:bb:cc:dd:ee:ff", "hdrType": "auto"}},
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                camera = await client.cameras.set_hdr_mode(
+                    "host-123", "site-1", "cam-1", "auto"
+                )
+                assert camera.id == "cam-1"
+
+    async def test_camera_set_hdr_mode_invalid(self, auth: ApiKeyAuth) -> None:
+        """Test setting invalid HDR mode."""
+        async with UniFiProtectClient(auth=auth) as client:
+            with pytest.raises(ValueError, match="HDR mode must be"):
+                await client.cameras.set_hdr_mode(
+                    "host-123", "site-1", "cam-1", "invalid"
+                )
+
+    async def test_camera_set_video_mode(self, auth: ApiKeyAuth) -> None:
+        """Test setting video mode."""
+        with aioresponses() as m:
+            m.patch(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/cameras/cam-1",
+                payload={
+                    "data": {"id": "cam-1", "mac": "aa:bb:cc:dd:ee:ff", "videoMode": "highFps"}
+                },
+            )
+
+            async with UniFiProtectClient(auth=auth) as client:
+                camera = await client.cameras.set_video_mode(
+                    "host-123", "site-1", "cam-1", "highFps"
+                )
+                assert camera.id == "cam-1"
+
+
+class TestViewerModel:
+    """Tests for Viewer model."""
+
+    def test_viewer_display_name_with_name(self) -> None:
+        """Test display_name with name set."""
+        from unifi_official_api.protect.models import Viewer
+
+        viewer = Viewer.model_validate({
+            "id": "v-1",
+            "modelKey": "viewer",
+            "state": "CONNECTED",
+            "name": "Living Room",
+            "mac": "aa:bb:cc:dd:ee:ff",
+            "streamLimit": 4,
+        })
+        assert viewer.display_name == "Living Room"
+
+    def test_viewer_display_name_without_name(self) -> None:
+        """Test display_name without name set."""
+        from unifi_official_api.protect.models import Viewer
+
+        viewer = Viewer.model_validate({
+            "id": "v-1",
+            "modelKey": "viewer",
+            "state": "CONNECTED",
+            "mac": "aa:bb:cc:dd:ee:ff",
+            "streamLimit": 4,
+        })
+        assert viewer.display_name == "aa:bb:cc:dd:ee:ff"
+
+
+class TestACLRuleModel:
+    """Tests for ACL Rule model."""
+
+    def test_acl_rule_is_user_defined_true(self) -> None:
+        """Test is_user_defined when user-defined."""
+        from unifi_official_api.network.models import ACLRule
+
+        rule = ACLRule.model_validate({
+            "id": "acl-1",
+            "type": "IPV4",
+            "name": "Test",
+            "action": "BLOCK",
+            "enabled": True,
+            "index": 0,
+            "metadata": {"origin": "USER_DEFINED"},
+        })
+        assert rule.is_user_defined is True
+
+    def test_acl_rule_is_user_defined_false(self) -> None:
+        """Test is_user_defined when system-defined."""
+        from unifi_official_api.network.models import ACLRule
+
+        rule = ACLRule.model_validate({
+            "id": "acl-1",
+            "type": "IPV4",
+            "name": "Test",
+            "action": "BLOCK",
+            "enabled": True,
+            "index": 0,
+            "metadata": {"origin": "SYSTEM_DEFINED"},
+        })
+        assert rule.is_user_defined is False
+
+    def test_acl_rule_is_user_defined_no_metadata(self) -> None:
+        """Test is_user_defined without metadata."""
+        from unifi_official_api.network.models import ACLRule
+
+        rule = ACLRule.model_validate({
+            "id": "acl-1",
+            "type": "IPV4",
+            "name": "Test",
+            "action": "BLOCK",
+            "enabled": True,
+            "index": 0,
+        })
+        assert rule.is_user_defined is True
+
+
+class TestTrafficMatchingListModel:
+    """Tests for Traffic Matching List model."""
+
+    def test_traffic_list_is_user_defined_true(self) -> None:
+        """Test is_user_defined when user-defined."""
+        from unifi_official_api.network.models import TrafficMatchingList
+
+        traffic_list = TrafficMatchingList.model_validate({
+            "id": "list-1",
+            "type": "IP_ADDRESS",
+            "name": "Test",
+            "entries": [],
+            "metadata": {"origin": "USER_DEFINED"},
+        })
+        assert traffic_list.is_user_defined is True
+
+    def test_traffic_list_is_user_defined_false(self) -> None:
+        """Test is_user_defined when system-defined."""
+        from unifi_official_api.network.models import TrafficMatchingList
+
+        traffic_list = TrafficMatchingList.model_validate({
+            "id": "list-1",
+            "type": "IP_ADDRESS",
+            "name": "Test",
+            "entries": [],
+            "metadata": {"origin": "SYSTEM_DEFINED"},
+        })
+        assert traffic_list.is_user_defined is False
+
+
+class TestVoucherModel:
+    """Tests for Voucher model."""
+
+    def test_voucher_is_active_not_expired(self) -> None:
+        """Test is_active when not expired."""
+        from unifi_official_api.network.models import Voucher
+
+        voucher = Voucher.model_validate({
+            "id": "v-1",
+            "code": "1234567890",
+            "expired": False,
+            "authorizedGuestCount": 0,
+        })
+        assert voucher.is_active is True
+
+    def test_voucher_is_active_expired(self) -> None:
+        """Test is_active when expired."""
+        from unifi_official_api.network.models import Voucher
+
+        voucher = Voucher.model_validate({
+            "id": "v-1",
+            "code": "1234567890",
+            "expired": True,
+            "authorizedGuestCount": 0,
+        })
+        assert voucher.is_active is False
+
+    def test_voucher_is_active_uses_exhausted(self) -> None:
+        """Test is_active when uses are exhausted."""
+        from unifi_official_api.network.models import Voucher
+
+        voucher = Voucher.model_validate({
+            "id": "v-1",
+            "code": "1234567890",
+            "expired": False,
+            "authorizedGuestLimit": 1,
+            "authorizedGuestCount": 1,
+        })
+        assert voucher.is_active is False

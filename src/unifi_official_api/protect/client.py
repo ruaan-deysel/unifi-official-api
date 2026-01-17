@@ -11,6 +11,7 @@ from ..base import BaseUniFiClient
 from ..const import DEFAULT_CONNECT_TIMEOUT, DEFAULT_TIMEOUT, PROTECT_API_BASE_URL
 from ..exceptions import UniFiConnectionError, UniFiTimeoutError
 from .endpoints import (
+    ApplicationEndpoint,
     CamerasEndpoint,
     ChimesEndpoint,
     EventsEndpoint,
@@ -18,6 +19,7 @@ from .endpoints import (
     LiveViewsEndpoint,
     NVREndpoint,
     SensorsEndpoint,
+    ViewersEndpoint,
 )
 
 
@@ -25,7 +27,7 @@ class UniFiProtectClient(BaseUniFiClient):
     """Async client for the UniFi Protect API.
 
     This client provides access to the official UniFi Protect API for managing
-    cameras, sensors, lights, chimes, and NVR settings.
+    cameras, sensors, lights, chimes, viewers, and NVR settings.
 
     Example:
         ```python
@@ -36,7 +38,7 @@ class UniFiProtectClient(BaseUniFiClient):
             auth=ApiKeyAuth(api_key="your-api-key"),
         ) as client:
             # List all cameras
-            cameras = await client.cameras.list(
+            cameras = await client.cameras.get_all(
                 host_id="your-host-id",
                 site_id="your-site-id"
             )
@@ -46,6 +48,19 @@ class UniFiProtectClient(BaseUniFiClient):
                 host_id="your-host-id",
                 site_id="your-site-id",
                 camera_id="camera-id"
+            )
+
+            # Create talkback session
+            session = await client.cameras.create_talkback_session(
+                host_id="your-host-id",
+                site_id="your-site-id",
+                camera_id="camera-id"
+            )
+
+            # Manage viewers
+            viewers = await client.viewers.get_all(
+                host_id="your-host-id",
+                site_id="your-site-id"
             )
         ```
     """
@@ -84,6 +99,8 @@ class UniFiProtectClient(BaseUniFiClient):
         self._nvr = NVREndpoint(self)
         self._liveviews = LiveViewsEndpoint(self)
         self._events = EventsEndpoint(self)
+        self._viewers = ViewersEndpoint(self)
+        self._application = ApplicationEndpoint(self)
 
     @property
     def cameras(self) -> CamerasEndpoint:
@@ -119,6 +136,16 @@ class UniFiProtectClient(BaseUniFiClient):
     def events(self) -> EventsEndpoint:
         """Access event management endpoints."""
         return self._events
+
+    @property
+    def viewers(self) -> ViewersEndpoint:
+        """Access viewer management endpoints."""
+        return self._viewers
+
+    @property
+    def application(self) -> ApplicationEndpoint:
+        """Access application info and file management endpoints."""
+        return self._application
 
     async def validate_connection(self) -> bool:
         """Validate the connection to the UniFi Protect API.

@@ -10,11 +10,15 @@ from ..auth import ApiKeyAuth
 from ..base import BaseUniFiClient
 from ..const import DEFAULT_CONNECT_TIMEOUT, DEFAULT_TIMEOUT, NETWORK_API_BASE_URL
 from .endpoints import (
+    ACLEndpoint,
     ClientsEndpoint,
     DevicesEndpoint,
     FirewallEndpoint,
     NetworksEndpoint,
+    ResourcesEndpoint,
     SitesEndpoint,
+    TrafficEndpoint,
+    VouchersEndpoint,
     WifiEndpoint,
 )
 
@@ -34,10 +38,15 @@ class UniFiNetworkClient(BaseUniFiClient):
             auth=ApiKeyAuth(api_key="your-api-key"),
         ) as client:
             # List all sites
-            sites = await client.sites.list(host_id="your-host-id")
+            sites = await client.sites.get_all(host_id="your-host-id")
 
             # List devices
-            devices = await client.devices.list(host_id="your-host-id")
+            devices = await client.devices.get_all(host_id="your-host-id")
+
+            # Manage vouchers
+            vouchers = await client.vouchers.get_all(
+                host_id="your-host-id", site_id="your-site-id"
+            )
         ```
     """
 
@@ -74,6 +83,10 @@ class UniFiNetworkClient(BaseUniFiClient):
         self._wifi = WifiEndpoint(self)
         self._sites = SitesEndpoint(self)
         self._firewall = FirewallEndpoint(self)
+        self._vouchers = VouchersEndpoint(self)
+        self._acl = ACLEndpoint(self)
+        self._traffic = TrafficEndpoint(self)
+        self._resources = ResourcesEndpoint(self)
 
     @property
     def devices(self) -> DevicesEndpoint:
@@ -105,6 +118,26 @@ class UniFiNetworkClient(BaseUniFiClient):
         """Access firewall management endpoints."""
         return self._firewall
 
+    @property
+    def vouchers(self) -> VouchersEndpoint:
+        """Access hotspot voucher management endpoints."""
+        return self._vouchers
+
+    @property
+    def acl(self) -> ACLEndpoint:
+        """Access ACL (Access Control List) rule endpoints."""
+        return self._acl
+
+    @property
+    def traffic(self) -> TrafficEndpoint:
+        """Access traffic matching and DPI endpoints."""
+        return self._traffic
+
+    @property
+    def resources(self) -> ResourcesEndpoint:
+        """Access supporting resources (WAN, VPN, RADIUS, etc)."""
+        return self._resources
+
     async def validate_connection(self) -> bool:
         """Validate the connection to the UniFi Network API.
 
@@ -134,3 +167,19 @@ class UniFiNetworkClient(BaseUniFiClient):
         if isinstance(data, list):
             return data
         return []
+
+    async def get_application_info(self, host_id: str) -> dict[str, Any]:
+        """Get application information.
+
+        Args:
+            host_id: The host ID.
+
+        Returns:
+            Application information dictionary.
+        """
+        response = await self._get(f"/ea/hosts/{host_id}/info")
+        if isinstance(response, dict):
+            data = response.get("data", response)
+            if isinstance(data, dict):
+                return data
+        return {}
