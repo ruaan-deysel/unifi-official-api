@@ -68,26 +68,32 @@ class TestClientModel:
     def test_client_display_name(self) -> None:
         """Test client display_name property."""
         # With name
-        client = Client.model_validate({
-            "id": "1",
-            "mac": "AA:BB:CC:DD:EE:FF",
-            "name": "Custom Name",
-        })
+        client = Client.model_validate(
+            {
+                "id": "1",
+                "mac": "AA:BB:CC:DD:EE:FF",
+                "name": "Custom Name",
+            }
+        )
         assert client.display_name == "Custom Name"
 
         # With hostname only
-        client = Client.model_validate({
-            "id": "2",
-            "mac": "AA:BB:CC:DD:EE:FF",
-            "hostname": "device-hostname",
-        })
+        client = Client.model_validate(
+            {
+                "id": "2",
+                "mac": "AA:BB:CC:DD:EE:FF",
+                "hostname": "device-hostname",
+            }
+        )
         assert client.display_name == "device-hostname"
 
         # MAC only
-        client = Client.model_validate({
-            "id": "3",
-            "mac": "AA:BB:CC:DD:EE:FF",
-        })
+        client = Client.model_validate(
+            {
+                "id": "3",
+                "mac": "AA:BB:CC:DD:EE:FF",
+            }
+        )
         assert client.display_name == "AA:BB:CC:DD:EE:FF"
 
 

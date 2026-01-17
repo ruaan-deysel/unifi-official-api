@@ -114,9 +114,7 @@ class Camera(BaseModel):
     has_led_status: bool = Field(default=False, alias="hasLedStatus")
     motion_zones: list[dict[str, Any]] = Field(default_factory=list, alias="motionZones")
     privacy_zones: list[dict[str, Any]] = Field(default_factory=list, alias="privacyZones")
-    smart_detect_zones: list[dict[str, Any]] = Field(
-        default_factory=list, alias="smartDetectZones"
-    )
+    smart_detect_zones: list[dict[str, Any]] = Field(default_factory=list, alias="smartDetectZones")
     smart_detect_types: list[str] = Field(default_factory=list, alias="smartDetectTypes")
 
     model_config = {"populate_by_name": True, "extra": "allow"}

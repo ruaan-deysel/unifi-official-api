@@ -43,17 +43,21 @@ class TestCameraModel:
 
     def test_camera_display_name(self) -> None:
         """Test camera display_name property."""
-        camera = Camera.model_validate({
-            "id": "1",
-            "mac": "11:22:33:44:55:66",
-            "name": "Backyard",
-        })
+        camera = Camera.model_validate(
+            {
+                "id": "1",
+                "mac": "11:22:33:44:55:66",
+                "name": "Backyard",
+            }
+        )
         assert camera.display_name == "Backyard"
 
-        camera = Camera.model_validate({
-            "id": "2",
-            "mac": "11:22:33:44:55:66",
-        })
+        camera = Camera.model_validate(
+            {
+                "id": "2",
+                "mac": "11:22:33:44:55:66",
+            }
+        )
         assert camera.display_name == "11:22:33:44:55:66"
 
 
@@ -180,19 +184,23 @@ class TestEventModel:
 
     def test_event_duration(self) -> None:
         """Test event duration calculation."""
-        event = Event.model_validate({
-            "id": "event-123",
-            "type": "motion",
-            "start": datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
-            "end": datetime(2024, 1, 1, 12, 0, 30, tzinfo=UTC),
-        })
+        event = Event.model_validate(
+            {
+                "id": "event-123",
+                "type": "motion",
+                "start": datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
+                "end": datetime(2024, 1, 1, 12, 0, 30, tzinfo=UTC),
+            }
+        )
         assert event.duration == 30.0
 
     def test_event_duration_no_end(self) -> None:
         """Test event duration when no end time."""
-        event = Event.model_validate({
-            "id": "event-123",
-            "type": "motion",
-            "start": datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
-        })
+        event = Event.model_validate(
+            {
+                "id": "event-123",
+                "type": "motion",
+                "start": datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
+            }
+        )
         assert event.duration is None

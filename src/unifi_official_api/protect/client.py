@@ -224,14 +224,8 @@ class UniFiProtectClient(BaseUniFiClient):
                 return await response.read()
 
         except aiohttp.ClientConnectorError as err:
-            raise UniFiConnectionError(
-                f"Failed to connect to {url}: {err}"
-            ) from err
+            raise UniFiConnectionError(f"Failed to connect to {url}: {err}") from err
         except TimeoutError as err:
-            raise UniFiTimeoutError(
-                f"Request to {url} timed out"
-            ) from err
+            raise UniFiTimeoutError(f"Request to {url} timed out") from err
         except aiohttp.ClientError as err:
-            raise UniFiConnectionError(
-                f"Request to {url} failed: {err}"
-            ) from err
+            raise UniFiConnectionError(f"Request to {url} failed: {err}") from err

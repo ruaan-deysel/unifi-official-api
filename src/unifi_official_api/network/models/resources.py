@@ -26,9 +26,7 @@ class WANInterface(BaseModel):
     dns: list[str] | None = Field(None, description="DNS servers")
     is_primary: bool = Field(False, alias="isPrimary")
     upload_speed: int | None = Field(None, alias="uploadSpeed", description="Mbps")
-    download_speed: int | None = Field(
-        None, alias="downloadSpeed", description="Mbps"
-    )
+    download_speed: int | None = Field(None, alias="downloadSpeed", description="Mbps")
 
     model_config = {"populate_by_name": True}
 

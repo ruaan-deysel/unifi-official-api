@@ -65,9 +65,7 @@ class TrafficEndpoint:
             return [TrafficMatchingList.model_validate(item) for item in data]
         return []
 
-    async def get_list(
-        self, host_id: str, site_id: str, list_id: str
-    ) -> TrafficMatchingList:
+    async def get_list(self, host_id: str, site_id: str, list_id: str) -> TrafficMatchingList:
         """Get a specific traffic matching list.
 
         Args:
@@ -194,9 +192,7 @@ class TrafficEndpoint:
             return [DPICategory.model_validate(item) for item in data]
         return []
 
-    async def get_dpi_applications(
-        self, host_id: str, site_id: str
-    ) -> list[DPIApplication]:
+    async def get_dpi_applications(self, host_id: str, site_id: str) -> list[DPIApplication]:
         """List all DPI applications.
 
         Args:

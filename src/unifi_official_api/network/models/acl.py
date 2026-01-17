@@ -77,16 +77,10 @@ class ACLRule(BaseModel):
     name: str = Field(..., description="ACL rule name")
     description: str | None = Field(None, description="ACL rule description")
     action: ACLAction = Field(..., description="Allow or block action")
-    index: int = Field(
-        ..., ge=0, description="Priority index; lower values = higher priority"
-    )
-    enforcing_device_filter: ACLDeviceFilter | None = Field(
-        None, alias="enforcingDeviceFilter"
-    )
+    index: int = Field(..., ge=0, description="Priority index; lower values = higher priority")
+    enforcing_device_filter: ACLDeviceFilter | None = Field(None, alias="enforcingDeviceFilter")
     source_filter: ACLSourceFilter | None = Field(None, alias="sourceFilter")
-    destination_filter: ACLDestinationFilter | None = Field(
-        None, alias="destinationFilter"
-    )
+    destination_filter: ACLDestinationFilter | None = Field(None, alias="destinationFilter")
     metadata: ACLMetadata | None = Field(None, description="Rule metadata")
 
     model_config = {"populate_by_name": True}

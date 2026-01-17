@@ -203,9 +203,7 @@ class TestNetworkEndpoints:
             )
 
             async with UniFiNetworkClient(auth=auth) as client:
-                network = await client.networks.create(
-                    "host-123", "site-1", name="Guest", vlan=10
-                )
+                network = await client.networks.create("host-123", "site-1", name="Guest", vlan=10)
                 assert network.id == "net-2"
 
     async def test_networks_update(self, auth: ApiKeyAuth) -> None:

@@ -110,9 +110,7 @@ class CamerasEndpoint:
         Returns:
             The updated camera.
         """
-        return await self.update(
-            host_id, site_id, camera_id, recordingMode=mode.value
-        )
+        return await self.update(host_id, site_id, camera_id, recordingMode=mode.value)
 
     async def get_snapshot(
         self,

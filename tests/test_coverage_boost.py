@@ -94,9 +94,7 @@ class TestRequestHeaders:
             )
 
             async with UniFiNetworkClient(auth=auth) as client:
-                await client._request(
-                    "GET", "/ea/hosts", headers={"X-Custom-Header": "test-value"}
-                )
+                await client._request("GET", "/ea/hosts", headers={"X-Custom-Header": "test-value"})
 
 
 class TestPutRequest:
@@ -183,7 +181,9 @@ class TestProtectClientEdgeCases:
         """Test _get_binary success."""
         with aioresponses() as m:
             m.get(
-                re.compile(r"https://api\.ui\.com/ea/hosts/host-123/sites/site-1/cameras/cam-1/snapshot.*"),
+                re.compile(
+                    r"https://api\.ui\.com/ea/hosts/host-123/sites/site-1/cameras/cam-1/snapshot.*"
+                ),
                 body=b"\x89PNG\r\n\x1a\n",
             )
 
@@ -195,7 +195,9 @@ class TestProtectClientEdgeCases:
         """Test _get_binary with width and height params."""
         with aioresponses() as m:
             m.get(
-                re.compile(r"https://api\.ui\.com/ea/hosts/host-123/sites/site-1/cameras/cam-1/snapshot.*"),
+                re.compile(
+                    r"https://api\.ui\.com/ea/hosts/host-123/sites/site-1/cameras/cam-1/snapshot.*"
+                ),
                 body=b"\x89PNG\r\n\x1a\n",
             )
 
@@ -209,7 +211,9 @@ class TestProtectClientEdgeCases:
         """Test _get_binary with error status code."""
         with aioresponses() as m:
             m.get(
-                re.compile(r"https://api\.ui\.com/ea/hosts/host-123/sites/site-1/cameras/cam-1/snapshot.*"),
+                re.compile(
+                    r"https://api\.ui\.com/ea/hosts/host-123/sites/site-1/cameras/cam-1/snapshot.*"
+                ),
                 status=404,
                 body="Not Found",
             )
@@ -403,9 +407,7 @@ class TestCameraEndpointEdgeCases:
             )
 
             async with UniFiProtectClient(auth=auth) as client:
-                result = await client.cameras.set_speaker_volume(
-                    "host-123", "site-1", "cam-1", 75
-                )
+                result = await client.cameras.set_speaker_volume("host-123", "site-1", "cam-1", 75)
                 assert result.id == "cam-1"
 
     async def test_camera_set_speaker_volume_invalid(self, auth: ApiKeyAuth) -> None:

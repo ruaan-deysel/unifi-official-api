@@ -148,9 +148,7 @@ class VouchersEndpoint:
         await self._client._delete(path)
         return True
 
-    async def delete_multiple(
-        self, host_id: str, site_id: str, voucher_ids: list[str]
-    ) -> bool:
+    async def delete_multiple(self, host_id: str, site_id: str, voucher_ids: list[str]) -> bool:
         """Delete multiple vouchers.
 
         Args:

@@ -238,4 +238,3 @@ class DevicesEndpoint:
         path = f"/ea/hosts/{host_id}/devices/{device_id}/{action}"
         await self._client._post(path)
         return True
-

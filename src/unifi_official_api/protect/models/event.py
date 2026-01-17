@@ -48,9 +48,7 @@ class Event(BaseModel):
     sensor: str | None = None
     sensor_id: str | None = Field(default=None, alias="sensorId")
     smart_detect_types: list[str] = Field(default_factory=list, alias="smartDetectTypes")
-    smart_detect_events: list[str] = Field(
-        default_factory=list, alias="smartDetectEvents"
-    )
+    smart_detect_events: list[str] = Field(default_factory=list, alias="smartDetectEvents")
     thumbnail: str | None = None
     heatmap: str | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)

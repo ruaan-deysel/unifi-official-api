@@ -55,9 +55,7 @@ class EventsEndpoint:
         if end is not None:
             params["end"] = int(end.timestamp() * 1000)
         if types is not None:
-            params["types"] = ",".join(
-                t.value if isinstance(t, EventType) else t for t in types
-            )
+            params["types"] = ",".join(t.value if isinstance(t, EventType) else t for t in types)
         if camera_ids is not None:
             params["cameraIds"] = ",".join(camera_ids)
 

@@ -63,9 +63,7 @@ class FirewallEndpoint:
             return [FirewallRule.model_validate(item) for item in data]
         return []
 
-    async def get_rule(
-        self, host_id: str, site_id: str, rule_id: str
-    ) -> FirewallRule:
+    async def get_rule(self, host_id: str, site_id: str, rule_id: str) -> FirewallRule:
         """Get a specific firewall rule.
 
         Args:

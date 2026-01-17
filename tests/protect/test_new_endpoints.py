@@ -143,9 +143,7 @@ class TestViewersEndpoint:
             )
 
             async with UniFiProtectClient(auth=auth) as client:
-                viewer = await client.viewers.set_liveview(
-                    "host-123", "site-1", "viewer-1", "lv-1"
-                )
+                viewer = await client.viewers.set_liveview("host-123", "site-1", "viewer-1", "lv-1")
                 assert viewer.liveview == "lv-1"
 
 
@@ -325,9 +323,7 @@ class TestCameraNewMethods:
             )
 
             async with UniFiProtectClient(auth=auth) as client:
-                stream = await client.cameras.create_rtsps_stream(
-                    "host-123", "site-1", "cam-1"
-                )
+                stream = await client.cameras.create_rtsps_stream("host-123", "site-1", "cam-1")
                 assert stream.url == "rtsps://192.168.1.1:7441/stream"
 
     async def test_camera_create_rtsps_stream_failed(self, auth: ApiKeyAuth) -> None:
@@ -375,9 +371,7 @@ class TestCameraNewMethods:
             )
 
             async with UniFiProtectClient(auth=auth) as client:
-                result = await client.cameras.delete_rtsps_stream(
-                    "host-123", "site-1", "cam-1"
-                )
+                result = await client.cameras.delete_rtsps_stream("host-123", "site-1", "cam-1")
                 assert result is True
 
     async def test_camera_create_talkback_session(self, auth: ApiKeyAuth) -> None:
@@ -412,9 +406,7 @@ class TestCameraNewMethods:
 
             async with UniFiProtectClient(auth=auth) as client:
                 with pytest.raises(ValueError, match="Failed"):
-                    await client.cameras.create_talkback_session(
-                        "host-123", "site-1", "cam-1"
-                    )
+                    await client.cameras.create_talkback_session("host-123", "site-1", "cam-1")
 
     async def test_camera_disable_mic_permanently(self, auth: ApiKeyAuth) -> None:
         """Test disabling camera microphone permanently."""
@@ -431,9 +423,7 @@ class TestCameraNewMethods:
             )
 
             async with UniFiProtectClient(auth=auth) as client:
-                camera = await client.cameras.disable_mic_permanently(
-                    "host-123", "site-1", "cam-1"
-                )
+                camera = await client.cameras.disable_mic_permanently("host-123", "site-1", "cam-1")
                 assert camera.id == "cam-1"
 
     async def test_camera_disable_mic_permanently_failed(self, auth: ApiKeyAuth) -> None:
@@ -446,9 +436,7 @@ class TestCameraNewMethods:
 
             async with UniFiProtectClient(auth=auth) as client:
                 with pytest.raises(ValueError, match="Failed"):
-                    await client.cameras.disable_mic_permanently(
-                        "host-123", "site-1", "cam-1"
-                    )
+                    await client.cameras.disable_mic_permanently("host-123", "site-1", "cam-1")
 
     async def test_camera_set_hdr_mode(self, auth: ApiKeyAuth) -> None:
         """Test setting HDR mode."""
@@ -459,18 +447,14 @@ class TestCameraNewMethods:
             )
 
             async with UniFiProtectClient(auth=auth) as client:
-                camera = await client.cameras.set_hdr_mode(
-                    "host-123", "site-1", "cam-1", "auto"
-                )
+                camera = await client.cameras.set_hdr_mode("host-123", "site-1", "cam-1", "auto")
                 assert camera.id == "cam-1"
 
     async def test_camera_set_hdr_mode_invalid(self, auth: ApiKeyAuth) -> None:
         """Test setting invalid HDR mode."""
         async with UniFiProtectClient(auth=auth) as client:
             with pytest.raises(ValueError, match="HDR mode must be"):
-                await client.cameras.set_hdr_mode(
-                    "host-123", "site-1", "cam-1", "invalid"
-                )
+                await client.cameras.set_hdr_mode("host-123", "site-1", "cam-1", "invalid")
 
     async def test_camera_set_video_mode(self, auth: ApiKeyAuth) -> None:
         """Test setting video mode."""
@@ -496,27 +480,31 @@ class TestViewerModel:
         """Test display_name with name set."""
         from unifi_official_api.protect.models import Viewer
 
-        viewer = Viewer.model_validate({
-            "id": "v-1",
-            "modelKey": "viewer",
-            "state": "CONNECTED",
-            "name": "Living Room",
-            "mac": "aa:bb:cc:dd:ee:ff",
-            "streamLimit": 4,
-        })
+        viewer = Viewer.model_validate(
+            {
+                "id": "v-1",
+                "modelKey": "viewer",
+                "state": "CONNECTED",
+                "name": "Living Room",
+                "mac": "aa:bb:cc:dd:ee:ff",
+                "streamLimit": 4,
+            }
+        )
         assert viewer.display_name == "Living Room"
 
     def test_viewer_display_name_without_name(self) -> None:
         """Test display_name without name set."""
         from unifi_official_api.protect.models import Viewer
 
-        viewer = Viewer.model_validate({
-            "id": "v-1",
-            "modelKey": "viewer",
-            "state": "CONNECTED",
-            "mac": "aa:bb:cc:dd:ee:ff",
-            "streamLimit": 4,
-        })
+        viewer = Viewer.model_validate(
+            {
+                "id": "v-1",
+                "modelKey": "viewer",
+                "state": "CONNECTED",
+                "mac": "aa:bb:cc:dd:ee:ff",
+                "streamLimit": 4,
+            }
+        )
         assert viewer.display_name == "aa:bb:cc:dd:ee:ff"
 
 
@@ -527,44 +515,50 @@ class TestACLRuleModel:
         """Test is_user_defined when user-defined."""
         from unifi_official_api.network.models import ACLRule
 
-        rule = ACLRule.model_validate({
-            "id": "acl-1",
-            "type": "IPV4",
-            "name": "Test",
-            "action": "BLOCK",
-            "enabled": True,
-            "index": 0,
-            "metadata": {"origin": "USER_DEFINED"},
-        })
+        rule = ACLRule.model_validate(
+            {
+                "id": "acl-1",
+                "type": "IPV4",
+                "name": "Test",
+                "action": "BLOCK",
+                "enabled": True,
+                "index": 0,
+                "metadata": {"origin": "USER_DEFINED"},
+            }
+        )
         assert rule.is_user_defined is True
 
     def test_acl_rule_is_user_defined_false(self) -> None:
         """Test is_user_defined when system-defined."""
         from unifi_official_api.network.models import ACLRule
 
-        rule = ACLRule.model_validate({
-            "id": "acl-1",
-            "type": "IPV4",
-            "name": "Test",
-            "action": "BLOCK",
-            "enabled": True,
-            "index": 0,
-            "metadata": {"origin": "SYSTEM_DEFINED"},
-        })
+        rule = ACLRule.model_validate(
+            {
+                "id": "acl-1",
+                "type": "IPV4",
+                "name": "Test",
+                "action": "BLOCK",
+                "enabled": True,
+                "index": 0,
+                "metadata": {"origin": "SYSTEM_DEFINED"},
+            }
+        )
         assert rule.is_user_defined is False
 
     def test_acl_rule_is_user_defined_no_metadata(self) -> None:
         """Test is_user_defined without metadata."""
         from unifi_official_api.network.models import ACLRule
 
-        rule = ACLRule.model_validate({
-            "id": "acl-1",
-            "type": "IPV4",
-            "name": "Test",
-            "action": "BLOCK",
-            "enabled": True,
-            "index": 0,
-        })
+        rule = ACLRule.model_validate(
+            {
+                "id": "acl-1",
+                "type": "IPV4",
+                "name": "Test",
+                "action": "BLOCK",
+                "enabled": True,
+                "index": 0,
+            }
+        )
         assert rule.is_user_defined is True
 
 
@@ -575,26 +569,30 @@ class TestTrafficMatchingListModel:
         """Test is_user_defined when user-defined."""
         from unifi_official_api.network.models import TrafficMatchingList
 
-        traffic_list = TrafficMatchingList.model_validate({
-            "id": "list-1",
-            "type": "IP_ADDRESS",
-            "name": "Test",
-            "entries": [],
-            "metadata": {"origin": "USER_DEFINED"},
-        })
+        traffic_list = TrafficMatchingList.model_validate(
+            {
+                "id": "list-1",
+                "type": "IP_ADDRESS",
+                "name": "Test",
+                "entries": [],
+                "metadata": {"origin": "USER_DEFINED"},
+            }
+        )
         assert traffic_list.is_user_defined is True
 
     def test_traffic_list_is_user_defined_false(self) -> None:
         """Test is_user_defined when system-defined."""
         from unifi_official_api.network.models import TrafficMatchingList
 
-        traffic_list = TrafficMatchingList.model_validate({
-            "id": "list-1",
-            "type": "IP_ADDRESS",
-            "name": "Test",
-            "entries": [],
-            "metadata": {"origin": "SYSTEM_DEFINED"},
-        })
+        traffic_list = TrafficMatchingList.model_validate(
+            {
+                "id": "list-1",
+                "type": "IP_ADDRESS",
+                "name": "Test",
+                "entries": [],
+                "metadata": {"origin": "SYSTEM_DEFINED"},
+            }
+        )
         assert traffic_list.is_user_defined is False
 
 
@@ -605,37 +603,43 @@ class TestVoucherModel:
         """Test is_active when not expired."""
         from unifi_official_api.network.models import Voucher
 
-        voucher = Voucher.model_validate({
-            "id": "v-1",
-            "code": "1234567890",
-            "expired": False,
-            "authorizedGuestCount": 0,
-        })
+        voucher = Voucher.model_validate(
+            {
+                "id": "v-1",
+                "code": "1234567890",
+                "expired": False,
+                "authorizedGuestCount": 0,
+            }
+        )
         assert voucher.is_active is True
 
     def test_voucher_is_active_expired(self) -> None:
         """Test is_active when expired."""
         from unifi_official_api.network.models import Voucher
 
-        voucher = Voucher.model_validate({
-            "id": "v-1",
-            "code": "1234567890",
-            "expired": True,
-            "authorizedGuestCount": 0,
-        })
+        voucher = Voucher.model_validate(
+            {
+                "id": "v-1",
+                "code": "1234567890",
+                "expired": True,
+                "authorizedGuestCount": 0,
+            }
+        )
         assert voucher.is_active is False
 
     def test_voucher_is_active_uses_exhausted(self) -> None:
         """Test is_active when uses are exhausted."""
         from unifi_official_api.network.models import Voucher
 
-        voucher = Voucher.model_validate({
-            "id": "v-1",
-            "code": "1234567890",
-            "expired": False,
-            "authorizedGuestLimit": 1,
-            "authorizedGuestCount": 1,
-        })
+        voucher = Voucher.model_validate(
+            {
+                "id": "v-1",
+                "code": "1234567890",
+                "expired": False,
+                "authorizedGuestLimit": 1,
+                "authorizedGuestCount": 1,
+            }
+        )
         assert voucher.is_active is False
 
 

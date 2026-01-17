@@ -361,7 +361,9 @@ class TestNVREndpoint:
                 "https://api.ui.com/ea/hosts/host-123/sites/site-1/nvr",
                 payload={
                     "data": {
-                        "id": "nvr-1", "mac": "aa:bb:cc:dd:ee:ff", "recordingRetentionDays": 30
+                        "id": "nvr-1",
+                        "mac": "aa:bb:cc:dd:ee:ff",
+                        "recordingRetentionDays": 30,
                     }
                 },
             )

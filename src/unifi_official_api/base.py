@@ -183,17 +183,11 @@ class BaseUniFiClient(ABC):
                 return await self._handle_response(response)
 
         except aiohttp.ClientConnectorError as err:
-            raise UniFiConnectionError(
-                f"Failed to connect to {url}: {err}"
-            ) from err
+            raise UniFiConnectionError(f"Failed to connect to {url}: {err}") from err
         except TimeoutError as err:
-            raise UniFiTimeoutError(
-                f"Request to {url} timed out"
-            ) from err
+            raise UniFiTimeoutError(f"Request to {url} timed out") from err
         except aiohttp.ClientError as err:
-            raise UniFiConnectionError(
-                f"Request to {url} failed: {err}"
-            ) from err
+            raise UniFiConnectionError(f"Request to {url} failed: {err}") from err
 
     async def _handle_response(
         self,
@@ -223,14 +217,10 @@ class BaseUniFiClient(ABC):
         )
 
         if status == HTTPStatus.UNAUTHORIZED:
-            raise UniFiAuthenticationError(
-                "Authentication failed. Check your API key."
-            )
+            raise UniFiAuthenticationError("Authentication failed. Check your API key.")
 
         if status == HTTPStatus.FORBIDDEN:
-            raise UniFiAuthenticationError(
-                "Access forbidden. Check your API key permissions."
-            )
+            raise UniFiAuthenticationError("Access forbidden. Check your API key permissions.")
 
         if status == HTTPStatus.NOT_FOUND:
             raise UniFiNotFoundError(

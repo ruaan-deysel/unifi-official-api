@@ -50,9 +50,7 @@ class NVR(BaseModel):
     cpu_load: float | None = Field(default=None, alias="cpuLoad")
     memory_usage: float | None = Field(default=None, alias="memoryUsage")
     camera_count: int = Field(default=0, alias="cameraCount")
-    recording_retention_days: int | None = Field(
-        default=None, alias="recordingRetentionDays"
-    )
+    recording_retention_days: int | None = Field(default=None, alias="recordingRetentionDays")
     enable_automatic_backups: bool = Field(default=False, alias="enableAutomaticBackups")
     feature_flags: dict[str, Any] | None = Field(default=None, alias="featureFlags")
 

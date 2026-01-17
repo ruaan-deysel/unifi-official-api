@@ -109,9 +109,7 @@ class SensorsEndpoint:
         Returns:
             The updated sensor.
         """
-        return await self.update(
-            host_id, site_id, sensor_id, openStatusLedEnabled=enabled
-        )
+        return await self.update(host_id, site_id, sensor_id, openStatusLedEnabled=enabled)
 
     async def set_motion_sensitivity(
         self,
@@ -133,6 +131,4 @@ class SensorsEndpoint:
         """
         if not 0 <= sensitivity <= 100:
             raise ValueError("Sensitivity must be between 0 and 100")
-        return await self.update(
-            host_id, site_id, sensor_id, motionSensitivity=sensitivity
-        )
+        return await self.update(host_id, site_id, sensor_id, motionSensitivity=sensitivity)

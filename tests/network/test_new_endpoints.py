@@ -137,9 +137,7 @@ class TestVouchersEndpoint:
             )
 
             async with UniFiNetworkClient(auth=auth) as client:
-                result = await client.vouchers.delete_multiple(
-                    "host-123", "site-1", ["v-1", "v-2"]
-                )
+                result = await client.vouchers.delete_multiple("host-123", "site-1", ["v-1", "v-2"])
                 assert result is True
 
 
@@ -259,9 +257,7 @@ class TestACLEndpoint:
 
             async with UniFiNetworkClient(auth=auth) as client:
                 with pytest.raises(ValueError, match="Failed"):
-                    await client.acl.create(
-                        "host-123", "site-1", name="Test", index=0
-                    )
+                    await client.acl.create("host-123", "site-1", name="Test", index=0)
 
     async def test_acl_update(self, auth: ApiKeyAuth) -> None:
         """Test updating an ACL rule."""
@@ -281,9 +277,7 @@ class TestACLEndpoint:
             )
 
             async with UniFiNetworkClient(auth=auth) as client:
-                rule = await client.acl.update(
-                    "host-123", "site-1", "acl-1", name="Updated Rule"
-                )
+                rule = await client.acl.update("host-123", "site-1", "acl-1", name="Updated Rule")
                 assert rule.name == "Updated Rule"
 
     async def test_acl_update_failed(self, auth: ApiKeyAuth) -> None:
@@ -1006,9 +1000,7 @@ class TestDeviceActions:
             )
 
             async with UniFiNetworkClient(auth=auth) as client:
-                result = await client.devices.execute_action(
-                    "host-123", "dev-1", "provision"
-                )
+                result = await client.devices.execute_action("host-123", "dev-1", "provision")
                 assert result is True
 
     async def test_device_execute_action_invalid(self, auth: ApiKeyAuth) -> None:
@@ -1035,9 +1027,7 @@ class TestClientActions:
             )
 
             async with UniFiNetworkClient(auth=auth) as client:
-                result = await client.clients.forget(
-                    "host-123", "site-1", "aa:bb:cc:dd:ee:ff"
-                )
+                result = await client.clients.forget("host-123", "site-1", "aa:bb:cc:dd:ee:ff")
                 assert result is True
 
     async def test_client_execute_action(self, auth: ApiKeyAuth) -> None:
@@ -1176,8 +1166,12 @@ class TestACLAdditional:
                 re.compile(r".*/ea/hosts/host-123/sites/site-1/acl-rules.*"),
                 payload={
                     "data": {
-                        "id": "acl-1", "type": "IPV4", "name": "Test",
-                        "action": "BLOCK", "enabled": True, "index": 0
+                        "id": "acl-1",
+                        "type": "IPV4",
+                        "name": "Test",
+                        "action": "BLOCK",
+                        "enabled": True,
+                        "index": 0,
                     }
                 },
             )
