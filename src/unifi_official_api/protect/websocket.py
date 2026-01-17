@@ -179,6 +179,7 @@ class ProtectWebSocket:
                 await ws.close()
 
             except (aiohttp.ClientError, asyncio.CancelledError):
+                # Expected during disconnects or cancellations; allow reconnection logic below
                 pass
 
             if self._running and reconnect:
