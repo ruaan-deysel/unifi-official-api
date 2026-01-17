@@ -115,3 +115,44 @@ class ClientsEndpoint:
         path = f"/ea/hosts/{host_id}/sites/{site_id}/clients/{mac}/reconnect"
         await self._client._post(path)
         return True
+
+    async def forget(self, host_id: str, site_id: str, mac: str) -> bool:
+        """Forget/remove a client from the network.
+
+        Args:
+            host_id: The host ID.
+            site_id: The site ID.
+            mac: The client MAC address.
+
+        Returns:
+            True if successful.
+        """
+        path = f"/ea/hosts/{host_id}/sites/{site_id}/clients/{mac}"
+        await self._client._delete(path)
+        return True
+
+    async def execute_action(
+        self,
+        host_id: str,
+        site_id: str,
+        mac: str,
+        action: str,
+    ) -> bool:
+        """Execute an action on a client.
+
+        Args:
+            host_id: The host ID.
+            site_id: The site ID.
+            mac: The client MAC address.
+            action: The action (block, unblock, reconnect).
+
+        Returns:
+            True if successful.
+        """
+        valid_actions = {"block", "unblock", "reconnect"}
+        if action not in valid_actions:
+            raise ValueError(f"Action must be one of: {', '.join(valid_actions)}")
+
+        path = f"/ea/hosts/{host_id}/sites/{site_id}/clients/{mac}/{action}"
+        await self._client._post(path)
+        return True

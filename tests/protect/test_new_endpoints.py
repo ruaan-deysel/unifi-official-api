@@ -637,3 +637,32 @@ class TestVoucherModel:
             "authorizedGuestCount": 1,
         })
         assert voucher.is_active is False
+
+
+class TestWebSocketSubscription:
+    """Tests for WebSocket subscription."""
+
+    @pytest.fixture
+    def auth(self) -> ApiKeyAuth:
+        """Create test auth."""
+        return ApiKeyAuth(api_key="test-api-key")
+
+    async def test_websocket_subscribe_invalid_type(self, auth: ApiKeyAuth) -> None:
+        """Test websocket subscribe with invalid type."""
+        async with UniFiProtectClient(auth=auth) as client:
+            with pytest.raises(ValueError, match="subscription_type must be"):
+                await client.websocket.subscribe_with_callback(
+                    "host-123", "site-1", "invalid", lambda _: None
+                )
+
+    def test_websocket_stop(self) -> None:
+        """Test websocket stop method."""
+        from unittest.mock import MagicMock
+
+        from unifi_official_api.protect.websocket import ProtectWebSocket
+
+        mock_client = MagicMock()
+        ws = ProtectWebSocket(mock_client)
+        ws._running = True
+        ws.stop()
+        assert ws._running is False

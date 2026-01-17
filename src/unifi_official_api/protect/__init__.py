@@ -19,6 +19,7 @@ from .models import (
     SensorType,
     VideoMode,
 )
+from .websocket import ProtectWebSocket
 
 __all__ = [
     "NVR",
@@ -31,6 +32,7 @@ __all__ = [
     "Light",
     "LightMode",
     "LiveView",
+    "ProtectWebSocket",
     "RecordingMode",
     "Sensor",
     "SensorType",

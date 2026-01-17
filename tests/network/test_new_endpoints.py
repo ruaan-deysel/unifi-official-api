@@ -907,3 +907,282 @@ class TestAdditionalCoverage:
                 viewers = await client.viewers.get_all("host-123", "site-1")
                 # Returns empty since not a list
                 assert viewers == []
+
+
+class TestDeviceActions:
+    """Tests for device action endpoints."""
+
+    @pytest.fixture
+    def auth(self) -> ApiKeyAuth:
+        """Create test auth."""
+        return ApiKeyAuth(api_key="test-api-key")
+
+    async def test_device_locate(self, auth: ApiKeyAuth) -> None:
+        """Test device locate mode."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/ea/hosts/host-123/devices/dev-1/locate",
+                status=204,
+            )
+
+            async with UniFiNetworkClient(auth=auth) as client:
+                result = await client.devices.locate("host-123", "dev-1", enabled=True)
+                assert result is True
+
+    async def test_device_get_pending_adoption(self, auth: ApiKeyAuth) -> None:
+        """Test getting devices pending adoption."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/ea/hosts/host-123/devices/pending-adoption",
+                payload={"data": [{"id": "dev-1", "mac": "aa:bb:cc:dd:ee:ff"}]},
+            )
+
+            async with UniFiNetworkClient(auth=auth) as client:
+                devices = await client.devices.get_pending_adoption("host-123")
+                assert len(devices) == 1
+
+    async def test_device_get_pending_adoption_empty(self, auth: ApiKeyAuth) -> None:
+        """Test getting devices pending adoption when empty."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/ea/hosts/host-123/devices/pending-adoption",
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(auth=auth) as client:
+                devices = await client.devices.get_pending_adoption("host-123")
+                assert devices == []
+
+    async def test_device_get_statistics(self, auth: ApiKeyAuth) -> None:
+        """Test getting device statistics."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/ea/hosts/host-123/devices/dev-1/statistics/latest",
+                payload={"data": {"cpu": 25, "memory": 50}},
+            )
+
+            async with UniFiNetworkClient(auth=auth) as client:
+                stats = await client.devices.get_statistics("host-123", "dev-1")
+                assert stats["cpu"] == 25
+
+    async def test_device_get_statistics_empty(self, auth: ApiKeyAuth) -> None:
+        """Test getting device statistics when empty."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/ea/hosts/host-123/devices/dev-1/statistics/latest",
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(auth=auth) as client:
+                stats = await client.devices.get_statistics("host-123", "dev-1")
+                assert stats == {}
+
+    async def test_device_port_action(self, auth: ApiKeyAuth) -> None:
+        """Test device port action."""
+        with aioresponses() as m:
+            m.patch(
+                "https://api.ui.com/ea/hosts/host-123/devices/dev-1/ports/1",
+                status=204,
+            )
+
+            async with UniFiNetworkClient(auth=auth) as client:
+                result = await client.devices.execute_port_action(
+                    "host-123", "dev-1", 1, poe_mode="auto", speed="1000", enabled=True
+                )
+                assert result is True
+
+    async def test_device_port_action_no_settings(self, auth: ApiKeyAuth) -> None:
+        """Test device port action without settings raises error."""
+        async with UniFiNetworkClient(auth=auth) as client:
+            with pytest.raises(ValueError, match="At least one"):
+                await client.devices.execute_port_action("host-123", "dev-1", 1)
+
+    async def test_device_execute_action(self, auth: ApiKeyAuth) -> None:
+        """Test device execute action."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/ea/hosts/host-123/devices/dev-1/provision",
+                status=204,
+            )
+
+            async with UniFiNetworkClient(auth=auth) as client:
+                result = await client.devices.execute_action(
+                    "host-123", "dev-1", "provision"
+                )
+                assert result is True
+
+    async def test_device_execute_action_invalid(self, auth: ApiKeyAuth) -> None:
+        """Test device execute action with invalid action."""
+        async with UniFiNetworkClient(auth=auth) as client:
+            with pytest.raises(ValueError, match="Action must be one of"):
+                await client.devices.execute_action("host-123", "dev-1", "invalid")
+
+
+class TestClientActions:
+    """Tests for client action endpoints."""
+
+    @pytest.fixture
+    def auth(self) -> ApiKeyAuth:
+        """Create test auth."""
+        return ApiKeyAuth(api_key="test-api-key")
+
+    async def test_client_forget(self, auth: ApiKeyAuth) -> None:
+        """Test client forget."""
+        with aioresponses() as m:
+            m.delete(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/clients/aa:bb:cc:dd:ee:ff",
+                status=204,
+            )
+
+            async with UniFiNetworkClient(auth=auth) as client:
+                result = await client.clients.forget(
+                    "host-123", "site-1", "aa:bb:cc:dd:ee:ff"
+                )
+                assert result is True
+
+    async def test_client_execute_action(self, auth: ApiKeyAuth) -> None:
+        """Test client execute action."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/clients/aa:bb:cc:dd:ee:ff/block",
+                status=204,
+            )
+
+            async with UniFiNetworkClient(auth=auth) as client:
+                result = await client.clients.execute_action(
+                    "host-123", "site-1", "aa:bb:cc:dd:ee:ff", "block"
+                )
+                assert result is True
+
+    async def test_client_execute_action_invalid(self, auth: ApiKeyAuth) -> None:
+        """Test client execute action with invalid action."""
+        async with UniFiNetworkClient(auth=auth) as client:
+            with pytest.raises(ValueError, match="Action must be one of"):
+                await client.clients.execute_action(
+                    "host-123", "site-1", "aa:bb:cc:dd:ee:ff", "invalid"
+                )
+
+
+class TestResourcesAdditional:
+    """Additional tests for resources endpoint."""
+
+    @pytest.fixture
+    def auth(self) -> ApiKeyAuth:
+        """Create test auth."""
+        return ApiKeyAuth(api_key="test-api-key")
+
+    async def test_wan_interfaces_single_item(self, auth: ApiKeyAuth) -> None:
+        """Test WAN interface when data is a single dict."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*/ea/hosts/host-123/sites/site-1/wan.*"),
+                payload={"data": {"id": "wan-1", "name": "WAN1"}},
+            )
+
+            async with UniFiNetworkClient(auth=auth) as client:
+                interfaces = await client.resources.get_wan_interfaces("host-123", "site-1")
+                # Returns empty since not a list
+                assert interfaces == []
+
+    async def test_vpn_tunnels_single_item(self, auth: ApiKeyAuth) -> None:
+        """Test VPN tunnels when data is a single dict."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*/ea/hosts/host-123/sites/site-1/vpn/tunnels.*"),
+                payload={"data": {"id": "vpn-1", "name": "VPN1"}},
+            )
+
+            async with UniFiNetworkClient(auth=auth) as client:
+                tunnels = await client.resources.get_vpn_tunnels("host-123", "site-1")
+                # Returns empty since not a list
+                assert tunnels == []
+
+
+class TestTrafficAdditional:
+    """Additional tests for traffic endpoint."""
+
+    @pytest.fixture
+    def auth(self) -> ApiKeyAuth:
+        """Create test auth."""
+        return ApiKeyAuth(api_key="test-api-key")
+
+    async def test_dpi_categories_single_item(self, auth: ApiKeyAuth) -> None:
+        """Test DPI categories when data is a single dict."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/dpi/categories",
+                payload={"data": {"id": "cat-1", "name": "Test"}},
+            )
+
+            async with UniFiNetworkClient(auth=auth) as client:
+                categories = await client.traffic.get_dpi_categories("host-123", "site-1")
+                # Returns empty since not a list
+                assert categories == []
+
+    async def test_dpi_applications_single_item(self, auth: ApiKeyAuth) -> None:
+        """Test DPI applications when data is a single dict."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/dpi/applications",
+                payload={"data": {"id": "app-1", "name": "Test"}},
+            )
+
+            async with UniFiNetworkClient(auth=auth) as client:
+                apps = await client.traffic.get_dpi_applications("host-123", "site-1")
+                # Returns empty since not a list
+                assert apps == []
+
+    async def test_countries_single_item(self, auth: ApiKeyAuth) -> None:
+        """Test countries when data is a single dict."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/ea/hosts/host-123/sites/site-1/geo/countries",
+                payload={"data": {"code": "US", "name": "USA"}},
+            )
+
+            async with UniFiNetworkClient(auth=auth) as client:
+                countries = await client.traffic.get_countries("host-123", "site-1")
+                # Returns empty since not a list
+                assert countries == []
+
+    async def test_traffic_lists_single_item(self, auth: ApiKeyAuth) -> None:
+        """Test traffic lists when data is a single dict."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*/ea/hosts/host-123/sites/site-1/traffic-matching-lists.*"),
+                payload={
+                    "data": {"id": "list-1", "type": "IP_ADDRESS", "name": "Test", "entries": []}
+                },
+            )
+
+            async with UniFiNetworkClient(auth=auth) as client:
+                lists = await client.traffic.get_all_lists("host-123", "site-1")
+                # Returns empty since not a list
+                assert lists == []
+
+
+class TestACLAdditional:
+    """Additional tests for ACL endpoint."""
+
+    @pytest.fixture
+    def auth(self) -> ApiKeyAuth:
+        """Create test auth."""
+        return ApiKeyAuth(api_key="test-api-key")
+
+    async def test_acl_rules_single_item(self, auth: ApiKeyAuth) -> None:
+        """Test ACL rules when data is a single dict."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*/ea/hosts/host-123/sites/site-1/acl-rules.*"),
+                payload={
+                    "data": {
+                        "id": "acl-1", "type": "IPV4", "name": "Test",
+                        "action": "BLOCK", "enabled": True, "index": 0
+                    }
+                },
+            )
+
+            async with UniFiNetworkClient(auth=auth) as client:
+                rules = await client.acl.get_all("host-123", "site-1")
+                # Returns empty since not a list
+                assert rules == []

@@ -21,6 +21,7 @@ from .endpoints import (
     SensorsEndpoint,
     ViewersEndpoint,
 )
+from .websocket import ProtectWebSocket
 
 
 class UniFiProtectClient(BaseUniFiClient):
@@ -101,6 +102,7 @@ class UniFiProtectClient(BaseUniFiClient):
         self._events = EventsEndpoint(self)
         self._viewers = ViewersEndpoint(self)
         self._application = ApplicationEndpoint(self)
+        self._websocket = ProtectWebSocket(self)
 
     @property
     def cameras(self) -> CamerasEndpoint:
@@ -146,6 +148,11 @@ class UniFiProtectClient(BaseUniFiClient):
     def application(self) -> ApplicationEndpoint:
         """Access application info and file management endpoints."""
         return self._application
+
+    @property
+    def websocket(self) -> ProtectWebSocket:
+        """Access WebSocket subscription manager for real-time updates."""
+        return self._websocket
 
     async def validate_connection(self) -> bool:
         """Validate the connection to the UniFi Protect API.
