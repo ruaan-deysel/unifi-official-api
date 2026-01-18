@@ -30,7 +30,7 @@ class NVREndpoint:
         Returns:
             The NVR information.
         """
-        path = self._client.build_api_path("/nvr", site_id)
+        path = self._client.build_api_path("/nvrs", site_id)
         response = await self._client._get(path)
 
         if isinstance(response, dict):

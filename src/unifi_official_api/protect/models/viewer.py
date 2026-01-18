@@ -26,7 +26,7 @@ class Viewer(BaseModel):
     liveview: str | None = Field(None, description="Associated liveview ID")
     stream_limit: int = Field(4, alias="streamLimit", description="Max parallel streams")
 
-    model_config = {"populate_by_name": True}
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
     @property
     def display_name(self) -> str:

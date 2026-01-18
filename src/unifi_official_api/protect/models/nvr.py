@@ -31,10 +31,11 @@ class NVR(BaseModel):
     """Model representing a UniFi Protect NVR."""
 
     id: str
-    mac: str
+    mac: str | None = None
     name: str | None = None
     type: str | None = None
     model: str | None = None
+    host_type: str | None = Field(default=None, alias="hostType")
     firmware_version: str | None = Field(default=None, alias="firmwareVersion")
     hardware_revision: str | None = Field(default=None, alias="hardwareRevision")
     uptime: int | None = None
@@ -45,7 +46,7 @@ class NVR(BaseModel):
     is_setup: bool = Field(default=False, alias="isSetup")
     is_recording_disabled: bool = Field(default=False, alias="isRecordingDisabled")
     is_recording_motion_only: bool = Field(default=False, alias="isRecordingMotionOnly")
-    storage_info: StorageInfo | None = Field(default=None, alias="storageInfo")
+    storage_info: StorageInfo | dict[str, Any] | None = Field(default=None, alias="storageInfo")
     timezone: str | None = None
     cpu_load: float | None = Field(default=None, alias="cpuLoad")
     memory_usage: float | None = Field(default=None, alias="memoryUsage")
@@ -59,4 +60,4 @@ class NVR(BaseModel):
     @property
     def display_name(self) -> str:
         """Get the display name for the NVR."""
-        return self.name or self.mac
+        return self.name or self.mac or self.id

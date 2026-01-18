@@ -21,7 +21,7 @@ class DeviceFile(BaseModel):
     original_name: str = Field(..., alias="originalName", description="Original filename")
     path: str = Field(..., description="Filesystem path")
 
-    model_config = {"populate_by_name": True}
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
 
 class ApplicationInfo(BaseModel):
@@ -29,7 +29,7 @@ class ApplicationInfo(BaseModel):
 
     application_version: str = Field(..., alias="applicationVersion")
 
-    model_config = {"populate_by_name": True}
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
 
 class TalkbackSession(BaseModel):
@@ -40,7 +40,7 @@ class TalkbackSession(BaseModel):
     sampling_rate: int = Field(..., alias="samplingRate", description="Audio sampling rate")
     bits_per_sample: int = Field(..., alias="bitsPerSample", description="Bits per sample")
 
-    model_config = {"populate_by_name": True}
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
 
 class RTSPSStream(BaseModel):
@@ -49,4 +49,4 @@ class RTSPSStream(BaseModel):
     url: str | None = Field(None, description="RTSPS stream URL")
     channel: int | None = Field(None, description="Stream channel")
 
-    model_config = {"populate_by_name": True}
+    model_config = {"populate_by_name": True, "extra": "allow"}

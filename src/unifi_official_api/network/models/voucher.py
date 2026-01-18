@@ -40,7 +40,7 @@ class Voucher(BaseModel):
         None, alias="txRateLimitKbps", description="Upload speed limit"
     )
 
-    model_config = {"populate_by_name": True}
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
     @property
     def is_active(self) -> bool:
@@ -73,4 +73,4 @@ class VoucherCreateRequest(BaseModel):
         None, alias="txRateLimitKbps", ge=1, description="Upload speed limit"
     )
 
-    model_config = {"populate_by_name": True}
+    model_config = {"populate_by_name": True, "extra": "allow"}

@@ -41,7 +41,7 @@ class TrafficMatchingList(BaseModel):
     entries: list[str] = Field(default_factory=list, description="List entries")
     metadata: TrafficMetadata | None = Field(None, description="List metadata")
 
-    model_config = {"populate_by_name": True}
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
     @property
     def is_user_defined(self) -> bool:
@@ -67,7 +67,7 @@ class DPIApplication(BaseModel):
     category_id: str | None = Field(None, alias="categoryId")
     description: str | None = Field(None, description="Application description")
 
-    model_config = {"populate_by_name": True}
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
 
 class Country(BaseModel):

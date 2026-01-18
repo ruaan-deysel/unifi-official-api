@@ -19,6 +19,9 @@ class DeviceType(str, Enum):
     UDM = "udm"  # UniFi Dream Machine
     UDMPRO = "udm-pro"  # UniFi Dream Machine Pro
     UCK = "uck"  # UniFi Cloud Key
+    UCG = "ucg"  # UniFi Cloud Gateway
+    UBB = "ubb"  # UniFi Building Bridge
+    UNKNOWN = "unknown"  # Fallback for new device types
 
 
 class DeviceState(str, Enum):
@@ -58,7 +61,7 @@ class Device(BaseModel):
     mac: str | None = Field(default=None, alias="macAddress")
     name: str | None = None
     model: str | None = None
-    type: DeviceType | None = None
+    type: DeviceType | str | None = None  # Accept enum or raw string for new types
     state: DeviceState | None = None
     ip: str | None = None
     firmware_version: str | None = Field(default=None, alias="firmwareVersion")

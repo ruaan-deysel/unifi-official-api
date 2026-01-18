@@ -28,7 +28,7 @@ class WANInterface(BaseModel):
     upload_speed: int | None = Field(None, alias="uploadSpeed", description="Mbps")
     download_speed: int | None = Field(None, alias="downloadSpeed", description="Mbps")
 
-    model_config = {"populate_by_name": True}
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
 
 class VPNTunnelStatus(str, Enum):
@@ -51,7 +51,7 @@ class VPNTunnel(BaseModel):
     remote_ip: str | None = Field(None, alias="remoteIp")
     ike_version: int | None = Field(None, alias="ikeVersion")
 
-    model_config = {"populate_by_name": True}
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
 
 class VPNServerType(str, Enum):
@@ -72,7 +72,7 @@ class VPNServer(BaseModel):
     port: int | None = Field(None, description="Server port")
     network: str | None = Field(None, description="VPN network CIDR")
 
-    model_config = {"populate_by_name": True}
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
 
 class RADIUSProfile(BaseModel):
@@ -86,7 +86,7 @@ class RADIUSProfile(BaseModel):
     acct_port: int = Field(1813, alias="acctPort")
     enabled: bool = Field(True)
 
-    model_config = {"populate_by_name": True}
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
 
 class DeviceTag(BaseModel):
@@ -97,4 +97,4 @@ class DeviceTag(BaseModel):
     color: str | None = Field(None, description="Tag color (hex)")
     device_count: int = Field(0, alias="deviceCount")
 
-    model_config = {"populate_by_name": True}
+    model_config = {"populate_by_name": True, "extra": "allow"}

@@ -43,7 +43,7 @@ class ACLDeviceFilter(BaseModel):
         None, alias="deviceIds", description="Switch device IDs for enforcement"
     )
 
-    model_config = {"populate_by_name": True}
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
 
 class ACLSourceFilter(BaseModel):
@@ -54,7 +54,7 @@ class ACLSourceFilter(BaseModel):
     ip_addresses: list[str] | None = Field(None, alias="ipAddresses")
     port_ranges: list[str] | None = Field(None, alias="portRanges")
 
-    model_config = {"populate_by_name": True}
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
 
 class ACLDestinationFilter(BaseModel):
@@ -65,7 +65,7 @@ class ACLDestinationFilter(BaseModel):
     ip_addresses: list[str] | None = Field(None, alias="ipAddresses")
     port_ranges: list[str] | None = Field(None, alias="portRanges")
 
-    model_config = {"populate_by_name": True}
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
 
 class ACLRule(BaseModel):
@@ -83,7 +83,7 @@ class ACLRule(BaseModel):
     destination_filter: ACLDestinationFilter | None = Field(None, alias="destinationFilter")
     metadata: ACLMetadata | None = Field(None, description="Rule metadata")
 
-    model_config = {"populate_by_name": True}
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
     @property
     def is_user_defined(self) -> bool:

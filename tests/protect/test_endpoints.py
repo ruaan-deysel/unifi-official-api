@@ -334,7 +334,7 @@ class TestNVREndpoint:
     ) -> None:
         """Test getting NVR."""
         mock_aioresponse.get(
-            "https://192.168.1.1/proxy/protect/integration/v1/nvr",
+            "https://192.168.1.1/proxy/protect/integration/v1/nvrs",
             payload={"data": {"id": "nvr-1", "mac": "AA:BB:CC:DD:EE:FF", "name": "NVR"}},
         )
 
