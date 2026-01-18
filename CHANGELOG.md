@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 #### Network API
+
 - **Vouchers**: Hotspot voucher management
   - `get_all()`: List vouchers with pagination and filtering
   - `get()`: Get specific voucher details
@@ -53,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Application Info**: `get_application_info()` method on client
 
 #### Protect API
+
 - **Viewers**: Viewport device management
   - `get_all()`: List all viewers
   - `get()`: Get specific viewer
@@ -83,11 +85,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `subscribe_events()`: Subscribe to Protect events
 
 ### Changed
+
 - Renamed `list()` methods to `get_all()` to avoid shadowing Python built-in
 
 ## [0.1.0] - 2024-01-17
 
 ### Added
+
 - Initial release with async Python library for UniFi APIs
 - UniFi Network API support:
   - Hosts management

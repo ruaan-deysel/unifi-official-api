@@ -135,3 +135,10 @@ exclude_lines = [
     "if TYPE_CHECKING:",
     "raise NotImplementedError",
 ]
+
+[tool.bandit]
+exclude_dirs = ["tests", "venv", ".venv"]
+skips = ["B101"]  # Skip assert_used check (needed for tests)
+
+[tool.bandit.assert_used]
+skips = ["*/test_*.py"]
