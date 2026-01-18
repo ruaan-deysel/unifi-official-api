@@ -274,6 +274,9 @@ cd unifi-official-api
 # Install development dependencies
 pip install -e ".[dev]"
 
+# Install pre-commit hooks (recommended)
+pre-commit install
+
 # Run tests
 pytest
 
@@ -283,6 +286,33 @@ ruff check src tests
 # Run type checking
 mypy src
 ```
+
+### Pre-commit Hooks
+
+This project uses pre-commit hooks to ensure code quality before commits. The hooks automatically run:
+
+- **Ruff** - Linting and formatting
+- **Mypy** - Static type checking
+- **Bandit** - Security vulnerability scanning
+- **Markdownlint** - Markdown file linting
+- **Codespell** - Spell checking
+- **Pyupgrade** - Python syntax modernization
+- **File checks** - YAML, TOML, JSON validation, trailing whitespace, etc.
+
+To set up pre-commit hooks:
+
+```bash
+# Install pre-commit
+pip install pre-commit
+
+# Install the git hooks
+pre-commit install
+
+# (Optional) Run against all files
+pre-commit run --all-files
+```
+
+Once installed, the hooks will automatically run on every commit. If any check fails, the commit will be blocked until you fix the issues.
 
 ### Running Tests
 
