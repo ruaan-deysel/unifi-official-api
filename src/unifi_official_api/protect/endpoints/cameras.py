@@ -236,9 +236,7 @@ class CamerasEndpoint:
         Returns:
             True if successful.
         """
-        path = self._client.build_api_path(
-            f"/cameras/{camera_id}/ptz/goto/{preset_id}", site_id
-        )
+        path = self._client.build_api_path(f"/cameras/{camera_id}/ptz/goto/{preset_id}", site_id)
         await self._client._post(path)
         return True
 
@@ -260,9 +258,7 @@ class CamerasEndpoint:
         """
         if not 0 <= slot <= 4:
             raise ValueError("Slot must be between 0 and 4")
-        path = self._client.build_api_path(
-            f"/cameras/{camera_id}/ptz/patrol/start/{slot}", site_id
-        )
+        path = self._client.build_api_path(f"/cameras/{camera_id}/ptz/patrol/start/{slot}", site_id)
         await self._client._post(path)
         return True
 
@@ -387,9 +383,7 @@ class CamerasEndpoint:
         Returns:
             The updated camera with microphone disabled.
         """
-        path = self._client.build_api_path(
-            f"/cameras/{camera_id}/disable-mic-permanently", site_id
-        )
+        path = self._client.build_api_path(f"/cameras/{camera_id}/disable-mic-permanently", site_id)
         response = await self._client._post(path)
 
         if isinstance(response, dict):

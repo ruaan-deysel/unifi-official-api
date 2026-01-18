@@ -42,9 +42,7 @@ class TestCamerasEndpoint:
             payload={"data": {**sample_camera, "recordingMode": "motion"}},
         )
 
-        camera = await protect_client.cameras.set_recording_mode(
-            camera_id, RecordingMode.MOTION
-        )
+        camera = await protect_client.cameras.set_recording_mode(camera_id, RecordingMode.MOTION)
         assert camera is not None
 
     async def test_cameras_get_snapshot(

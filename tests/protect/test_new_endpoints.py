@@ -262,9 +262,7 @@ class TestApplicationEndpoint:
         )
 
         with pytest.raises(ValueError, match="Failed"):
-            await protect_client.application.upload_file(
-                file_data=b"...", filename="test.gif"
-            )
+            await protect_client.application.upload_file(file_data=b"...", filename="test.gif")
 
     async def test_application_trigger_alarm_webhook(
         self,
@@ -498,9 +496,7 @@ class TestCameraNewMethods:
         """Test setting video mode."""
         mock_aioresponse.patch(
             "https://192.168.1.1/proxy/protect/integration/v1/cameras/cam-1",
-            payload={
-                "data": {"id": "cam-1", "mac": "aa:bb:cc:dd:ee:ff", "videoMode": "highFps"}
-            },
+            payload={"data": {"id": "cam-1", "mac": "aa:bb:cc:dd:ee:ff", "videoMode": "highFps"}},
         )
 
         camera = await protect_client.cameras.set_video_mode("cam-1", "highFps")
