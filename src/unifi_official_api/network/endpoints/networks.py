@@ -23,20 +23,33 @@ class NetworksEndpoint:
 
     async def get_all(
         self,
-        host_id: str,
         site_id: str,
+        *,
+        offset: int | None = None,
+        limit: int | None = None,
+        filter_str: str | None = None,
     ) -> list[Network]:
         """List all networks.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
+            offset: Number of networks to skip (pagination).
+            limit: Maximum number of networks to return.
+            filter_str: Filter string for network properties.
 
         Returns:
             List of networks.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/networks"
-        response = await self._client._get(path)
+        params: dict[str, Any] = {}
+        if offset is not None:
+            params["offset"] = offset
+        if limit is not None:
+            params["limit"] = limit
+        if filter_str:
+            params["filter"] = filter_str
+
+        path = self._client.build_api_path(f"/sites/{site_id}/networks")
+        response = await self._client._get(path, params=params if params else None)
 
         if response is None:
             return []
@@ -46,18 +59,17 @@ class NetworksEndpoint:
             return [Network.model_validate(item) for item in data]
         return []
 
-    async def get(self, host_id: str, site_id: str, network_id: str) -> Network:
+    async def get(self, site_id: str, network_id: str) -> Network:
         """Get a specific network.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             network_id: The network ID.
 
         Returns:
             The network.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/networks/{network_id}"
+        path = self._client.build_api_path(f"/sites/{site_id}/networks/{network_id}")
         response = await self._client._get(path)
 
         if isinstance(response, dict):
@@ -70,7 +82,6 @@ class NetworksEndpoint:
 
     async def create(
         self,
-        host_id: str,
         site_id: str,
         *,
         name: str,
@@ -82,7 +93,6 @@ class NetworksEndpoint:
         """Create a new network.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             name: Network name.
             vlan_id: VLAN ID.
@@ -93,7 +103,7 @@ class NetworksEndpoint:
         Returns:
             The created network.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/networks"
+        path = self._client.build_api_path(f"/sites/{site_id}/networks")
         data: dict[str, Any] = {
             "name": name,
             "dhcpEnabled": dhcp_enabled,
@@ -113,7 +123,6 @@ class NetworksEndpoint:
 
     async def update(
         self,
-        host_id: str,
         site_id: str,
         network_id: str,
         **kwargs: Any,
@@ -121,7 +130,6 @@ class NetworksEndpoint:
         """Update a network.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             network_id: The network ID.
             **kwargs: Network parameters to update.
@@ -129,7 +137,7 @@ class NetworksEndpoint:
         Returns:
             The updated network.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/networks/{network_id}"
+        path = self._client.build_api_path(f"/sites/{site_id}/networks/{network_id}")
         response = await self._client._patch(path, json_data=kwargs)
 
         if isinstance(response, dict):
@@ -138,17 +146,16 @@ class NetworksEndpoint:
                 return Network.model_validate(result)
         raise ValueError("Failed to update network")
 
-    async def delete(self, host_id: str, site_id: str, network_id: str) -> bool:
+    async def delete(self, site_id: str, network_id: str) -> bool:
         """Delete a network.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             network_id: The network ID.
 
         Returns:
             True if successful.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/networks/{network_id}"
+        path = self._client.build_api_path(f"/sites/{site_id}/networks/{network_id}")
         await self._client._delete(path)
         return True

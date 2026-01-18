@@ -23,7 +23,6 @@ class ACLEndpoint:
 
     async def get_all(
         self,
-        host_id: str,
         site_id: str,
         *,
         offset: int = 0,
@@ -33,7 +32,6 @@ class ACLEndpoint:
         """List all ACL rules.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             offset: Pagination offset.
             limit: Maximum results (max 200).
@@ -42,7 +40,7 @@ class ACLEndpoint:
         Returns:
             List of ACL rules.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/acl-rules"
+        path = self._client.build_api_path(f"/sites/{site_id}/acl-rules")
         params: dict[str, Any] = {"offset": offset, "limit": min(limit, 200)}
         if filter_query:
             params["filter"] = filter_query
@@ -57,18 +55,17 @@ class ACLEndpoint:
             return [ACLRule.model_validate(item) for item in data]
         return []
 
-    async def get(self, host_id: str, site_id: str, rule_id: str) -> ACLRule:
+    async def get(self, site_id: str, rule_id: str) -> ACLRule:
         """Get a specific ACL rule.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             rule_id: The ACL rule ID.
 
         Returns:
             The ACL rule.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/acl-rules/{rule_id}"
+        path = self._client.build_api_path(f"/sites/{site_id}/acl-rules/{rule_id}")
         response = await self._client._get(path)
 
         if isinstance(response, dict):
@@ -81,7 +78,6 @@ class ACLEndpoint:
 
     async def create(
         self,
-        host_id: str,
         site_id: str,
         *,
         name: str,
@@ -95,7 +91,6 @@ class ACLEndpoint:
         """Create a new ACL rule.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             name: Rule name.
             rule_type: Rule type (IPV4 or MAC).
@@ -108,7 +103,7 @@ class ACLEndpoint:
         Returns:
             The created ACL rule.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/acl-rules"
+        path = self._client.build_api_path(f"/sites/{site_id}/acl-rules")
         data: dict[str, Any] = {
             "type": rule_type.value,
             "name": name,
@@ -130,7 +125,6 @@ class ACLEndpoint:
 
     async def update(
         self,
-        host_id: str,
         site_id: str,
         rule_id: str,
         **kwargs: Any,
@@ -138,7 +132,6 @@ class ACLEndpoint:
         """Update an ACL rule.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             rule_id: The ACL rule ID.
             **kwargs: Parameters to update.
@@ -146,7 +139,7 @@ class ACLEndpoint:
         Returns:
             The updated ACL rule.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/acl-rules/{rule_id}"
+        path = self._client.build_api_path(f"/sites/{site_id}/acl-rules/{rule_id}")
         response = await self._client._put(path, json_data=kwargs)
 
         if isinstance(response, dict):
@@ -155,19 +148,18 @@ class ACLEndpoint:
                 return ACLRule.model_validate(result)
         raise ValueError("Failed to update ACL rule")
 
-    async def delete(self, host_id: str, site_id: str, rule_id: str) -> bool:
+    async def delete(self, site_id: str, rule_id: str) -> bool:
         """Delete an ACL rule.
 
         Only user-defined rules can be deleted.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             rule_id: The ACL rule ID.
 
         Returns:
             True if successful.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/acl-rules/{rule_id}"
+        path = self._client.build_api_path(f"/sites/{site_id}/acl-rules/{rule_id}")
         await self._client._delete(path)
         return True

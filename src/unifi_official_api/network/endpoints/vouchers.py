@@ -23,7 +23,6 @@ class VouchersEndpoint:
 
     async def get_all(
         self,
-        host_id: str,
         site_id: str,
         *,
         offset: int = 0,
@@ -33,7 +32,6 @@ class VouchersEndpoint:
         """List all vouchers.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             offset: Pagination offset.
             limit: Maximum results (max 1000).
@@ -42,7 +40,7 @@ class VouchersEndpoint:
         Returns:
             List of vouchers.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/hotspot/vouchers"
+        path = self._client.build_api_path(f"/sites/{site_id}/hotspot/vouchers")
         params: dict[str, Any] = {"offset": offset, "limit": min(limit, 1000)}
         if filter_query:
             params["filter"] = filter_query
@@ -57,18 +55,17 @@ class VouchersEndpoint:
             return [Voucher.model_validate(item) for item in data]
         return []
 
-    async def get(self, host_id: str, site_id: str, voucher_id: str) -> Voucher:
+    async def get(self, site_id: str, voucher_id: str) -> Voucher:
         """Get a specific voucher.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             voucher_id: The voucher ID.
 
         Returns:
             The voucher.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/hotspot/vouchers/{voucher_id}"
+        path = self._client.build_api_path(f"/sites/{site_id}/hotspot/vouchers/{voucher_id}")
         response = await self._client._get(path)
 
         if isinstance(response, dict):
@@ -81,7 +78,6 @@ class VouchersEndpoint:
 
     async def create(
         self,
-        host_id: str,
         site_id: str,
         *,
         count: int = 1,
@@ -95,7 +91,6 @@ class VouchersEndpoint:
         """Generate new vouchers.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             count: Number of vouchers to create (1-10000).
             name: Optional voucher note/label.
@@ -108,7 +103,7 @@ class VouchersEndpoint:
         Returns:
             List of created vouchers.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/hotspot/vouchers"
+        path = self._client.build_api_path(f"/sites/{site_id}/hotspot/vouchers")
         data: dict[str, Any] = {"count": count}
         if name is not None:
             data["name"] = name
@@ -133,26 +128,24 @@ class VouchersEndpoint:
                 return [Voucher.model_validate(result)]
         raise ValueError("Failed to create vouchers")
 
-    async def delete(self, host_id: str, site_id: str, voucher_id: str) -> bool:
+    async def delete(self, site_id: str, voucher_id: str) -> bool:
         """Delete a specific voucher.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             voucher_id: The voucher ID.
 
         Returns:
             True if successful.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/hotspot/vouchers/{voucher_id}"
+        path = self._client.build_api_path(f"/sites/{site_id}/hotspot/vouchers/{voucher_id}")
         await self._client._delete(path)
         return True
 
-    async def delete_multiple(self, host_id: str, site_id: str, voucher_ids: list[str]) -> bool:
+    async def delete_multiple(self, site_id: str, voucher_ids: list[str]) -> bool:
         """Delete multiple vouchers.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             voucher_ids: List of voucher IDs to delete.
 
@@ -161,5 +154,5 @@ class VouchersEndpoint:
         """
         # Delete each voucher individually
         for voucher_id in voucher_ids:
-            await self.delete(host_id, site_id, voucher_id)
+            await self.delete(site_id, voucher_id)
         return True

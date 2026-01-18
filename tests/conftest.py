@@ -7,7 +7,8 @@ from typing import Any
 import pytest
 from aioresponses import aioresponses
 
-from unifi_official_api import ApiKeyAuth
+from unifi_official_api import ApiKeyAuth, LocalAuth
+from unifi_official_api.const import ConnectionType
 from unifi_official_api.network import UniFiNetworkClient
 from unifi_official_api.protect import UniFiProtectClient
 
@@ -25,15 +26,33 @@ def auth(api_key: str) -> ApiKeyAuth:
 
 
 @pytest.fixture
+def local_auth(api_key: str) -> LocalAuth:
+    """Return a test LocalAuth instance."""
+    return LocalAuth(api_key=api_key, verify_ssl=False)
+
+
+@pytest.fixture
 def host_id() -> str:
-    """Return a test host ID."""
+    """Return a test host ID (used as console_id for REMOTE)."""
     return "test-host-id"
+
+
+@pytest.fixture
+def console_id() -> str:
+    """Return a test console ID."""
+    return "test-console-id"
 
 
 @pytest.fixture
 def site_id() -> str:
     """Return a test site ID."""
     return "test-site-id"
+
+
+@pytest.fixture
+def base_url() -> str:
+    """Return a test base URL for local connection."""
+    return "https://192.168.1.1"
 
 
 @pytest.fixture
@@ -44,17 +63,25 @@ def mock_aioresponse():
 
 
 @pytest.fixture
-async def network_client(auth: ApiKeyAuth) -> UniFiNetworkClient:
-    """Create a UniFi Network client for testing."""
-    client = UniFiNetworkClient(auth=auth)
+async def network_client(local_auth: LocalAuth, base_url: str) -> UniFiNetworkClient:
+    """Create a UniFi Network client for testing (LOCAL connection)."""
+    client = UniFiNetworkClient(
+        auth=local_auth,
+        base_url=base_url,
+        connection_type=ConnectionType.LOCAL,
+    )
     yield client
     await client.close()
 
 
 @pytest.fixture
-async def protect_client(auth: ApiKeyAuth) -> UniFiProtectClient:
-    """Create a UniFi Protect client for testing."""
-    client = UniFiProtectClient(auth=auth)
+async def protect_client(local_auth: LocalAuth, base_url: str) -> UniFiProtectClient:
+    """Create a UniFi Protect client for testing (LOCAL connection)."""
+    client = UniFiProtectClient(
+        auth=local_auth,
+        base_url=base_url,
+        connection_type=ConnectionType.LOCAL,
+    )
     yield client
     await client.close()
 
@@ -64,11 +91,11 @@ def sample_device() -> dict[str, Any]:
     """Return sample device data."""
     return {
         "id": "device-123",
-        "mac": "00:11:22:33:44:55",
+        "macAddress": "00:11:22:33:44:55",
         "name": "Test Switch",
         "model": "USW-24-POE",
         "type": "usw",
-        "state": "connected",
+        "state": "ONLINE",
         "ip": "192.168.1.10",
         "firmwareVersion": "6.5.28",
         "uptime": 86400,
@@ -82,11 +109,11 @@ def sample_client() -> dict[str, Any]:
     """Return sample client data."""
     return {
         "id": "client-123",
-        "mac": "AA:BB:CC:DD:EE:FF",
+        "macAddress": "AA:BB:CC:DD:EE:FF",
         "name": "Test Device",
         "hostname": "test-device",
-        "ip": "192.168.1.100",
-        "type": "wireless",
+        "ipAddress": "192.168.1.100",
+        "type": "WIRELESS",
         "connected": True,
         "txBytes": 1000000,
         "rxBytes": 2000000,

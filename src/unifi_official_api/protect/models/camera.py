@@ -61,6 +61,9 @@ class VideoMode(str, Enum):
     HIGH_FPS = "highFps"
     SPORT = "sport"
     SLOW_SHUTTER = "slowShutter"
+    # LPR (License Plate Recognition) related modes
+    LPR_NONE_REFLEX = "lprNoneReflex"
+    LPR_SLOW_SHUTTER = "lprSlowShutter"
 
 
 class CameraChannel(BaseModel):
@@ -100,8 +103,8 @@ class Camera(BaseModel):
     is_recording: bool = Field(default=False, alias="isRecording")
     is_motion_detected: bool = Field(default=False, alias="isMotionDetected")
     is_smart_detected: bool = Field(default=False, alias="isSmartDetected")
-    recording_mode: RecordingMode | None = Field(default=None, alias="recordingMode")
-    video_mode: VideoMode | None = Field(default=None, alias="videoMode")
+    recording_mode: RecordingMode | str | None = Field(default=None, alias="recordingMode")
+    video_mode: VideoMode | str | None = Field(default=None, alias="videoMode")
     hdr_mode: bool = Field(default=False, alias="hdrMode")
     mic_volume: int = Field(default=100, alias="micVolume")
     speaker_volume: int = Field(default=100, alias="speakerVolume")

@@ -4,26 +4,34 @@ This library provides async Python clients for the official UniFi APIs:
 - UniFi Network API: Manage network devices, clients, WiFi, and more
 - UniFi Protect API: Manage cameras, sensors, lights, and NVR settings
 
-Example:
+Supports both LOCAL (direct to device) and REMOTE (via cloud) connections.
+
+Example (Local Connection):
     ```python
-    from unifi_official_api import ApiKeyAuth
+    from unifi_official_api import LocalAuth, ConnectionType
     from unifi_official_api.network import UniFiNetworkClient
-    from unifi_official_api.protect import UniFiProtectClient
 
-    # Network API
     async with UniFiNetworkClient(
-        auth=ApiKeyAuth(api_key="your-api-key"),
+        auth=LocalAuth(api_key="your-local-api-key", verify_ssl=False),
+        base_url="https://192.168.1.1",
+        connection_type=ConnectionType.LOCAL,
     ) as client:
-        devices = await client.devices.list(host_id="your-host-id")
+        sites = await client.sites.get_all()
+        devices = await client.devices.get_all(site_id="default")
+    ```
 
-    # Protect API
-    async with UniFiProtectClient(
-        auth=ApiKeyAuth(api_key="your-api-key"),
+Example (Remote/Cloud Connection):
+    ```python
+    from unifi_official_api import ApiKeyAuth, ConnectionType
+    from unifi_official_api.network import UniFiNetworkClient
+
+    async with UniFiNetworkClient(
+        auth=ApiKeyAuth(api_key="your-cloud-api-key"),
+        connection_type=ConnectionType.REMOTE,
+        console_id="your-console-id",
     ) as client:
-        cameras = await client.cameras.list(
-            host_id="your-host-id",
-            site_id="your-site-id"
-        )
+        sites = await client.sites.get_all()
+        devices = await client.devices.get_all(site_id="default")
     ```
 """
 
@@ -31,6 +39,7 @@ from __future__ import annotations
 
 from ._version import __version__
 from .auth import ApiKeyAuth, ApiKeyType, LocalAuth
+from .const import ConnectionType
 from .exceptions import (
     UniFiAuthenticationError,
     UniFiConnectionError,
@@ -49,6 +58,8 @@ __all__ = [
     "ApiKeyAuth",
     "ApiKeyType",
     "LocalAuth",
+    # Connection types
+    "ConnectionType",
     # Exceptions
     "UniFiAuthenticationError",
     "UniFiConnectionError",

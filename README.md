@@ -10,8 +10,9 @@ Async Python library for the official UniFi Network and Protect APIs.
 
 - **Async-first**: Built with `aiohttp` for efficient async operations
 - **Type-safe**: Full type hints and Pydantic models for all API responses
-- **Official API**: Uses the official UniFi developer API (not web scraping)
+- **Official API**: Uses the official UniFi developer API endpoints
 - **Comprehensive**: Supports both UniFi Network and UniFi Protect
+- **Dual Connection Support**: Works with both LOCAL (direct to device) and REMOTE (cloud) connections
 - **Home Assistant ready**: Designed for integration with Home Assistant and other automation platforms
 
 ## Requirements
@@ -19,7 +20,7 @@ Async Python library for the official UniFi Network and Protect APIs.
 > **Python 3.11 or higher is required.**
 
 - Python 3.11, 3.12, or 3.13
-- UniFi API Key from [developer.ui.com](https://developer.ui.com)
+- UniFi API Key from [developer.ui.com](https://developer.ui.com) or generated locally on your device
 
 ## Installation
 
@@ -45,35 +46,75 @@ pip install unifi-official-api[docs]
 pip install unifi-official-api[dev]
 ```
 
+## Connection Types
+
+This library supports two connection types:
+
+| Connection Type | Use Case | Base URL | API Key Source |
+|-----------------|----------|----------|----------------|
+| **LOCAL** | Direct connection to your UniFi device (UDM, UDM-Pro, etc.) | Your device IP (e.g., `https://192.168.1.1`) | Generated on device under Settings → Admins & Users → API Keys |
+| **REMOTE** | Cloud connection via Ubiquiti's API | `https://api.ui.com` (default) | Generated at [account.ui.com](https://account.ui.com) |
+
 ## Quick Start
 
-### UniFi Network API
+### Local Connection (Direct to Device)
+
+For direct connection to your UniFi device on your local network:
 
 ```python
 import asyncio
-from unifi_official_api import ApiKeyAuth
+from unifi_official_api import LocalAuth, ConnectionType
 from unifi_official_api.network import UniFiNetworkClient
 
 async def main():
     async with UniFiNetworkClient(
-        auth=ApiKeyAuth(api_key="your-api-key"),
+        auth=LocalAuth(
+            api_key="your-local-api-key",
+            verify_ssl=False,  # Disable SSL verification for self-signed certs
+        ),
+        base_url="https://192.168.1.1",  # Your device IP
+        connection_type=ConnectionType.LOCAL,
     ) as client:
-        # Get available hosts
-        hosts = await client.get_hosts()
-        host_id = hosts[0]["id"]
-
         # List all sites
-        sites = await client.sites.get_all(host_id)
+        sites = await client.sites.get_all()
+        site_id = sites[0].id  # Use the actual site ID
 
         # List all devices
-        devices = await client.devices.get_all(host_id)
+        devices = await client.devices.get_all(site_id)
         for device in devices:
             print(f"Device: {device.name} ({device.mac})")
 
         # List connected clients
-        clients = await client.clients.get_all(host_id)
+        clients = await client.clients.get_all(site_id)
         for client_info in clients:
             print(f"Client: {client_info.display_name} - {client_info.ip}")
+
+asyncio.run(main())
+```
+
+### Remote Connection (Cloud API)
+
+For cloud connection via Ubiquiti's API:
+
+```python
+import asyncio
+from unifi_official_api import ApiKeyAuth, ConnectionType
+from unifi_official_api.network import UniFiNetworkClient
+
+async def main():
+    async with UniFiNetworkClient(
+        auth=ApiKeyAuth(api_key="your-cloud-api-key"),
+        connection_type=ConnectionType.REMOTE,
+        console_id="your-console-id",  # Required for REMOTE
+    ) as client:
+        # List all sites
+        sites = await client.sites.get_all()
+        site_id = sites[0].id
+
+        # List all devices
+        devices = await client.devices.get_all(site_id)
+        for device in devices:
+            print(f"Device: {device.name} ({device.mac})")
 
 asyncio.run(main())
 ```
@@ -122,11 +163,15 @@ asyncio.run(main())
 | Endpoint | Methods |
 |----------|---------|
 | Sites | list, get |
-| Devices | list, get, restart, adopt, forget |
+| Devices | list, get, restart, adopt, forget, locate, get_statistics |
 | Clients | list, get, block, unblock, reconnect |
 | Networks | list, get, create, update, delete |
 | WiFi | list, get, create, update, delete |
-| Firewall | list_zones, list_rules, get_rule, create_rule, update_rule, delete_rule |
+| Firewall | list_policies, get_policy, create_policy, update_policy, delete_policy |
+| Vouchers | list, get, create, revoke |
+| ACL | list, get, create, update, delete |
+| Traffic | list_matching_lists, get_dpi_categories, get_dpi_applications |
+| Resources | get_wan_interfaces, get_vpn_tunnels, get_radius_profiles |
 
 ### UniFi Protect API
 
@@ -173,15 +218,30 @@ except UniFiError as e:
 Both clients accept the following configuration options:
 
 ```python
-from unifi_official_api import ApiKeyAuth
+from unifi_official_api import LocalAuth, ConnectionType
 from unifi_official_api.network import UniFiNetworkClient
 
+# Local connection
 client = UniFiNetworkClient(
-    auth=ApiKeyAuth(api_key="your-api-key"),
-    base_url="https://api.ui.com",  # Default
+    auth=LocalAuth(
+        api_key="your-local-api-key",
+        verify_ssl=False,  # For self-signed certificates
+    ),
+    base_url="https://192.168.1.1",  # Your device IP
+    connection_type=ConnectionType.LOCAL,
     timeout=30,  # Request timeout in seconds
     connect_timeout=10,  # Connection timeout in seconds
-    session=None,  # Optional: reuse an existing aiohttp session
+)
+
+# Remote/Cloud connection
+from unifi_official_api import ApiKeyAuth
+
+client = UniFiNetworkClient(
+    auth=ApiKeyAuth(api_key="your-cloud-api-key"),
+    connection_type=ConnectionType.REMOTE,
+    console_id="your-console-id",  # Required for REMOTE connections
+    timeout=30,
+    connect_timeout=10,
 )
 ```
 

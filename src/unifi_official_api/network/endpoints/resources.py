@@ -31,16 +31,14 @@ class ResourcesEndpoint:
 
     async def get_wan_interfaces(
         self,
-        host_id: str,
         site_id: str,
         *,
-        offset: int = 0,
-        limit: int = 25,
+        offset: int | None = None,
+        limit: int | None = None,
     ) -> list[WANInterface]:
         """List all WAN interfaces.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             offset: Pagination offset.
             limit: Maximum results.
@@ -48,10 +46,14 @@ class ResourcesEndpoint:
         Returns:
             List of WAN interfaces.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/wan"
-        params: dict[str, Any] = {"offset": offset, "limit": limit}
+        params: dict[str, Any] = {}
+        if offset is not None:
+            params["offset"] = offset
+        if limit is not None:
+            params["limit"] = limit
 
-        response = await self._client._get(path, params=params)
+        path = self._client.build_api_path(f"/sites/{site_id}/wan")
+        response = await self._client._get(path, params=params if params else None)
 
         if response is None:
             return []
@@ -65,16 +67,14 @@ class ResourcesEndpoint:
 
     async def get_vpn_tunnels(
         self,
-        host_id: str,
         site_id: str,
         *,
-        offset: int = 0,
-        limit: int = 25,
+        offset: int | None = None,
+        limit: int | None = None,
     ) -> list[VPNTunnel]:
         """List all site-to-site VPN tunnels.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             offset: Pagination offset.
             limit: Maximum results.
@@ -82,10 +82,14 @@ class ResourcesEndpoint:
         Returns:
             List of VPN tunnels.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/vpn/tunnels"
-        params: dict[str, Any] = {"offset": offset, "limit": limit}
+        params: dict[str, Any] = {}
+        if offset is not None:
+            params["offset"] = offset
+        if limit is not None:
+            params["limit"] = limit
 
-        response = await self._client._get(path, params=params)
+        path = self._client.build_api_path(f"/sites/{site_id}/vpn/tunnels")
+        response = await self._client._get(path, params=params if params else None)
 
         if response is None:
             return []
@@ -99,16 +103,14 @@ class ResourcesEndpoint:
 
     async def get_vpn_servers(
         self,
-        host_id: str,
         site_id: str,
         *,
-        offset: int = 0,
-        limit: int = 25,
+        offset: int | None = None,
+        limit: int | None = None,
     ) -> list[VPNServer]:
         """List all VPN servers.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             offset: Pagination offset.
             limit: Maximum results.
@@ -116,10 +118,14 @@ class ResourcesEndpoint:
         Returns:
             List of VPN servers.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/vpn/servers"
-        params: dict[str, Any] = {"offset": offset, "limit": limit}
+        params: dict[str, Any] = {}
+        if offset is not None:
+            params["offset"] = offset
+        if limit is not None:
+            params["limit"] = limit
 
-        response = await self._client._get(path, params=params)
+        path = self._client.build_api_path(f"/sites/{site_id}/vpn/servers")
+        response = await self._client._get(path, params=params if params else None)
 
         if response is None:
             return []
@@ -133,16 +139,14 @@ class ResourcesEndpoint:
 
     async def get_radius_profiles(
         self,
-        host_id: str,
         site_id: str,
         *,
-        offset: int = 0,
-        limit: int = 25,
+        offset: int | None = None,
+        limit: int | None = None,
     ) -> list[RADIUSProfile]:
         """List all RADIUS profiles.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             offset: Pagination offset.
             limit: Maximum results.
@@ -150,10 +154,14 @@ class ResourcesEndpoint:
         Returns:
             List of RADIUS profiles.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/radius/profiles"
-        params: dict[str, Any] = {"offset": offset, "limit": limit}
+        params: dict[str, Any] = {}
+        if offset is not None:
+            params["offset"] = offset
+        if limit is not None:
+            params["limit"] = limit
 
-        response = await self._client._get(path, params=params)
+        path = self._client.build_api_path(f"/sites/{site_id}/radius/profiles")
+        response = await self._client._get(path, params=params if params else None)
 
         if response is None:
             return []
@@ -167,16 +175,14 @@ class ResourcesEndpoint:
 
     async def get_device_tags(
         self,
-        host_id: str,
         site_id: str,
         *,
-        offset: int = 0,
-        limit: int = 25,
+        offset: int | None = None,
+        limit: int | None = None,
     ) -> list[DeviceTag]:
         """List all device tags.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             offset: Pagination offset.
             limit: Maximum results.
@@ -184,10 +190,14 @@ class ResourcesEndpoint:
         Returns:
             List of device tags.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/device-tags"
-        params: dict[str, Any] = {"offset": offset, "limit": limit}
+        params: dict[str, Any] = {}
+        if offset is not None:
+            params["offset"] = offset
+        if limit is not None:
+            params["limit"] = limit
 
-        response = await self._client._get(path, params=params)
+        path = self._client.build_api_path(f"/sites/{site_id}/device-tags")
+        response = await self._client._get(path, params=params if params else None)
 
         if response is None:
             return []

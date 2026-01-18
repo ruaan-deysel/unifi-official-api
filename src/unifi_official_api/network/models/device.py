@@ -25,8 +25,11 @@ class DeviceState(str, Enum):
     """Device connection states."""
 
     CONNECTED = "connected"
+    ONLINE = "ONLINE"  # API returns uppercase
     DISCONNECTED = "disconnected"
+    OFFLINE = "OFFLINE"  # API returns uppercase
     PENDING = "pending"
+    PENDING_ADOPTION = "PENDING_ADOPTION"  # API returns uppercase
     ADOPTING = "adopting"
     PROVISIONING = "provisioning"
     UPGRADING = "upgrading"
@@ -52,11 +55,11 @@ class Device(BaseModel):
     """Model representing a UniFi network device."""
 
     id: str
-    mac: str
+    mac: str | None = Field(default=None, alias="macAddress")
     name: str | None = None
     model: str | None = None
     type: DeviceType | None = None
-    state: DeviceState = DeviceState.UNKNOWN
+    state: DeviceState | None = None
     ip: str | None = None
     firmware_version: str | None = Field(default=None, alias="firmwareVersion")
     uptime: int | None = None

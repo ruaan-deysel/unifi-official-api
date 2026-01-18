@@ -22,17 +22,16 @@ class CamerasEndpoint:
         """
         self._client = client
 
-    async def get_all(self, host_id: str, site_id: str) -> list[Camera]:
+    async def get_all(self, site_id: str | None = None) -> list[Camera]:
         """List all cameras.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             List of cameras.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/cameras"
+        path = self._client.build_api_path("/cameras", site_id)
         response = await self._client._get(path)
 
         if response is None:
@@ -43,18 +42,17 @@ class CamerasEndpoint:
             return [Camera.model_validate(item) for item in data]
         return []
 
-    async def get(self, host_id: str, site_id: str, camera_id: str) -> Camera:
+    async def get(self, camera_id: str, site_id: str | None = None) -> Camera:
         """Get a specific camera.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             camera_id: The camera ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             The camera.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/cameras/{camera_id}"
+        path = self._client.build_api_path(f"/cameras/{camera_id}", site_id)
         response = await self._client._get(path)
 
         if isinstance(response, dict):
@@ -67,23 +65,21 @@ class CamerasEndpoint:
 
     async def update(
         self,
-        host_id: str,
-        site_id: str,
         camera_id: str,
+        site_id: str | None = None,
         **kwargs: Any,
     ) -> Camera:
         """Update camera settings.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             camera_id: The camera ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
             **kwargs: Settings to update.
 
         Returns:
             The updated camera.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/cameras/{camera_id}"
+        path = self._client.build_api_path(f"/cameras/{camera_id}", site_id)
         response = await self._client._patch(path, json_data=kwargs)
 
         if isinstance(response, dict):
@@ -94,40 +90,36 @@ class CamerasEndpoint:
 
     async def set_recording_mode(
         self,
-        host_id: str,
-        site_id: str,
         camera_id: str,
         mode: RecordingMode,
+        site_id: str | None = None,
     ) -> Camera:
         """Set camera recording mode.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             camera_id: The camera ID.
             mode: The recording mode.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             The updated camera.
         """
-        return await self.update(host_id, site_id, camera_id, recordingMode=mode.value)
+        return await self.update(camera_id, site_id, recordingMode=mode.value)
 
     async def get_snapshot(
         self,
-        host_id: str,
-        site_id: str,
         camera_id: str,
         width: int | None = None,
         height: int | None = None,
+        site_id: str | None = None,
     ) -> bytes:
         """Get a snapshot from the camera.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             camera_id: The camera ID.
             width: Optional width for the snapshot.
             height: Optional height for the snapshot.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             The snapshot image bytes.
@@ -138,87 +130,80 @@ class CamerasEndpoint:
         if height:
             params["h"] = height
 
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/cameras/{camera_id}/snapshot"
+        path = self._client.build_api_path(f"/cameras/{camera_id}/snapshot", site_id)
         return await self._client._get_binary(path, params=params)
 
-    async def restart(self, host_id: str, site_id: str, camera_id: str) -> bool:
+    async def restart(self, camera_id: str, site_id: str | None = None) -> bool:
         """Restart a camera.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             camera_id: The camera ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             True if successful.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/cameras/{camera_id}/restart"
+        path = self._client.build_api_path(f"/cameras/{camera_id}/restart", site_id)
         await self._client._post(path)
         return True
 
     async def set_microphone_volume(
         self,
-        host_id: str,
-        site_id: str,
         camera_id: str,
         volume: int,
+        site_id: str | None = None,
     ) -> Camera:
         """Set camera microphone volume.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             camera_id: The camera ID.
             volume: Volume level (0-100).
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             The updated camera.
         """
         if not 0 <= volume <= 100:
             raise ValueError("Volume must be between 0 and 100")
-        return await self.update(host_id, site_id, camera_id, micVolume=volume)
+        return await self.update(camera_id, site_id, micVolume=volume)
 
     async def set_speaker_volume(
         self,
-        host_id: str,
-        site_id: str,
         camera_id: str,
         volume: int,
+        site_id: str | None = None,
     ) -> Camera:
         """Set camera speaker volume.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             camera_id: The camera ID.
             volume: Volume level (0-100).
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             The updated camera.
         """
         if not 0 <= volume <= 100:
             raise ValueError("Volume must be between 0 and 100")
-        return await self.update(host_id, site_id, camera_id, speakerVolume=volume)
+        return await self.update(camera_id, site_id, speakerVolume=volume)
 
     async def ptz_move(
         self,
-        host_id: str,
-        site_id: str,
         camera_id: str,
         *,
         pan: float | None = None,
         tilt: float | None = None,
         zoom: float | None = None,
+        site_id: str | None = None,
     ) -> bool:
         """Move PTZ camera.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             camera_id: The camera ID.
             pan: Pan value (-1.0 to 1.0).
             tilt: Tilt value (-1.0 to 1.0).
             zoom: Zoom value (0.0 to 1.0).
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             True if successful.
@@ -231,93 +216,89 @@ class CamerasEndpoint:
         if zoom is not None:
             data["zoom"] = zoom
 
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/cameras/{camera_id}/ptz/move"
+        path = self._client.build_api_path(f"/cameras/{camera_id}/ptz/move", site_id)
         await self._client._post(path, json_data=data)
         return True
 
     async def ptz_goto_preset(
         self,
-        host_id: str,
-        site_id: str,
         camera_id: str,
         preset_id: str,
+        site_id: str | None = None,
     ) -> bool:
         """Move PTZ camera to a preset position.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             camera_id: The camera ID.
             preset_id: The preset position ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             True if successful.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/cameras/{camera_id}/ptz/goto/{preset_id}"
+        path = self._client.build_api_path(
+            f"/cameras/{camera_id}/ptz/goto/{preset_id}", site_id
+        )
         await self._client._post(path)
         return True
 
     async def ptz_patrol_start(
         self,
-        host_id: str,
-        site_id: str,
         camera_id: str,
         slot: int,
+        site_id: str | None = None,
     ) -> bool:
         """Start PTZ patrol.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             camera_id: The camera ID.
             slot: Patrol slot number (0-4).
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             True if successful.
         """
         if not 0 <= slot <= 4:
             raise ValueError("Slot must be between 0 and 4")
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/cameras/{camera_id}/ptz/patrol/start/{slot}"
+        path = self._client.build_api_path(
+            f"/cameras/{camera_id}/ptz/patrol/start/{slot}", site_id
+        )
         await self._client._post(path)
         return True
 
     async def ptz_patrol_stop(
         self,
-        host_id: str,
-        site_id: str,
         camera_id: str,
+        site_id: str | None = None,
     ) -> bool:
         """Stop active PTZ patrol.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             camera_id: The camera ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             True if successful.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/cameras/{camera_id}/ptz/patrol/stop"
+        path = self._client.build_api_path(f"/cameras/{camera_id}/ptz/patrol/stop", site_id)
         await self._client._post(path)
         return True
 
     async def create_rtsps_stream(
         self,
-        host_id: str,
-        site_id: str,
         camera_id: str,
+        site_id: str | None = None,
     ) -> RTSPSStream:
         """Create RTSPS stream for camera.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             camera_id: The camera ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             RTSPS stream configuration.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/cameras/{camera_id}/rtsps-stream"
+        path = self._client.build_api_path(f"/cameras/{camera_id}/rtsps-stream", site_id)
         response = await self._client._post(path)
 
         if isinstance(response, dict):
@@ -328,21 +309,19 @@ class CamerasEndpoint:
 
     async def get_rtsps_stream(
         self,
-        host_id: str,
-        site_id: str,
         camera_id: str,
+        site_id: str | None = None,
     ) -> RTSPSStream:
         """Get RTSPS stream configuration.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             camera_id: The camera ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             RTSPS stream configuration.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/cameras/{camera_id}/rtsps-stream"
+        path = self._client.build_api_path(f"/cameras/{camera_id}/rtsps-stream", site_id)
         response = await self._client._get(path)
 
         if isinstance(response, dict):
@@ -353,41 +332,37 @@ class CamerasEndpoint:
 
     async def delete_rtsps_stream(
         self,
-        host_id: str,
-        site_id: str,
         camera_id: str,
+        site_id: str | None = None,
     ) -> bool:
         """Delete RTSPS stream.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             camera_id: The camera ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             True if successful.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/cameras/{camera_id}/rtsps-stream"
+        path = self._client.build_api_path(f"/cameras/{camera_id}/rtsps-stream", site_id)
         await self._client._delete(path)
         return True
 
     async def create_talkback_session(
         self,
-        host_id: str,
-        site_id: str,
         camera_id: str,
+        site_id: str | None = None,
     ) -> TalkbackSession:
         """Create a talkback (two-way audio) session.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             camera_id: The camera ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             Talkback session configuration with URL and audio settings.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/cameras/{camera_id}/talkback-session"
+        path = self._client.build_api_path(f"/cameras/{camera_id}/talkback-session", site_id)
         response = await self._client._post(path)
 
         if isinstance(response, dict):
@@ -398,23 +373,23 @@ class CamerasEndpoint:
 
     async def disable_mic_permanently(
         self,
-        host_id: str,
-        site_id: str,
         camera_id: str,
+        site_id: str | None = None,
     ) -> Camera:
         """Permanently disable camera microphone.
 
         This action cannot be undone.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             camera_id: The camera ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             The updated camera with microphone disabled.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/cameras/{camera_id}/disable-mic-permanently"
+        path = self._client.build_api_path(
+            f"/cameras/{camera_id}/disable-mic-permanently", site_id
+        )
         response = await self._client._post(path)
 
         if isinstance(response, dict):
@@ -425,42 +400,38 @@ class CamerasEndpoint:
 
     async def set_hdr_mode(
         self,
-        host_id: str,
-        site_id: str,
         camera_id: str,
         mode: str,
+        site_id: str | None = None,
     ) -> Camera:
         """Set camera HDR mode.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             camera_id: The camera ID.
             mode: HDR mode (auto, on, off).
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             The updated camera.
         """
         if mode not in ("auto", "on", "off"):
             raise ValueError("HDR mode must be 'auto', 'on', or 'off'")
-        return await self.update(host_id, site_id, camera_id, hdrType=mode)
+        return await self.update(camera_id, site_id, hdrType=mode)
 
     async def set_video_mode(
         self,
-        host_id: str,
-        site_id: str,
         camera_id: str,
         mode: str,
+        site_id: str | None = None,
     ) -> Camera:
         """Set camera video mode.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             camera_id: The camera ID.
             mode: Video mode (default, highFps, sport, slowShutter, etc).
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             The updated camera.
         """
-        return await self.update(host_id, site_id, camera_id, videoMode=mode)
+        return await self.update(camera_id, site_id, videoMode=mode)

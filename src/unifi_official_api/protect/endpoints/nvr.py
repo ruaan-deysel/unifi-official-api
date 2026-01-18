@@ -21,17 +21,16 @@ class NVREndpoint:
         """
         self._client = client
 
-    async def get(self, host_id: str, site_id: str) -> NVR:
+    async def get(self, site_id: str | None = None) -> NVR:
         """Get NVR information.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             The NVR information.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/nvr"
+        path = self._client.build_api_path("/nvr", site_id)
         response = await self._client._get(path)
 
         if isinstance(response, dict):
@@ -44,21 +43,19 @@ class NVREndpoint:
 
     async def update(
         self,
-        host_id: str,
-        site_id: str,
+        site_id: str | None = None,
         **kwargs: Any,
     ) -> NVR:
         """Update NVR settings.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
             **kwargs: Settings to update.
 
         Returns:
             The updated NVR.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/nvr"
+        path = self._client.build_api_path("/nvr", site_id)
         response = await self._client._patch(path, json_data=kwargs)
 
         if isinstance(response, dict):
@@ -67,36 +64,33 @@ class NVREndpoint:
                 return NVR.model_validate(result)
         raise ValueError("Failed to update NVR")
 
-    async def restart(self, host_id: str, site_id: str) -> bool:
+    async def restart(self, site_id: str | None = None) -> bool:
         """Restart the NVR.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             True if successful.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/nvr/restart"
+        path = self._client.build_api_path("/nvr/restart", site_id)
         await self._client._post(path)
         return True
 
     async def set_recording_retention(
         self,
-        host_id: str,
-        site_id: str,
         days: int,
+        site_id: str | None = None,
     ) -> NVR:
         """Set recording retention period.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             days: Number of days to retain recordings.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             The updated NVR.
         """
         if days < 1:
             raise ValueError("Retention days must be at least 1")
-        return await self.update(host_id, site_id, recordingRetentionDays=days)
+        return await self.update(site_id, recordingRetentionDays=days)

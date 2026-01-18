@@ -21,17 +21,16 @@ class LiveViewsEndpoint:
         """
         self._client = client
 
-    async def get_all(self, host_id: str, site_id: str) -> list[LiveView]:
+    async def get_all(self, site_id: str | None = None) -> list[LiveView]:
         """List all live views.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             List of live views.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/liveviews"
+        path = self._client.build_api_path("/liveviews", site_id)
         response = await self._client._get(path)
 
         if response is None:
@@ -42,18 +41,17 @@ class LiveViewsEndpoint:
             return [LiveView.model_validate(item) for item in data]
         return []
 
-    async def get(self, host_id: str, site_id: str, liveview_id: str) -> LiveView:
+    async def get(self, liveview_id: str, site_id: str | None = None) -> LiveView:
         """Get a specific live view.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             liveview_id: The live view ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             The live view.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/liveviews/{liveview_id}"
+        path = self._client.build_api_path(f"/liveviews/{liveview_id}", site_id)
         response = await self._client._get(path)
 
         if isinstance(response, dict):
@@ -66,28 +64,26 @@ class LiveViewsEndpoint:
 
     async def create(
         self,
-        host_id: str,
-        site_id: str,
         *,
         name: str,
         layout: int = 1,
         slots: list[dict[str, Any]] | None = None,
+        site_id: str | None = None,
         **kwargs: Any,
     ) -> LiveView:
         """Create a new live view.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             name: Name of the live view.
             layout: Layout grid size (1, 4, 9, 16).
             slots: List of slot configurations.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
             **kwargs: Additional parameters.
 
         Returns:
             The created live view.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/liveviews"
+        path = self._client.build_api_path("/liveviews", site_id)
         data: dict[str, Any] = {
             "name": name,
             "layout": layout,
@@ -105,23 +101,21 @@ class LiveViewsEndpoint:
 
     async def update(
         self,
-        host_id: str,
-        site_id: str,
         liveview_id: str,
+        site_id: str | None = None,
         **kwargs: Any,
     ) -> LiveView:
         """Update a live view.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             liveview_id: The live view ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
             **kwargs: Parameters to update.
 
         Returns:
             The updated live view.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/liveviews/{liveview_id}"
+        path = self._client.build_api_path(f"/liveviews/{liveview_id}", site_id)
         response = await self._client._patch(path, json_data=kwargs)
 
         if isinstance(response, dict):
@@ -130,17 +124,16 @@ class LiveViewsEndpoint:
                 return LiveView.model_validate(result)
         raise ValueError("Failed to update live view")
 
-    async def delete(self, host_id: str, site_id: str, liveview_id: str) -> bool:
+    async def delete(self, liveview_id: str, site_id: str | None = None) -> bool:
         """Delete a live view.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             liveview_id: The live view ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             True if successful.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/liveviews/{liveview_id}"
+        path = self._client.build_api_path(f"/liveviews/{liveview_id}", site_id)
         await self._client._delete(path)
         return True

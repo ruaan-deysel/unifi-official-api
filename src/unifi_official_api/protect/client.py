@@ -8,7 +8,13 @@ import aiohttp
 
 from ..auth import ApiKeyAuth, LocalAuth
 from ..base import BaseUniFiClient
-from ..const import DEFAULT_CONNECT_TIMEOUT, DEFAULT_TIMEOUT, PROTECT_API_BASE_URL
+from ..const import (
+    DEFAULT_CONNECT_TIMEOUT,
+    DEFAULT_TIMEOUT,
+    PROTECT_API_BASE_URL,
+    PROTECT_INTEGRATION_PATH,
+    ConnectionType,
+)
 from ..exceptions import UniFiConnectionError, UniFiTimeoutError
 from .endpoints import (
     ApplicationEndpoint,
@@ -30,37 +36,43 @@ class UniFiProtectClient(BaseUniFiClient):
     This client provides access to the official UniFi Protect API for managing
     cameras, sensors, lights, chimes, viewers, and NVR settings.
 
-    Example:
+    Supports two connection types:
+    - LOCAL: Direct connection to a UniFi console (e.g., UDM-Pro at 192.168.1.1)
+    - REMOTE: Cloud connection via api.ui.com (requires cloud API key)
+
+    Example (Local Connection):
         ```python
-        from unifi_official_api import ApiKeyAuth
+        from unifi_official_api import LocalAuth, ConnectionType
         from unifi_official_api.protect import UniFiProtectClient
 
         async with UniFiProtectClient(
-            auth=ApiKeyAuth(api_key="your-api-key"),
+            auth=LocalAuth(api_key="your-local-api-key", verify_ssl=False),
+            base_url="https://192.168.1.1",
+            connection_type=ConnectionType.LOCAL,
         ) as client:
-            # List all cameras
-            cameras = await client.cameras.get_all(
-                host_id="your-host-id",
-                site_id="your-site-id"
-            )
+            # List all cameras (no site_id needed for local)
+            cameras = await client.cameras.get_all()
 
-            # Get snapshot from a camera
+            # Get a camera snapshot
+            snapshot = await client.cameras.get_snapshot(camera_id="camera-id")
+        ```
+
+    Example (Remote/Cloud Connection):
+        ```python
+        from unifi_official_api import ApiKeyAuth, ConnectionType
+        from unifi_official_api.protect import UniFiProtectClient
+
+        async with UniFiProtectClient(
+            auth=ApiKeyAuth(api_key="your-cloud-api-key"),
+            connection_type=ConnectionType.REMOTE,
+            console_id="your-console-id",
+        ) as client:
+            # List all cameras (site_id required for remote)
+            cameras = await client.cameras.get_all(site_id="your-site-id")
+
+            # Get a camera snapshot
             snapshot = await client.cameras.get_snapshot(
-                host_id="your-host-id",
-                site_id="your-site-id",
-                camera_id="camera-id"
-            )
-
-            # Create talkback session
-            session = await client.cameras.create_talkback_session(
-                host_id="your-host-id",
-                site_id="your-site-id",
-                camera_id="camera-id"
-            )
-
-            # Manage viewers
-            viewers = await client.viewers.get_all(
-                host_id="your-host-id",
+                camera_id="camera-id",
                 site_id="your-site-id"
             )
         ```
@@ -70,7 +82,9 @@ class UniFiProtectClient(BaseUniFiClient):
         self,
         auth: ApiKeyAuth | LocalAuth,
         *,
-        base_url: str = PROTECT_API_BASE_URL,
+        base_url: str | None = None,
+        connection_type: ConnectionType = ConnectionType.LOCAL,
+        console_id: str | None = None,
         session: aiohttp.ClientSession | None = None,
         timeout: int = DEFAULT_TIMEOUT,
         connect_timeout: int = DEFAULT_CONNECT_TIMEOUT,
@@ -78,12 +92,29 @@ class UniFiProtectClient(BaseUniFiClient):
         """Initialize the UniFi Protect client.
 
         Args:
-            auth: API key or local authentication.
-            base_url: Base URL for the API. Defaults to the official API URL.
+            auth: API key authentication (ApiKeyAuth for cloud, LocalAuth for local).
+            base_url: Base URL for the API. For LOCAL, this is the console IP
+                (e.g., https://192.168.1.1). For REMOTE, defaults to api.ui.com.
+            connection_type: Connection type (LOCAL or REMOTE).
+            console_id: Console ID for REMOTE connections (required for REMOTE).
             session: Optional aiohttp session to reuse.
             timeout: Request timeout in seconds.
             connect_timeout: Connection timeout in seconds.
+
+        Raises:
+            ValueError: If REMOTE connection type is used without console_id.
         """
+        # Determine base URL
+        if base_url is None:
+            if connection_type == ConnectionType.REMOTE:
+                base_url = PROTECT_API_BASE_URL
+            else:
+                raise ValueError("base_url is required for LOCAL connection type")
+
+        # Validate console_id for REMOTE
+        if connection_type == ConnectionType.REMOTE and not console_id:
+            raise ValueError("console_id is required for REMOTE connection type")
+
         super().__init__(
             auth=auth,
             base_url=base_url,
@@ -91,6 +122,9 @@ class UniFiProtectClient(BaseUniFiClient):
             timeout=timeout,
             connect_timeout=connect_timeout,
         )
+
+        self._connection_type = connection_type
+        self._console_id = console_id
 
         # Initialize endpoints
         self._cameras = CamerasEndpoint(self)
@@ -103,6 +137,45 @@ class UniFiProtectClient(BaseUniFiClient):
         self._viewers = ViewersEndpoint(self)
         self._application = ApplicationEndpoint(self)
         self._websocket = ProtectWebSocket(self)
+
+    @property
+    def connection_type(self) -> ConnectionType:
+        """Return the connection type."""
+        return self._connection_type
+
+    @property
+    def console_id(self) -> str | None:
+        """Return the console ID (for REMOTE connections)."""
+        return self._console_id
+
+    def build_api_path(self, endpoint: str, site_id: str | None = None) -> str:
+        """Build the full API path based on connection type.
+
+        For LOCAL connections, the Protect API does not use site prefixes.
+        For REMOTE connections, the site_id is included in the path.
+
+        Args:
+            endpoint: The API endpoint path (e.g., "/cameras", "/cameras/{id}").
+            site_id: The site ID (required for REMOTE, ignored for LOCAL).
+
+        Returns:
+            Full API path with proper prefix for the connection type.
+        """
+        # Ensure endpoint starts with /
+        if not endpoint.startswith("/"):
+            endpoint = f"/{endpoint}"
+
+        if self._connection_type == ConnectionType.LOCAL:
+            # Local: /proxy/protect/integration/v1{endpoint}
+            # Note: LOCAL Protect API does NOT use /sites/{site_id} prefix
+            return f"{PROTECT_INTEGRATION_PATH}{endpoint}"
+        else:
+            # Remote: /v1/connector/consoles/{consoleId}/proxy/protect/...
+            # .../integration/v1/sites/{siteId}{endpoint}
+            if not site_id:
+                raise ValueError("site_id is required for REMOTE connection type")
+            base = f"/v1/connector/consoles/{self._console_id}"
+            return f"{base}{PROTECT_INTEGRATION_PATH}/sites/{site_id}{endpoint}"
 
     @property
     def cameras(self) -> CamerasEndpoint:
@@ -166,16 +239,16 @@ class UniFiProtectClient(BaseUniFiClient):
             UniFiAuthenticationError: If authentication fails.
             UniFiConnectionError: If connection fails.
         """
-        response = await self._get("/ea/hosts")
+        response = await self._get(self.build_api_path("/sites"))
         return response is not None
 
-    async def get_hosts(self) -> list[dict[str, Any]]:
-        """Get list of available hosts.
+    async def get_sites(self) -> list[dict[str, Any]]:
+        """Get list of available sites.
 
         Returns:
-            List of host information dictionaries.
+            List of site information dictionaries.
         """
-        response = await self._get("/ea/hosts")
+        response = await self._get(self.build_api_path("/sites"))
         if response is None:
             return []
         data = response.get("data", response) if isinstance(response, dict) else response

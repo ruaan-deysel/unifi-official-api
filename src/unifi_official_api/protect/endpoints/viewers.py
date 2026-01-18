@@ -21,17 +21,16 @@ class ViewersEndpoint:
         """
         self._client = client
 
-    async def get_all(self, host_id: str, site_id: str) -> list[Viewer]:
+    async def get_all(self, site_id: str | None = None) -> list[Viewer]:
         """List all viewers.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             List of viewers.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/viewers"
+        path = self._client.build_api_path("/viewers", site_id)
         response = await self._client._get(path)
 
         if response is None:
@@ -42,18 +41,17 @@ class ViewersEndpoint:
             return [Viewer.model_validate(item) for item in data]
         return []
 
-    async def get(self, host_id: str, site_id: str, viewer_id: str) -> Viewer:
+    async def get(self, viewer_id: str, site_id: str | None = None) -> Viewer:
         """Get a specific viewer.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             viewer_id: The viewer ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             The viewer.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/viewers/{viewer_id}"
+        path = self._client.build_api_path(f"/viewers/{viewer_id}", site_id)
         response = await self._client._get(path)
 
         if isinstance(response, dict):
@@ -66,23 +64,21 @@ class ViewersEndpoint:
 
     async def update(
         self,
-        host_id: str,
-        site_id: str,
         viewer_id: str,
+        site_id: str | None = None,
         **kwargs: Any,
     ) -> Viewer:
         """Update viewer settings.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             viewer_id: The viewer ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
             **kwargs: Settings to update (name, liveview).
 
         Returns:
             The updated viewer.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/viewers/{viewer_id}"
+        path = self._client.build_api_path(f"/viewers/{viewer_id}", site_id)
         response = await self._client._patch(path, json_data=kwargs)
 
         if isinstance(response, dict):
@@ -93,20 +89,18 @@ class ViewersEndpoint:
 
     async def set_liveview(
         self,
-        host_id: str,
-        site_id: str,
         viewer_id: str,
         liveview_id: str | None,
+        site_id: str | None = None,
     ) -> Viewer:
         """Set the liveview for a viewer.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             viewer_id: The viewer ID.
             liveview_id: The liveview ID or None to unset.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             The updated viewer.
         """
-        return await self.update(host_id, site_id, viewer_id, liveview=liveview_id)
+        return await self.update(viewer_id, site_id, liveview=liveview_id)

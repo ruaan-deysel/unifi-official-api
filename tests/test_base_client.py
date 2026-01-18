@@ -6,12 +6,13 @@ import pytest
 from aioresponses import aioresponses
 
 from unifi_official_api import (
-    ApiKeyAuth,
+    LocalAuth,
     UniFiAuthenticationError,
     UniFiNotFoundError,
     UniFiRateLimitError,
     UniFiResponseError,
 )
+from unifi_official_api.const import ConnectionType
 from unifi_official_api.network import UniFiNetworkClient
 
 
@@ -19,120 +20,141 @@ class TestBaseClientErrorHandling:
     """Tests for base client error handling."""
 
     @pytest.fixture
-    def auth(self) -> ApiKeyAuth:
+    def auth(self) -> LocalAuth:
         """Create test auth."""
-        return ApiKeyAuth(api_key="test-api-key")
+        return LocalAuth(api_key="test-api-key", verify_ssl=False)
 
-    async def test_authentication_error_401(self, auth: ApiKeyAuth) -> None:
+    @pytest.fixture
+    def base_url(self) -> str:
+        """Return test base URL."""
+        return "https://192.168.1.1"
+
+    async def test_authentication_error_401(self, auth: LocalAuth, base_url: str) -> None:
         """Test 401 unauthorized raises authentication error."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/ea/hosts",
+                f"{base_url}/proxy/network/integration/v1/sites",
                 status=401,
                 body="Unauthorized",
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
                 with pytest.raises(UniFiAuthenticationError) as exc_info:
-                    await client.get_hosts()
+                    await client.sites.get_all()
                 assert "Authentication failed" in str(exc_info.value)
 
-    async def test_authentication_error_403(self, auth: ApiKeyAuth) -> None:
+    async def test_authentication_error_403(self, auth: LocalAuth, base_url: str) -> None:
         """Test 403 forbidden raises authentication error."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/ea/hosts",
+                f"{base_url}/proxy/network/integration/v1/sites",
                 status=403,
                 body="Forbidden",
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
                 with pytest.raises(UniFiAuthenticationError) as exc_info:
-                    await client.get_hosts()
+                    await client.sites.get_all()
                 assert "Access forbidden" in str(exc_info.value)
 
-    async def test_not_found_error(self, auth: ApiKeyAuth) -> None:
+    async def test_not_found_error(self, auth: LocalAuth, base_url: str) -> None:
         """Test 404 not found raises not found error."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/ea/hosts/host-123/devices/device-999",
+                f"{base_url}/proxy/network/integration/v1/sites/site-1/devices/device-999",
                 status=404,
                 body="Not Found",
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
                 with pytest.raises(UniFiNotFoundError) as exc_info:
-                    await client.devices.get("host-123", "device-999")
+                    await client.devices.get("site-1", "device-999")
                 assert exc_info.value.status_code == 404
 
-    async def test_rate_limit_error(self, auth: ApiKeyAuth) -> None:
+    async def test_rate_limit_error(self, auth: LocalAuth, base_url: str) -> None:
         """Test 429 rate limit raises rate limit error."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/ea/hosts",
+                f"{base_url}/proxy/network/integration/v1/sites",
                 status=429,
                 body="Too Many Requests",
                 headers={"Retry-After": "30"},
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
                 with pytest.raises(UniFiRateLimitError) as exc_info:
-                    await client.get_hosts()
+                    await client.sites.get_all()
                 assert exc_info.value.retry_after == 30
 
-    async def test_rate_limit_error_no_retry_header(self, auth: ApiKeyAuth) -> None:
+    async def test_rate_limit_error_no_retry_header(self, auth: LocalAuth, base_url: str) -> None:
         """Test 429 rate limit without Retry-After header."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/ea/hosts",
+                f"{base_url}/proxy/network/integration/v1/sites",
                 status=429,
                 body="Too Many Requests",
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
                 with pytest.raises(UniFiRateLimitError) as exc_info:
-                    await client.get_hosts()
+                    await client.sites.get_all()
                 assert exc_info.value.retry_after == 60  # Default
 
-    async def test_server_error(self, auth: ApiKeyAuth) -> None:
+    async def test_server_error(self, auth: LocalAuth, base_url: str) -> None:
         """Test 500 server error raises response error."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/ea/hosts",
+                f"{base_url}/proxy/network/integration/v1/sites",
                 status=500,
                 body="Internal Server Error",
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
                 with pytest.raises(UniFiResponseError) as exc_info:
-                    await client.get_hosts()
+                    await client.sites.get_all()
                 assert exc_info.value.status_code == 500
 
-    async def test_empty_response(self, auth: ApiKeyAuth) -> None:
+    async def test_empty_response(self, auth: LocalAuth, base_url: str) -> None:
         """Test handling of empty response."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/ea/hosts",
+                f"{base_url}/proxy/network/integration/v1/sites",
                 status=200,
                 body="",
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                result = await client.get_hosts()
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                result = await client.sites.get_all()
                 assert result == []
 
-    async def test_non_json_response(self, auth: ApiKeyAuth) -> None:
+    async def test_non_json_response(self, auth: LocalAuth, base_url: str) -> None:
         """Test handling of non-JSON response."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/ea/hosts",
+                f"{base_url}/proxy/network/integration/v1/sites",
                 status=200,
                 body="Not JSON content",
                 content_type="text/plain",
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                result = await client.get_hosts()
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                result = await client.sites.get_all()
                 assert result == []
 
 
@@ -140,283 +162,329 @@ class TestNetworkEndpoints:
     """Tests for network endpoint methods."""
 
     @pytest.fixture
-    def auth(self) -> ApiKeyAuth:
+    def auth(self) -> LocalAuth:
         """Create test auth."""
-        return ApiKeyAuth(api_key="test-api-key")
+        return LocalAuth(api_key="test-api-key", verify_ssl=False)
 
-    async def test_sites_get_all(self, auth: ApiKeyAuth) -> None:
+    @pytest.fixture
+    def base_url(self) -> str:
+        """Return test base URL."""
+        return "https://192.168.1.1"
+
+    @pytest.fixture
+    def site_id(self) -> str:
+        """Return test site ID."""
+        return "site-1"
+
+    async def test_sites_get_all(self, auth: LocalAuth, base_url: str) -> None:
         """Test listing sites."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/ea/hosts/host-123/sites",
+                f"{base_url}/proxy/network/integration/v1/sites",
                 payload={"data": [{"id": "site-1", "name": "Default"}]},
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                sites = await client.sites.get_all("host-123")
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                sites = await client.sites.get_all()
                 assert len(sites) == 1
                 assert sites[0].id == "site-1"
 
-    async def test_sites_get(self, auth: ApiKeyAuth) -> None:
+    async def test_sites_get(self, auth: LocalAuth, base_url: str, site_id: str) -> None:
         """Test getting a specific site."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/ea/hosts/host-123/sites/site-1",
-                payload={"data": {"id": "site-1", "name": "Default"}},
+                f"{base_url}/proxy/network/integration/v1/sites/{site_id}",
+                payload={"data": {"id": site_id, "name": "Default"}},
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                site = await client.sites.get("host-123", "site-1")
-                assert site.id == "site-1"
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                site = await client.sites.get(site_id)
+                assert site.id == site_id
 
-    async def test_networks_get_all(self, auth: ApiKeyAuth) -> None:
+    async def test_networks_get_all(self, auth: LocalAuth, base_url: str, site_id: str) -> None:
         """Test listing networks."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/ea/hosts/host-123/sites/site-1/networks",
+                f"{base_url}/proxy/network/integration/v1/sites/{site_id}/networks",
                 payload={"data": [{"id": "net-1", "name": "LAN", "vlan": 1}]},
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                networks = await client.networks.get_all("host-123", "site-1")
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                networks = await client.networks.get_all(site_id)
                 assert len(networks) == 1
                 assert networks[0].id == "net-1"
 
-    async def test_networks_get(self, auth: ApiKeyAuth) -> None:
+    async def test_networks_get(self, auth: LocalAuth, base_url: str, site_id: str) -> None:
         """Test getting a specific network."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/ea/hosts/host-123/sites/site-1/networks/net-1",
+                f"{base_url}/proxy/network/integration/v1/sites/{site_id}/networks/net-1",
                 payload={"data": {"id": "net-1", "name": "LAN"}},
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                network = await client.networks.get("host-123", "site-1", "net-1")
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                network = await client.networks.get(site_id, "net-1")
                 assert network.id == "net-1"
 
-    async def test_networks_create(self, auth: ApiKeyAuth) -> None:
+    async def test_networks_create(self, auth: LocalAuth, base_url: str, site_id: str) -> None:
         """Test creating a network."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/ea/hosts/host-123/sites/site-1/networks",
+                f"{base_url}/proxy/network/integration/v1/sites/{site_id}/networks",
                 payload={"data": {"id": "net-2", "name": "Guest", "vlan": 10}},
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                network = await client.networks.create("host-123", "site-1", name="Guest", vlan=10)
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                network = await client.networks.create(site_id, name="Guest", vlan=10)
                 assert network.id == "net-2"
 
-    async def test_networks_update(self, auth: ApiKeyAuth) -> None:
+    async def test_networks_update(self, auth: LocalAuth, base_url: str, site_id: str) -> None:
         """Test updating a network."""
         with aioresponses() as m:
             m.patch(
-                "https://api.ui.com/ea/hosts/host-123/sites/site-1/networks/net-1",
+                f"{base_url}/proxy/network/integration/v1/sites/{site_id}/networks/net-1",
                 payload={"data": {"id": "net-1", "name": "Updated"}},
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                network = await client.networks.update(
-                    "host-123", "site-1", "net-1", name="Updated"
-                )
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                network = await client.networks.update(site_id, "net-1", name="Updated")
                 assert network.name == "Updated"
 
-    async def test_networks_delete(self, auth: ApiKeyAuth) -> None:
+    async def test_networks_delete(self, auth: LocalAuth, base_url: str, site_id: str) -> None:
         """Test deleting a network."""
         with aioresponses() as m:
             m.delete(
-                "https://api.ui.com/ea/hosts/host-123/sites/site-1/networks/net-1",
+                f"{base_url}/proxy/network/integration/v1/sites/{site_id}/networks/net-1",
                 status=204,
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                result = await client.networks.delete("host-123", "site-1", "net-1")
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                result = await client.networks.delete(site_id, "net-1")
                 assert result is True
 
-    async def test_wifi_get_all(self, auth: ApiKeyAuth) -> None:
+    async def test_wifi_get_all(self, auth: LocalAuth, base_url: str, site_id: str) -> None:
         """Test listing WiFi networks."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/ea/hosts/host-123/sites/site-1/wifi",
+                f"{base_url}/proxy/network/integration/v1/sites/{site_id}/wifi/broadcasts",
                 payload={"data": [{"id": "wifi-1", "name": "Home WiFi", "ssid": "Home"}]},
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                wifi_networks = await client.wifi.get_all("host-123", "site-1")
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                wifi_networks = await client.wifi.get_all(site_id)
                 assert len(wifi_networks) == 1
                 assert wifi_networks[0].ssid == "Home"
 
-    async def test_wifi_create(self, auth: ApiKeyAuth) -> None:
+    async def test_wifi_create(self, auth: LocalAuth, base_url: str, site_id: str) -> None:
         """Test creating a WiFi network."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/ea/hosts/host-123/sites/site-1/wifi",
+                f"{base_url}/proxy/network/integration/v1/sites/{site_id}/wifi/broadcasts",
                 payload={"data": {"id": "wifi-2", "name": "Guest WiFi", "ssid": "Guest"}},
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                wifi = await client.wifi.create(
-                    "host-123", "site-1", name="Guest WiFi", ssid="Guest"
-                )
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                wifi = await client.wifi.create(site_id, name="Guest WiFi", ssid="Guest")
                 assert wifi.ssid == "Guest"
 
-    async def test_firewall_list_zones(self, auth: ApiKeyAuth) -> None:
+    async def test_firewall_list_zones(self, auth: LocalAuth, base_url: str, site_id: str) -> None:
         """Test listing firewall zones."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/ea/hosts/host-123/sites/site-1/firewall/zones",
+                f"{base_url}/proxy/network/integration/v1/sites/{site_id}/firewall/zones",
                 payload={"data": [{"id": "zone-1", "name": "LAN"}]},
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                zones = await client.firewall.list_zones("host-123", "site-1")
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                zones = await client.firewall.list_zones(site_id)
                 assert len(zones) == 1
                 assert zones[0].name == "LAN"
 
-    async def test_firewall_list_rules(self, auth: ApiKeyAuth) -> None:
+    async def test_firewall_list_rules(self, auth: LocalAuth, base_url: str, site_id: str) -> None:
         """Test listing firewall rules."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/ea/hosts/host-123/sites/site-1/firewall/rules",
+                f"{base_url}/proxy/network/integration/v1/sites/{site_id}/firewall/policies",
                 payload={"data": [{"id": "rule-1", "name": "Block", "action": "drop"}]},
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                rules = await client.firewall.list_rules("host-123", "site-1")
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                rules = await client.firewall.list_rules(site_id)
                 assert len(rules) == 1
                 assert rules[0].name == "Block"
 
-    async def test_firewall_get_rule(self, auth: ApiKeyAuth) -> None:
+    async def test_firewall_get_rule(self, auth: LocalAuth, base_url: str, site_id: str) -> None:
         """Test getting a specific firewall rule."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/ea/hosts/host-123/sites/site-1/firewall/rules/rule-1",
+                f"{base_url}/proxy/network/integration/v1/sites/{site_id}/firewall/policies/rule-1",
                 payload={"data": {"id": "rule-1", "name": "Block"}},
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                rule = await client.firewall.get_rule("host-123", "site-1", "rule-1")
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                rule = await client.firewall.get_rule(site_id, "rule-1")
                 assert rule.id == "rule-1"
 
-    async def test_firewall_create_rule(self, auth: ApiKeyAuth) -> None:
+    async def test_firewall_create_rule(self, auth: LocalAuth, base_url: str, site_id: str) -> None:
         """Test creating a firewall rule."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/ea/hosts/host-123/sites/site-1/firewall/rules",
-                payload={"data": {"id": "rule-2", "name": "New Rule", "action": "accept"}},
+                f"{base_url}/proxy/network/integration/v1/sites/{site_id}/firewall/policies",
+                payload={"data": {"id": "rule-2", "name": "Allow", "action": "accept"}},
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                rule = await client.firewall.create_rule(
-                    "host-123", "site-1", name="New Rule", action="accept"
-                )
-                assert rule.name == "New Rule"
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                rule = await client.firewall.create_rule(site_id, name="Allow", action="accept")
+                assert rule.name == "Allow"
 
-    async def test_firewall_update_rule(self, auth: ApiKeyAuth) -> None:
+    async def test_firewall_update_rule(self, auth: LocalAuth, base_url: str, site_id: str) -> None:
         """Test updating a firewall rule."""
         with aioresponses() as m:
             m.patch(
-                "https://api.ui.com/ea/hosts/host-123/sites/site-1/firewall/rules/rule-1",
-                payload={"data": {"id": "rule-1", "name": "Updated Rule"}},
+                f"{base_url}/proxy/network/integration/v1/sites/{site_id}/firewall/policies/rule-1",
+                payload={"data": {"id": "rule-1", "name": "Updated"}},
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                rule = await client.firewall.update_rule(
-                    "host-123", "site-1", "rule-1", name="Updated Rule"
-                )
-                assert rule.name == "Updated Rule"
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                rule = await client.firewall.update_rule(site_id, "rule-1", name="Updated")
+                assert rule.name == "Updated"
 
-    async def test_firewall_delete_rule(self, auth: ApiKeyAuth) -> None:
+    async def test_firewall_delete_rule(self, auth: LocalAuth, base_url: str, site_id: str) -> None:
         """Test deleting a firewall rule."""
         with aioresponses() as m:
             m.delete(
-                "https://api.ui.com/ea/hosts/host-123/sites/site-1/firewall/rules/rule-1",
+                f"{base_url}/proxy/network/integration/v1/sites/{site_id}/firewall/policies/rule-1",
                 status=204,
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                result = await client.firewall.delete_rule("host-123", "site-1", "rule-1")
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                result = await client.firewall.delete_rule(site_id, "rule-1")
                 assert result is True
 
-    async def test_clients_get(self, auth: ApiKeyAuth) -> None:
+    async def test_clients_get(self, auth: LocalAuth, base_url: str, site_id: str) -> None:
         """Test getting a specific client."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/ea/hosts/host-123/clients/client-1",
-                payload={"data": {"id": "client-1", "mac": "aa:bb:cc:dd:ee:ff"}},
+                f"{base_url}/proxy/network/integration/v1/sites/{site_id}/clients/client-1",
+                payload={"data": {"id": "client-1", "name": "Test Client"}},
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                client_info = await client.clients.get("host-123", "client-1")
-                assert client_info.id == "client-1"
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                network_client = await client.clients.get(site_id, "client-1")
+                assert network_client.id == "client-1"
 
-    async def test_clients_block(self, auth: ApiKeyAuth) -> None:
+    async def test_clients_block(self, auth: LocalAuth, base_url: str, site_id: str) -> None:
         """Test blocking a client."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/ea/hosts/host-123/sites/site-1/clients/aa:bb:cc:dd:ee:ff/block",
-                status=200,
+                f"{base_url}/proxy/network/integration/v1/sites/{site_id}/clients/client-1/block",
+                payload={},
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                result = await client.clients.block("host-123", "site-1", "aa:bb:cc:dd:ee:ff")
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                result = await client.clients.block(site_id, "client-1")
                 assert result is True
 
-    async def test_clients_unblock(self, auth: ApiKeyAuth) -> None:
+    async def test_clients_unblock(self, auth: LocalAuth, base_url: str, site_id: str) -> None:
         """Test unblocking a client."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/ea/hosts/host-123/sites/site-1/clients/aa:bb:cc:dd:ee:ff/unblock",
-                status=200,
+                f"{base_url}/proxy/network/integration/v1/sites/{site_id}/clients/client-1/unblock",
+                payload={},
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                result = await client.clients.unblock("host-123", "site-1", "aa:bb:cc:dd:ee:ff")
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                result = await client.clients.unblock(site_id, "client-1")
                 assert result is True
 
-    async def test_clients_reconnect(self, auth: ApiKeyAuth) -> None:
+    async def test_clients_reconnect(self, auth: LocalAuth, base_url: str, site_id: str) -> None:
         """Test reconnecting a client."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/ea/hosts/host-123/sites/site-1/clients/aa:bb:cc:dd:ee:ff/reconnect",
-                status=200,
+                f"{base_url}/proxy/network/integration/v1/sites/{site_id}/clients/client-1/reconnect",
+                payload={},
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                result = await client.clients.reconnect("host-123", "site-1", "aa:bb:cc:dd:ee:ff")
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                result = await client.clients.reconnect(site_id, "client-1")
                 assert result is True
 
-    async def test_devices_restart(self, auth: ApiKeyAuth) -> None:
+    async def test_devices_restart(self, auth: LocalAuth, base_url: str, site_id: str) -> None:
         """Test restarting a device."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/ea/hosts/host-123/devices/device-1/restart",
-                status=200,
+                f"{base_url}/proxy/network/integration/v1/sites/{site_id}/devices/device-1/restart",
+                payload={},
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                result = await client.devices.restart("host-123", "device-1")
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                result = await client.devices.restart(site_id, "device-1")
                 assert result is True
 
-    async def test_devices_adopt(self, auth: ApiKeyAuth) -> None:
+    async def test_devices_adopt(self, auth: LocalAuth, base_url: str, site_id: str) -> None:
         """Test adopting a device."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/ea/hosts/host-123/sites/site-1/devices/adopt",
-                status=200,
+                f"{base_url}/proxy/network/integration/v1/sites/{site_id}/devices/adopt",
+                payload={},
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                result = await client.devices.adopt("host-123", "site-1", "aa:bb:cc:dd:ee:ff")
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                result = await client.devices.adopt(site_id, "00:11:22:33:44:55")
                 assert result is True
 
-    async def test_devices_forget(self, auth: ApiKeyAuth) -> None:
+    async def test_devices_forget(self, auth: LocalAuth, base_url: str, site_id: str) -> None:
         """Test forgetting a device."""
         with aioresponses() as m:
             m.delete(
-                "https://api.ui.com/ea/hosts/host-123/devices/device-1",
+                f"{base_url}/proxy/network/integration/v1/sites/{site_id}/devices/device-1",
                 status=204,
             )
 
-            async with UniFiNetworkClient(auth=auth) as client:
-                result = await client.devices.forget("host-123", "device-1")
+            async with UniFiNetworkClient(
+                auth=auth, base_url=base_url, connection_type=ConnectionType.LOCAL
+            ) as client:
+                result = await client.devices.forget(site_id, "device-1")
                 assert result is True

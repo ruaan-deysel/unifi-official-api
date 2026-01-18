@@ -23,24 +23,33 @@ class ClientsEndpoint:
 
     async def get_all(
         self,
-        host_id: str,
-        site_id: str | None = None,
+        site_id: str,
+        *,
+        offset: int | None = None,
+        limit: int | None = None,
+        filter_str: str | None = None,
     ) -> list[Client]:
         """List all connected clients.
 
         Args:
-            host_id: The host ID.
-            site_id: Optional site ID to filter by.
+            site_id: The site ID.
+            offset: Number of clients to skip (pagination).
+            limit: Maximum number of clients to return.
+            filter_str: Filter string for client properties.
 
         Returns:
             List of clients.
         """
         params: dict[str, Any] = {}
-        if site_id:
-            params["siteId"] = site_id
+        if offset is not None:
+            params["offset"] = offset
+        if limit is not None:
+            params["limit"] = limit
+        if filter_str:
+            params["filter"] = filter_str
 
-        path = f"/ea/hosts/{host_id}/clients"
-        response = await self._client._get(path, params=params)
+        path = self._client.build_api_path(f"/sites/{site_id}/clients")
+        response = await self._client._get(path, params=params if params else None)
 
         if response is None:
             return []
@@ -50,17 +59,17 @@ class ClientsEndpoint:
             return [Client.model_validate(item) for item in data]
         return []
 
-    async def get(self, host_id: str, client_id: str) -> Client:
+    async def get(self, site_id: str, client_id: str) -> Client:
         """Get a specific client.
 
         Args:
-            host_id: The host ID.
+            site_id: The site ID.
             client_id: The client ID or MAC address.
 
         Returns:
             The client.
         """
-        path = f"/ea/hosts/{host_id}/clients/{client_id}"
+        path = self._client.build_api_path(f"/sites/{site_id}/clients/{client_id}")
         response = await self._client._get(path)
 
         if isinstance(response, dict):
@@ -71,79 +80,73 @@ class ClientsEndpoint:
                 return Client.model_validate(data[0])
         raise ValueError(f"Client {client_id} not found")
 
-    async def block(self, host_id: str, site_id: str, mac: str) -> bool:
+    async def block(self, site_id: str, client_id: str) -> bool:
         """Block a client.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
-            mac: The client MAC address.
+            client_id: The client ID.
 
         Returns:
             True if successful.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/clients/{mac}/block"
+        path = self._client.build_api_path(f"/sites/{site_id}/clients/{client_id}/block")
         await self._client._post(path)
         return True
 
-    async def unblock(self, host_id: str, site_id: str, mac: str) -> bool:
+    async def unblock(self, site_id: str, client_id: str) -> bool:
         """Unblock a client.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
-            mac: The client MAC address.
+            client_id: The client ID.
 
         Returns:
             True if successful.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/clients/{mac}/unblock"
+        path = self._client.build_api_path(f"/sites/{site_id}/clients/{client_id}/unblock")
         await self._client._post(path)
         return True
 
-    async def reconnect(self, host_id: str, site_id: str, mac: str) -> bool:
+    async def reconnect(self, site_id: str, client_id: str) -> bool:
         """Force a client to reconnect.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
-            mac: The client MAC address.
+            client_id: The client ID.
 
         Returns:
             True if successful.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/clients/{mac}/reconnect"
+        path = self._client.build_api_path(f"/sites/{site_id}/clients/{client_id}/reconnect")
         await self._client._post(path)
         return True
 
-    async def forget(self, host_id: str, site_id: str, mac: str) -> bool:
+    async def forget(self, site_id: str, client_id: str) -> bool:
         """Forget/remove a client from the network.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
-            mac: The client MAC address.
+            client_id: The client ID.
 
         Returns:
             True if successful.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/clients/{mac}"
+        path = self._client.build_api_path(f"/sites/{site_id}/clients/{client_id}")
         await self._client._delete(path)
         return True
 
     async def execute_action(
         self,
-        host_id: str,
         site_id: str,
-        mac: str,
+        client_id: str,
         action: str,
     ) -> bool:
         """Execute an action on a client.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
-            mac: The client MAC address.
+            client_id: The client ID.
             action: The action (block, unblock, reconnect).
 
         Returns:
@@ -153,6 +156,6 @@ class ClientsEndpoint:
         if action not in valid_actions:
             raise ValueError(f"Action must be one of: {', '.join(valid_actions)}")
 
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/clients/{mac}/{action}"
+        path = self._client.build_api_path(f"/sites/{site_id}/clients/{client_id}/{action}")
         await self._client._post(path)
         return True

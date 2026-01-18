@@ -12,17 +12,19 @@ class ClientType(str, Enum):
     """Types of network clients."""
 
     WIRED = "wired"
+    WIRED_UPPER = "WIRED"  # API returns uppercase
     WIRELESS = "wireless"
+    WIRELESS_UPPER = "WIRELESS"  # API returns uppercase
 
 
 class Client(BaseModel):
     """Model representing a connected network client."""
 
     id: str
-    mac: str
+    mac: str | None = Field(default=None, alias="macAddress")
     name: str | None = None
     hostname: str | None = None
-    ip: str | None = None
+    ip: str | None = Field(default=None, alias="ipAddress")
     type: ClientType | None = None
     network_id: str | None = Field(default=None, alias="networkId")
     site_id: str | None = Field(default=None, alias="siteId")
@@ -54,4 +56,4 @@ class Client(BaseModel):
     @property
     def display_name(self) -> str:
         """Get the display name for the client."""
-        return self.name or self.hostname or self.mac
+        return self.name or self.hostname or self.mac or "Unknown"

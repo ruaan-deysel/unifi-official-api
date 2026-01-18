@@ -23,20 +23,33 @@ class WifiEndpoint:
 
     async def get_all(
         self,
-        host_id: str,
         site_id: str,
+        *,
+        offset: int | None = None,
+        limit: int | None = None,
+        filter_str: str | None = None,
     ) -> list[WifiNetwork]:
         """List all WiFi networks.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
+            offset: Number of WiFi networks to skip (pagination).
+            limit: Maximum number of WiFi networks to return.
+            filter_str: Filter string for WiFi properties.
 
         Returns:
             List of WiFi networks.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/wifi"
-        response = await self._client._get(path)
+        params: dict[str, Any] = {}
+        if offset is not None:
+            params["offset"] = offset
+        if limit is not None:
+            params["limit"] = limit
+        if filter_str:
+            params["filter"] = filter_str
+
+        path = self._client.build_api_path(f"/sites/{site_id}/wifi/broadcasts")
+        response = await self._client._get(path, params=params if params else None)
 
         if response is None:
             return []
@@ -46,18 +59,17 @@ class WifiEndpoint:
             return [WifiNetwork.model_validate(item) for item in data]
         return []
 
-    async def get(self, host_id: str, site_id: str, wifi_id: str) -> WifiNetwork:
+    async def get(self, site_id: str, wifi_id: str) -> WifiNetwork:
         """Get a specific WiFi network.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             wifi_id: The WiFi network ID.
 
         Returns:
             The WiFi network.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/wifi/{wifi_id}"
+        path = self._client.build_api_path(f"/sites/{site_id}/wifi/broadcasts/{wifi_id}")
         response = await self._client._get(path)
 
         if isinstance(response, dict):
@@ -70,7 +82,6 @@ class WifiEndpoint:
 
     async def create(
         self,
-        host_id: str,
         site_id: str,
         *,
         name: str,
@@ -84,7 +95,6 @@ class WifiEndpoint:
         """Create a new WiFi network.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             name: WiFi network name.
             ssid: The SSID to broadcast.
@@ -97,7 +107,7 @@ class WifiEndpoint:
         Returns:
             The created WiFi network.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/wifi"
+        path = self._client.build_api_path(f"/sites/{site_id}/wifi/broadcasts")
         data: dict[str, Any] = {
             "name": name,
             "ssid": ssid,
@@ -119,7 +129,6 @@ class WifiEndpoint:
 
     async def update(
         self,
-        host_id: str,
         site_id: str,
         wifi_id: str,
         **kwargs: Any,
@@ -127,7 +136,6 @@ class WifiEndpoint:
         """Update a WiFi network.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             wifi_id: The WiFi network ID.
             **kwargs: Parameters to update.
@@ -135,7 +143,7 @@ class WifiEndpoint:
         Returns:
             The updated WiFi network.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/wifi/{wifi_id}"
+        path = self._client.build_api_path(f"/sites/{site_id}/wifi/broadcasts/{wifi_id}")
         response = await self._client._patch(path, json_data=kwargs)
 
         if isinstance(response, dict):
@@ -144,17 +152,16 @@ class WifiEndpoint:
                 return WifiNetwork.model_validate(result)
         raise ValueError("Failed to update WiFi network")
 
-    async def delete(self, host_id: str, site_id: str, wifi_id: str) -> bool:
+    async def delete(self, site_id: str, wifi_id: str) -> bool:
         """Delete a WiFi network.
 
         Args:
-            host_id: The host ID.
             site_id: The site ID.
             wifi_id: The WiFi network ID.
 
         Returns:
             True if successful.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/wifi/{wifi_id}"
+        path = self._client.build_api_path(f"/sites/{site_id}/wifi/broadcasts/{wifi_id}")
         await self._client._delete(path)
         return True

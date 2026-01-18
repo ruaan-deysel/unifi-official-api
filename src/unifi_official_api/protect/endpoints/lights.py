@@ -21,17 +21,16 @@ class LightsEndpoint:
         """
         self._client = client
 
-    async def get_all(self, host_id: str, site_id: str) -> list[Light]:
+    async def get_all(self, site_id: str | None = None) -> list[Light]:
         """List all lights.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             List of lights.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/lights"
+        path = self._client.build_api_path("/lights", site_id)
         response = await self._client._get(path)
 
         if response is None:
@@ -42,18 +41,17 @@ class LightsEndpoint:
             return [Light.model_validate(item) for item in data]
         return []
 
-    async def get(self, host_id: str, site_id: str, light_id: str) -> Light:
+    async def get(self, light_id: str, site_id: str | None = None) -> Light:
         """Get a specific light.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             light_id: The light ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             The light.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/lights/{light_id}"
+        path = self._client.build_api_path(f"/lights/{light_id}", site_id)
         response = await self._client._get(path)
 
         if isinstance(response, dict):
@@ -66,23 +64,21 @@ class LightsEndpoint:
 
     async def update(
         self,
-        host_id: str,
-        site_id: str,
         light_id: str,
+        site_id: str | None = None,
         **kwargs: Any,
     ) -> Light:
         """Update light settings.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             light_id: The light ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
             **kwargs: Settings to update.
 
         Returns:
             The updated light.
         """
-        path = f"/ea/hosts/{host_id}/sites/{site_id}/lights/{light_id}"
+        path = self._client.build_api_path(f"/lights/{light_id}", site_id)
         response = await self._client._patch(path, json_data=kwargs)
 
         if isinstance(response, dict):
@@ -91,70 +87,64 @@ class LightsEndpoint:
                 return Light.model_validate(result)
         raise ValueError("Failed to update light")
 
-    async def turn_on(self, host_id: str, site_id: str, light_id: str) -> Light:
+    async def turn_on(self, light_id: str, site_id: str | None = None) -> Light:
         """Turn on a light.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             light_id: The light ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             The updated light.
         """
-        return await self.update(host_id, site_id, light_id, lightMode=LightMode.ON.value)
+        return await self.update(light_id, site_id, lightMode=LightMode.ON.value)
 
-    async def turn_off(self, host_id: str, site_id: str, light_id: str) -> Light:
+    async def turn_off(self, light_id: str, site_id: str | None = None) -> Light:
         """Turn off a light.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             light_id: The light ID.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             The updated light.
         """
-        return await self.update(host_id, site_id, light_id, lightMode=LightMode.OFF.value)
+        return await self.update(light_id, site_id, lightMode=LightMode.OFF.value)
 
     async def set_mode(
         self,
-        host_id: str,
-        site_id: str,
         light_id: str,
         mode: LightMode,
+        site_id: str | None = None,
     ) -> Light:
         """Set light mode.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             light_id: The light ID.
             mode: The light mode.
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             The updated light.
         """
-        return await self.update(host_id, site_id, light_id, lightMode=mode.value)
+        return await self.update(light_id, site_id, lightMode=mode.value)
 
     async def set_brightness(
         self,
-        host_id: str,
-        site_id: str,
         light_id: str,
         brightness: int,
+        site_id: str | None = None,
     ) -> Light:
         """Set light brightness.
 
         Args:
-            host_id: The host ID.
-            site_id: The site ID.
             light_id: The light ID.
             brightness: Brightness level (0-100).
+            site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             The updated light.
         """
         if not 0 <= brightness <= 100:
             raise ValueError("Brightness must be between 0 and 100")
-        return await self.update(host_id, site_id, light_id, brightness=brightness)
+        return await self.update(light_id, site_id, brightness=brightness)

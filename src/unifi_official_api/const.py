@@ -2,9 +2,27 @@
 
 from __future__ import annotations
 
+from enum import Enum
 from typing import Final
 
 from ._version import __version__
+
+
+class ConnectionType(str, Enum):
+    """Connection type for UniFi API access.
+
+    LOCAL: Direct connection to the UniFi console (e.g., https://192.168.1.1)
+           - Uses local API key generated on the console
+           - Endpoints: /proxy/network/integration/v1/...
+
+    REMOTE: Cloud connection via Ubiquiti's API (https://api.ui.com)
+            - Uses cloud API key from account.ui.com
+            - Endpoints: /v1/connector/consoles/{consoleId}/proxy/network/integration/v1/...
+    """
+
+    LOCAL = "local"
+    REMOTE = "remote"
+
 
 # API Base URLs
 NETWORK_API_BASE_URL: Final[str] = "https://api.ui.com"
@@ -13,6 +31,12 @@ PROTECT_API_BASE_URL: Final[str] = "https://api.ui.com"
 # API Versions
 NETWORK_API_VERSION: Final[str] = "v1"
 PROTECT_API_VERSION: Final[str] = "v1"
+
+# Network Integration API path prefix (used for both local and remote)
+NETWORK_INTEGRATION_PATH: Final[str] = "/proxy/network/integration/v1"
+
+# Protect Integration API path prefix (used for both local and remote)
+PROTECT_INTEGRATION_PATH: Final[str] = "/proxy/protect/integration/v1"
 
 # Default timeouts (in seconds)
 DEFAULT_TIMEOUT: Final[int] = 30
