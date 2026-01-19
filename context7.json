@@ -1,0 +1,38 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "UniFi Official API",
+  "description": "Async Python library for the official UniFi Network and Protect APIs, supporting both cloud-hosted and local on-premise deployments",
+  "folders": [
+    "src/unifi_official_api",
+    "README.md"
+  ],
+  "excludeFolders": [
+    "tests",
+    ".venv",
+    "venv",
+    "__pycache__",
+    ".git",
+    "build",
+    "dist",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache"
+  ],
+  "excludeFiles": [
+    "CHANGELOG.md",
+    "LICENSE",
+    "CODE_OF_CONDUCT.md",
+    ".gitignore",
+    ".pre-commit-config.yaml"
+  ],
+  "rules": [
+    "All I/O operations must be async using aiohttp and must use await",
+    "Always use context managers (async with) for client session lifecycle management",
+    "Use Pydantic v2 models with Field(alias=...) for camelCase API responses",
+    "Implement endpoints by inheriting from client and accessing _get, _post, _put, _patch, _delete methods",
+    "Never hardcode or log API keys",
+    "Let exceptions propagate from the exceptions module rather than swallowing them",
+    "Include comprehensive docstrings with Args, Returns, and Raises sections",
+    "Maintain minimum Python 3.11 compatibility"
+  ]
+}
