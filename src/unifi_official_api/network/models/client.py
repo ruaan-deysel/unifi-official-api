@@ -9,12 +9,24 @@ from pydantic import BaseModel, Field
 
 
 class ClientType(str, Enum):
-    """Types of network clients."""
+    """Types of network clients.
 
-    WIRED = "wired"
-    WIRED_UPPER = "WIRED"  # API returns uppercase
-    WIRELESS = "wireless"
-    WIRELESS_UPPER = "WIRELESS"  # API returns uppercase
+    The API returns either uppercase (WIRED/WIRELESS) or lowercase (wired/wireless).
+    This enum normalizes both cases to uppercase values for consistent comparisons.
+    """
+
+    WIRED = "WIRED"
+    WIRELESS = "WIRELESS"
+
+    @classmethod
+    def _missing_(cls, value: object) -> ClientType | None:
+        """Handle case-insensitive enum lookup."""
+        if isinstance(value, str):
+            upper_value = value.upper()
+            for member in cls:
+                if member.value == upper_value:
+                    return member
+        return None
 
 
 class Client(BaseModel):
@@ -51,7 +63,7 @@ class Client(BaseModel):
     os_name: str | None = Field(default=None, alias="osName")
     device_name: str | None = Field(default=None, alias="deviceName")
 
-    model_config = {"populate_by_name": True, "extra": "allow"}
+    model_config = {"populate_by_name": True, "extra": "allow", "use_enum_values": True}
 
     @property
     def display_name(self) -> str:

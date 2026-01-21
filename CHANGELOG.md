@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-01-22
+
 ### Added
 
 #### Network API
@@ -36,11 +38,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `get_countries()`: Get countries for geo-blocking
 
 - **Resources**: Supporting network resources
-  - `get_wan_interfaces()`: List WAN interfaces
-  - `get_vpn_tunnels()`: List site-to-site VPN tunnels
-  - `get_vpn_servers()`: List VPN servers (WireGuard, OpenVPN, L2TP)
-  - `get_radius_profiles()`: List RADIUS profiles
-  - `get_device_tags()`: List device tags
+  - `get_wan_interfaces()`: List WAN interfaces with filter support
+  - `get_vpn_tunnels()`: List site-to-site VPN tunnels with filter support
+  - `get_vpn_servers()`: List VPN servers (WireGuard, OpenVPN, L2TP) with filter support
+  - `get_radius_profiles()`: List RADIUS profiles with filter support
+  - `get_device_tags()`: List device tags with filter support
+
+- **Firewall Enhancements**:
+  - `get_zone()`: Get specific firewall zone
+  - `create_zone()`: Create custom firewall zone
+  - `update_zone()`: Update firewall zone
+  - `delete_zone()`: Delete custom firewall zone
+  - Added pagination and filter support to `list_zones()` and `list_rules()`
+
+- **Networks Enhancements**:
+  - `get_references()`: Get references to a network (what uses a network)
 
 - **Device Actions**: Device management operations
   - `execute_port_action()`: Control device ports (enable/disable PoE, speed)
@@ -52,6 +64,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `execute_action()`: Client actions (block, unblock, reconnect, forget)
 
 - **Application Info**: `get_application_info()` method on client
+
+- **Filter Query Support**: All list endpoints now support the UniFi filter query syntax
+  - Property expressions: `id.eq(123)`, `name.like('guest*')`
+  - Compound expressions: `and(name.isNull(), createdAt.gt(2025-01-01))`
+  - Negation expressions: `not(name.like('guest*'))`
 
 #### Protect API
 
@@ -71,7 +88,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `ptz_patrol_start()`: Start PTZ patrol on slot
   - `ptz_patrol_stop()`: Stop PTZ patrol
   - `ptz_goto_preset()`: Move camera to PTZ preset position
-  - `create_rtsps_stream()`: Create RTSPS stream for camera
+  - `create_rtsps_stream()`: Create RTSPS stream for camera (requires `qualities` parameter)
   - `get_rtsps_stream()`: Get existing RTSPS stream info
   - `delete_rtsps_stream()`: Remove RTSPS stream
   - `create_talkback_session()`: Create two-way audio session
@@ -79,16 +96,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `set_hdr_mode()`: Set HDR mode (off, auto, always)
   - `set_video_mode()`: Set video mode (default, highFps, sport)
   - `get_snapshot()`: Retrieve camera snapshot image
+  - `construct_rtsp_url()`: Helper method to construct RTSP URLs for cameras
 
 - **WebSocket Subscriptions**: Real-time event streaming
   - `subscribe_devices()`: Subscribe to device state updates
   - `subscribe_events()`: Subscribe to Protect events
+  - `get_host_id()`: Helper method to get host ID for WebSocket subscriptions
 
 ### Changed
 
 - Renamed `list()` methods to `get_all()` to avoid shadowing Python built-in
+- Standardized filter parameter naming to `filter_str` across all endpoints
+- Fixed `create_rtsps_stream()` to require `qualities` parameter per API spec
+- Fixed `delete_rtsps_stream()` to pass qualities as query parameters
+- Fixed WAN interfaces endpoint path from `/wan` to `/wans`
+- Fixed `ClientType` enum serialization to return string values instead of enum objects
+- Made WAN/VPN model fields optional for better API compatibility
 
-## [1.0.0] - 2024-01-17
+### Fixed
+
+- RTSPS stream creation now properly sends `qualities` in request body
+- Client type field now returns string ("WIRED"/"WIRELESS") instead of enum object
+- WAN interfaces API now uses correct endpoint path
+
+## [1.0.0] - 2025-01-17
 
 ### Added
 

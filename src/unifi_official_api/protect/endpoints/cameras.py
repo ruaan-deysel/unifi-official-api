@@ -283,19 +283,24 @@ class CamerasEndpoint:
     async def create_rtsps_stream(
         self,
         camera_id: str,
+        qualities: list[str] | None = None,
         site_id: str | None = None,
     ) -> RTSPSStream:
         """Create RTSPS stream for camera.
 
         Args:
             camera_id: The camera ID.
+            qualities: List of stream qualities to enable (e.g., ["high"], ["medium", "low"]).
+                      Valid values are typically "high", "medium", "low".
+                      Defaults to ["high"] if not specified.
             site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             RTSPS stream configuration.
         """
         path = self._client.build_api_path(f"/cameras/{camera_id}/rtsps-stream", site_id)
-        response = await self._client._post(path)
+        body = {"qualities": qualities or ["high"]}
+        response = await self._client._post(path, json_data=body)
 
         if isinstance(response, dict):
             data = response.get("data", response)
@@ -329,19 +334,23 @@ class CamerasEndpoint:
     async def delete_rtsps_stream(
         self,
         camera_id: str,
+        qualities: list[str] | None = None,
         site_id: str | None = None,
     ) -> bool:
         """Delete RTSPS stream.
 
         Args:
             camera_id: The camera ID.
+            qualities: List of stream qualities to delete (e.g., ["high"], ["medium", "low"]).
+                      Defaults to ["high"] if not specified.
             site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             True if successful.
         """
         path = self._client.build_api_path(f"/cameras/{camera_id}/rtsps-stream", site_id)
-        await self._client._delete(path)
+        params = {"qualities": qualities or ["high"]}
+        await self._client._delete(path, params=params)
         return True
 
     async def create_talkback_session(

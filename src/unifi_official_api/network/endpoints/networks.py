@@ -159,3 +159,26 @@ class NetworksEndpoint:
         path = self._client.build_api_path(f"/sites/{site_id}/networks/{network_id}")
         await self._client._delete(path)
         return True
+
+    async def get_references(self, site_id: str, network_id: str) -> dict[str, Any]:
+        """Get references to a network.
+
+        Returns information about what resources reference this network,
+        such as WiFi broadcasts, firewall rules, or other configurations
+        that use this network.
+
+        Args:
+            site_id: The site ID.
+            network_id: The network ID.
+
+        Returns:
+            Dictionary containing references to this network.
+        """
+        path = self._client.build_api_path(f"/sites/{site_id}/networks/{network_id}/references")
+        response = await self._client._get(path)
+
+        if isinstance(response, dict):
+            data = response.get("data", response)
+            if isinstance(data, dict):
+                return data
+        return {}

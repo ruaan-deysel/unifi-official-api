@@ -21,17 +21,36 @@ class FirewallEndpoint:
         """
         self._client = client
 
-    async def list_zones(self, site_id: str) -> list[FirewallZone]:
+    async def list_zones(
+        self,
+        site_id: str,
+        *,
+        offset: int | None = None,
+        limit: int | None = None,
+        filter_str: str | None = None,
+    ) -> list[FirewallZone]:
         """List all firewall zones.
 
         Args:
             site_id: The site ID.
+            offset: Number of items to skip (pagination).
+            limit: Maximum number of items to return.
+            filter_str: Filter query string using API filter syntax.
+                Example: "name.like('Internal*')" or "and(name.isNotNull(), id.eq('zone-1'))"
 
         Returns:
             List of firewall zones.
         """
+        params: dict[str, Any] = {}
+        if offset is not None:
+            params["offset"] = offset
+        if limit is not None:
+            params["limit"] = limit
+        if filter_str:
+            params["filter"] = filter_str
+
         path = self._client.build_api_path(f"/sites/{site_id}/firewall/zones")
-        response = await self._client._get(path)
+        response = await self._client._get(path, params=params if params else None)
 
         if response is None:
             return []
@@ -41,17 +60,124 @@ class FirewallEndpoint:
             return [FirewallZone.model_validate(item) for item in data]
         return []
 
-    async def list_rules(self, site_id: str) -> list[FirewallRule]:
+    async def get_zone(self, site_id: str, zone_id: str) -> FirewallZone:
+        """Get a specific firewall zone.
+
+        Args:
+            site_id: The site ID.
+            zone_id: The zone ID.
+
+        Returns:
+            The firewall zone.
+        """
+        path = self._client.build_api_path(f"/sites/{site_id}/firewall/zones/{zone_id}")
+        response = await self._client._get(path)
+
+        if isinstance(response, dict):
+            data = response.get("data", response)
+            if isinstance(data, dict):
+                return FirewallZone.model_validate(data)
+            if isinstance(data, list) and len(data) > 0:
+                return FirewallZone.model_validate(data[0])
+        raise ValueError(f"Firewall zone {zone_id} not found")
+
+    async def create_zone(
+        self,
+        site_id: str,
+        *,
+        name: str,
+        **kwargs: Any,
+    ) -> FirewallZone:
+        """Create a custom firewall zone.
+
+        Args:
+            site_id: The site ID.
+            name: Zone name.
+            **kwargs: Additional parameters.
+
+        Returns:
+            The created firewall zone.
+        """
+        path = self._client.build_api_path(f"/sites/{site_id}/firewall/zones")
+        data: dict[str, Any] = {"name": name}
+        data.update(kwargs)
+
+        response = await self._client._post(path, json_data=data)
+        if isinstance(response, dict):
+            result = response.get("data", response)
+            if isinstance(result, dict):
+                return FirewallZone.model_validate(result)
+        raise ValueError("Failed to create firewall zone")
+
+    async def update_zone(
+        self,
+        site_id: str,
+        zone_id: str,
+        **kwargs: Any,
+    ) -> FirewallZone:
+        """Update a firewall zone.
+
+        Args:
+            site_id: The site ID.
+            zone_id: The zone ID.
+            **kwargs: Parameters to update.
+
+        Returns:
+            The updated firewall zone.
+        """
+        path = self._client.build_api_path(f"/sites/{site_id}/firewall/zones/{zone_id}")
+        response = await self._client._put(path, json_data=kwargs)
+
+        if isinstance(response, dict):
+            result = response.get("data", response)
+            if isinstance(result, dict):
+                return FirewallZone.model_validate(result)
+        raise ValueError("Failed to update firewall zone")
+
+    async def delete_zone(self, site_id: str, zone_id: str) -> bool:
+        """Delete a custom firewall zone.
+
+        Args:
+            site_id: The site ID.
+            zone_id: The zone ID.
+
+        Returns:
+            True if successful.
+        """
+        path = self._client.build_api_path(f"/sites/{site_id}/firewall/zones/{zone_id}")
+        await self._client._delete(path)
+        return True
+
+    async def list_rules(
+        self,
+        site_id: str,
+        *,
+        offset: int | None = None,
+        limit: int | None = None,
+        filter_str: str | None = None,
+    ) -> list[FirewallRule]:
         """List all firewall rules.
 
         Args:
             site_id: The site ID.
+            offset: Number of items to skip (pagination).
+            limit: Maximum number of items to return.
+            filter_str: Filter query string using API filter syntax.
+                Example: "action.eq('drop')" or "and(name.isNotNull(), enabled.eq(true))"
 
         Returns:
             List of firewall rules.
         """
+        params: dict[str, Any] = {}
+        if offset is not None:
+            params["offset"] = offset
+        if limit is not None:
+            params["limit"] = limit
+        if filter_str:
+            params["filter"] = filter_str
+
         path = self._client.build_api_path(f"/sites/{site_id}/firewall/policies")
-        response = await self._client._get(path)
+        response = await self._client._get(path, params=params if params else None)
 
         if response is None:
             return []

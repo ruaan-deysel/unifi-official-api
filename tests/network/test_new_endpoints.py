@@ -846,7 +846,7 @@ class TestAdditionalCoverage:
             async with UniFiNetworkClient(
                 auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
             ) as client:
-                vouchers = await client.vouchers.get_all("site-1", filter_query="active")
+                vouchers = await client.vouchers.get_all("site-1", filter_str="active")
                 assert len(vouchers) == 1
 
     async def test_vouchers_with_all_options(self, auth: ApiKeyAuth) -> None:
@@ -1315,6 +1315,319 @@ class TestTrafficAdditional:
                 lists = await client.traffic.get_all_lists("site-1")
                 # Returns empty since not a list
                 assert lists == []
+
+
+class TestFirewallEndpoint:
+    """Tests for firewall endpoint."""
+
+    @pytest.fixture
+    def auth(self) -> ApiKeyAuth:
+        """Create test auth."""
+        return ApiKeyAuth(api_key="test-api-key")
+
+    async def test_firewall_list_zones(self, auth: ApiKeyAuth) -> None:
+        """Test listing firewall zones."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(
+                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones.*"
+                ),
+                payload={
+                    "data": [
+                        {"id": "zone-1", "name": "Internal", "zoneKey": "INTERNAL"},
+                        {"id": "zone-2", "name": "External", "zoneKey": "EXTERNAL"},
+                    ]
+                },
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                zones = await client.firewall.list_zones("site-1")
+                assert len(zones) == 2
+                assert zones[0].name == "Internal"
+
+    async def test_firewall_list_zones_empty(self, auth: ApiKeyAuth) -> None:
+        """Test listing firewall zones with empty response."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(
+                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones.*"
+                ),
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                zones = await client.firewall.list_zones("site-1")
+                assert zones == []
+
+    async def test_firewall_get_zone(self, auth: ApiKeyAuth) -> None:
+        """Test getting a specific firewall zone."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones/zone-1",
+                payload={"data": {"id": "zone-1", "name": "Internal", "zoneKey": "INTERNAL"}},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                zone = await client.firewall.get_zone("site-1", "zone-1")
+                assert zone.id == "zone-1"
+                assert zone.name == "Internal"
+
+    async def test_firewall_get_zone_not_found(self, auth: ApiKeyAuth) -> None:
+        """Test getting a firewall zone that doesn't exist."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones/zone-999",
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                with pytest.raises(ValueError, match="not found"):
+                    await client.firewall.get_zone("site-1", "zone-999")
+
+    async def test_firewall_create_zone(self, auth: ApiKeyAuth) -> None:
+        """Test creating a firewall zone."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones",
+                payload={"data": {"id": "zone-new", "name": "Custom Zone", "zoneKey": "CUSTOM"}},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                zone = await client.firewall.create_zone("site-1", name="Custom Zone")
+                assert zone.id == "zone-new"
+                assert zone.name == "Custom Zone"
+
+    async def test_firewall_create_zone_failed(self, auth: ApiKeyAuth) -> None:
+        """Test creating a firewall zone failure."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones",
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                with pytest.raises(ValueError, match="Failed"):
+                    await client.firewall.create_zone("site-1", name="Test")
+
+    async def test_firewall_update_zone(self, auth: ApiKeyAuth) -> None:
+        """Test updating a firewall zone."""
+        with aioresponses() as m:
+            m.put(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones/zone-1",
+                payload={"data": {"id": "zone-1", "name": "Updated Zone", "zoneKey": "CUSTOM"}},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                zone = await client.firewall.update_zone("site-1", "zone-1", name="Updated Zone")
+                assert zone.name == "Updated Zone"
+
+    async def test_firewall_update_zone_failed(self, auth: ApiKeyAuth) -> None:
+        """Test updating a firewall zone failure."""
+        with aioresponses() as m:
+            m.put(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones/zone-1",
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                with pytest.raises(ValueError, match="Failed"):
+                    await client.firewall.update_zone("site-1", "zone-1", name="Test")
+
+    async def test_firewall_delete_zone(self, auth: ApiKeyAuth) -> None:
+        """Test deleting a firewall zone."""
+        with aioresponses() as m:
+            m.delete(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones/zone-1",
+                status=204,
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                result = await client.firewall.delete_zone("site-1", "zone-1")
+                assert result is True
+
+    async def test_firewall_list_rules(self, auth: ApiKeyAuth) -> None:
+        """Test listing firewall rules."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(
+                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policies.*"
+                ),
+                payload={
+                    "data": [
+                        {
+                            "id": "rule-1",
+                            "name": "Block All",
+                            "action": "drop",
+                            "protocol": "all",
+                        }
+                    ]
+                },
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                rules = await client.firewall.list_rules("site-1")
+                assert len(rules) == 1
+                assert rules[0].name == "Block All"
+
+    async def test_firewall_list_rules_empty(self, auth: ApiKeyAuth) -> None:
+        """Test listing firewall rules with empty response."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(
+                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policies.*"
+                ),
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                rules = await client.firewall.list_rules("site-1")
+                assert rules == []
+
+    async def test_firewall_get_rule(self, auth: ApiKeyAuth) -> None:
+        """Test getting a specific firewall rule."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policies/rule-1",
+                payload={
+                    "data": {
+                        "id": "rule-1",
+                        "name": "Block All",
+                        "action": "drop",
+                        "protocol": "all",
+                    }
+                },
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                rule = await client.firewall.get_rule("site-1", "rule-1")
+                assert rule.id == "rule-1"
+
+    async def test_firewall_get_rule_not_found(self, auth: ApiKeyAuth) -> None:
+        """Test getting a firewall rule that doesn't exist."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policies/rule-999",
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                with pytest.raises(ValueError, match="not found"):
+                    await client.firewall.get_rule("site-1", "rule-999")
+
+    async def test_firewall_create_rule(self, auth: ApiKeyAuth) -> None:
+        """Test creating a firewall rule."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policies",
+                payload={
+                    "data": {
+                        "id": "rule-new",
+                        "name": "New Rule",
+                        "action": "drop",
+                        "protocol": "tcp",
+                    }
+                },
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                rule = await client.firewall.create_rule(
+                    "site-1",
+                    name="New Rule",
+                    action="drop",
+                    protocol="tcp",
+                )
+                assert rule.id == "rule-new"
+
+    async def test_firewall_create_rule_failed(self, auth: ApiKeyAuth) -> None:
+        """Test creating a firewall rule failure."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policies",
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                with pytest.raises(ValueError, match="Failed"):
+                    await client.firewall.create_rule("site-1", name="Test")
+
+    async def test_firewall_update_rule(self, auth: ApiKeyAuth) -> None:
+        """Test updating a firewall rule."""
+        with aioresponses() as m:
+            m.patch(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policies/rule-1",
+                payload={
+                    "data": {
+                        "id": "rule-1",
+                        "name": "Updated Rule",
+                        "action": "accept",
+                        "protocol": "all",
+                    }
+                },
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                rule = await client.firewall.update_rule("site-1", "rule-1", name="Updated Rule")
+                assert rule.name == "Updated Rule"
+
+    async def test_firewall_update_rule_failed(self, auth: ApiKeyAuth) -> None:
+        """Test updating a firewall rule failure."""
+        with aioresponses() as m:
+            m.patch(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policies/rule-1",
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                with pytest.raises(ValueError, match="Failed"):
+                    await client.firewall.update_rule("site-1", "rule-1", name="Test")
+
+    async def test_firewall_delete_rule(self, auth: ApiKeyAuth) -> None:
+        """Test deleting a firewall rule."""
+        with aioresponses() as m:
+            m.delete(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policies/rule-1",
+                status=204,
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                result = await client.firewall.delete_rule("site-1", "rule-1")
+                assert result is True
 
 
 class TestACLAdditional:

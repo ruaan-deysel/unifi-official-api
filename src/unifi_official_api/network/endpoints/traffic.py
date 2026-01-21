@@ -35,7 +35,7 @@ class TrafficEndpoint:
         *,
         offset: int | None = None,
         limit: int | None = None,
-        filter_query: str | None = None,
+        filter_str: str | None = None,
     ) -> list[TrafficMatchingList]:
         """List all traffic matching lists.
 
@@ -43,7 +43,8 @@ class TrafficEndpoint:
             site_id: The site ID.
             offset: Pagination offset.
             limit: Maximum results (max 200).
-            filter_query: Optional filter query string.
+            filter_str: Filter query string using API filter syntax.
+                Example: "type.eq('IP_ADDRESS')" or "name.like('block*')"
 
         Returns:
             List of traffic matching lists.
@@ -53,8 +54,8 @@ class TrafficEndpoint:
             params["offset"] = offset
         if limit is not None:
             params["limit"] = min(limit, 200)
-        if filter_query:
-            params["filter"] = filter_query
+        if filter_str:
+            params["filter"] = filter_str
 
         path = self._client.build_api_path(f"/sites/{site_id}/traffic-matching-lists")
         response = await self._client._get(path, params=params if params else None)

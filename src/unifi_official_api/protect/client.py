@@ -256,6 +256,32 @@ class UniFiProtectClient(BaseUniFiClient):
             return data
         return []
 
+    async def get_host_id(self) -> str:
+        """Get the host ID for WebSocket subscriptions.
+
+        The host ID is the NVR ID, which is required for WebSocket subscriptions.
+        This is useful for establishing real-time event streams.
+
+        Returns:
+            The host ID (NVR ID).
+
+        Raises:
+            ValueError: If NVR info cannot be retrieved.
+
+        Example:
+            ```python
+            # Get host_id for WebSocket subscriptions
+            host_id = await client.get_host_id()
+            site_id = "your-site-id"  # Or get from client.get_sites()
+
+            async with client.websocket.subscribe_events(host_id, site_id) as events:
+                async for event in events:
+                    print(f"Event: {event}")
+            ```
+        """
+        nvr = await self.nvr.get()
+        return nvr.id
+
     async def _get_binary(
         self,
         path: str,

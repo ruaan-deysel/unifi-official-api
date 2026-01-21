@@ -163,27 +163,30 @@ asyncio.run(main())
 | Endpoint | Methods |
 |----------|---------|
 | Sites | list, get |
-| Devices | list, get, restart, adopt, forget, locate, get_statistics |
-| Clients | list, get, block, unblock, reconnect |
-| Networks | list, get, create, update, delete |
+| Devices | list, get, restart, adopt, forget, locate, get_statistics, execute_port_action |
+| Clients | list, get, block, unblock, reconnect, forget, execute_action |
+| Networks | list, get, create, update, delete, get_references |
 | WiFi | list, get, create, update, delete |
-| Firewall | list_policies, get_policy, create_policy, update_policy, delete_policy |
-| Vouchers | list, get, create, revoke |
+| Firewall | list_zones, get_zone, create_zone, update_zone, delete_zone, list_rules, get_rule, create_rule, update_rule, delete_rule |
+| Vouchers | list, get, create, delete, delete_multiple |
 | ACL | list, get, create, update, delete |
-| Traffic | list_matching_lists, get_dpi_categories, get_dpi_applications |
-| Resources | get_wan_interfaces, get_vpn_tunnels, get_radius_profiles |
+| Traffic | list_matching_lists, create_list, update_list, delete_list, get_dpi_categories, get_dpi_applications, get_countries |
+| Resources | get_wan_interfaces, get_vpn_tunnels, get_vpn_servers, get_radius_profiles, get_device_tags |
 
 ### UniFi Protect API
 
 | Endpoint | Methods |
 |----------|---------|
-| Cameras | list, get, update, set_recording_mode, get_snapshot, restart, ptz_move |
-| Sensors | list, get, update, set_status_led, set_motion_sensitivity |
-| Lights | list, get, update, turn_on, turn_off, set_mode, set_brightness |
-| Chimes | list, get, update, set_volume, play |
-| NVR | get, update, restart, set_recording_retention |
+| Cameras | list, get, update, get_snapshot, ptz_patrol_start, ptz_patrol_stop, ptz_goto_preset, create_rtsps_stream, delete_rtsps_stream, create_talkback_session |
+| Sensors | list, get, update |
+| Lights | list, get, update |
+| Chimes | list, get, update |
+| NVR | get, update |
 | Live Views | list, get, create, update, delete |
+| Viewers | list, get, update, set_liveview |
 | Events | list, get, get_thumbnail, get_heatmap, list_motion_events, list_smart_detect_events |
+| Application | get_info, get_files, upload_file, trigger_alarm_webhook |
+| WebSocket | subscribe_devices, subscribe_events |
 
 ## Error Handling
 
