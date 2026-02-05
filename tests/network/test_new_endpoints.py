@@ -1663,3 +1663,1294 @@ class TestACLAdditional:
                 rules = await client.acl.get_all("site-1")
                 # Returns empty since not a list
                 assert rules == []
+
+
+class TestWifiEndpoint:
+    """Tests for WiFi endpoint."""
+
+    @pytest.fixture
+    def auth(self) -> ApiKeyAuth:
+        """Create test auth."""
+        return ApiKeyAuth(api_key="test-api-key")
+
+    async def test_wifi_get_all(self, auth: ApiKeyAuth) -> None:
+        """Test listing WiFi networks."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(
+                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/wifi/broadcasts.*"
+                ),
+                payload={
+                    "data": [
+                        {"id": "wifi-1", "name": "Guest WiFi", "ssid": "Guest", "security": "wpa2"},
+                        {"id": "wifi-2", "name": "Main WiFi", "ssid": "Main", "security": "wpa3"},
+                    ]
+                },
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                wifi_networks = await client.wifi.get_all("site-1")
+                assert len(wifi_networks) == 2
+                assert wifi_networks[0].name == "Guest WiFi"
+                assert wifi_networks[1].ssid == "Main"
+
+    async def test_wifi_get_all_with_params(self, auth: ApiKeyAuth) -> None:
+        """Test listing WiFi networks with pagination and filter."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*wifi/broadcasts\?.*"),
+                payload={"data": [{"id": "wifi-1", "name": "Test WiFi", "ssid": "Test", "security": "wpa2"}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                wifi_networks = await client.wifi.get_all("site-1", offset=10, limit=20, filter_str="test")
+                assert len(wifi_networks) == 1
+
+    async def test_wifi_get_all_empty(self, auth: ApiKeyAuth) -> None:
+        """Test listing WiFi networks with empty response."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*wifi/broadcasts.*"),
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                wifi_networks = await client.wifi.get_all("site-1")
+                assert wifi_networks == []
+
+    async def test_wifi_get_all_none_response(self, auth: ApiKeyAuth) -> None:
+        """Test listing WiFi networks with None response."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*wifi/broadcasts.*"),
+                payload=None,
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                wifi_networks = await client.wifi.get_all("site-1")
+                assert wifi_networks == []
+
+    async def test_wifi_get(self, auth: ApiKeyAuth) -> None:
+        """Test getting a specific WiFi network."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/wifi/broadcasts/wifi-1",
+                payload={"data": {"id": "wifi-1", "name": "Guest WiFi", "ssid": "Guest", "security": "wpa2"}},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                wifi = await client.wifi.get("site-1", "wifi-1")
+                assert wifi.id == "wifi-1"
+                assert wifi.name == "Guest WiFi"
+
+    async def test_wifi_get_list_response(self, auth: ApiKeyAuth) -> None:
+        """Test getting WiFi when response is a list."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/wifi/broadcasts/wifi-1",
+                payload={"data": [{"id": "wifi-1", "name": "Guest WiFi", "ssid": "Guest", "security": "wpa2"}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                wifi = await client.wifi.get("site-1", "wifi-1")
+                assert wifi.id == "wifi-1"
+
+    async def test_wifi_get_not_found(self, auth: ApiKeyAuth) -> None:
+        """Test getting WiFi network that doesn't exist."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/wifi/broadcasts/wifi-999",
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                with pytest.raises(ValueError, match="not found"):
+                    await client.wifi.get("site-1", "wifi-999")
+
+    async def test_wifi_create(self, auth: ApiKeyAuth) -> None:
+        """Test creating a WiFi network."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/wifi/broadcasts",
+                payload={
+                    "data": {
+                        "id": "wifi-new",
+                        "name": "New WiFi",
+                        "ssid": "NewSSID",
+                        "security": "wpa2",
+                        "hidden": False,
+                    }
+                },
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                from unifi_official_api.network.models import WifiSecurity
+
+                wifi = await client.wifi.create(
+                    "site-1", name="New WiFi", ssid="NewSSID", passphrase="password123", security=WifiSecurity.WPA2
+                )
+                assert wifi.id == "wifi-new"
+                assert wifi.name == "New WiFi"
+
+    async def test_wifi_create_with_network_id(self, auth: ApiKeyAuth) -> None:
+        """Test creating WiFi with network_id."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/wifi/broadcasts",
+                payload={"data": {"id": "wifi-new", "name": "New", "ssid": "New", "security": "wpa2", "networkId": "net-1"}},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                from unifi_official_api.network.models import WifiSecurity
+
+                wifi = await client.wifi.create("site-1", name="New", ssid="New", network_id="net-1")
+                assert wifi.id == "wifi-new"
+
+    async def test_wifi_create_failed(self, auth: ApiKeyAuth) -> None:
+        """Test WiFi creation failure."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/wifi/broadcasts",
+                payload=[],  # Empty list response
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                with pytest.raises(ValueError, match="Failed to create"):
+                    await client.wifi.create("site-1", name="New", ssid="New")
+
+    async def test_wifi_update(self, auth: ApiKeyAuth) -> None:
+        """Test updating a WiFi network."""
+        with aioresponses() as m:
+            m.patch(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/wifi/broadcasts/wifi-1",
+                payload={"data": {"id": "wifi-1", "name": "Updated WiFi", "ssid": "Updated", "security": "wpa3"}},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                wifi = await client.wifi.update("site-1", "wifi-1", name="Updated WiFi")
+                assert wifi.name == "Updated WiFi"
+
+    async def test_wifi_update_failed(self, auth: ApiKeyAuth) -> None:
+        """Test WiFi update failure."""
+        with aioresponses() as m:
+            m.patch(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/wifi/broadcasts/wifi-1",
+                payload=[],  # Empty list response
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                with pytest.raises(ValueError, match="Failed to update"):
+                    await client.wifi.update("site-1", "wifi-1", name="Updated")
+
+    async def test_wifi_delete(self, auth: ApiKeyAuth) -> None:
+        """Test deleting a WiFi network."""
+        with aioresponses() as m:
+            m.delete(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/wifi/broadcasts/wifi-1",
+                payload={},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                result = await client.wifi.delete("site-1", "wifi-1")
+                assert result is True
+
+
+class TestNetworksEndpoint:
+    """Tests for Networks endpoint."""
+
+    @pytest.fixture
+    def auth(self) -> ApiKeyAuth:
+        """Create test auth."""
+        return ApiKeyAuth(api_key="test-api-key")
+
+    async def test_networks_get_all(self, auth: ApiKeyAuth) -> None:
+        """Test listing networks."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*sites/site-1/networks.*"),
+                payload={
+                    "data": [
+                        {"id": "net-1", "name": "Corporate", "type": "corporate"},
+                        {"id": "net-2", "name": "WAN", "type": "wan"},
+                    ]
+                },
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                networks = await client.networks.get_all("site-1")
+                assert len(networks) == 2
+                assert networks[0].name == "Corporate"
+
+    async def test_networks_get_all_with_params(self, auth: ApiKeyAuth) -> None:
+        """Test listing networks with pagination."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*networks\?.*"),
+                payload={"data": [{"id": "net-1", "name": "Corporate", "type": "corporate"}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                networks = await client.networks.get_all("site-1", offset=5, limit=10, filter_str="corporate")
+                assert len(networks) == 1
+
+    async def test_networks_get_all_empty(self, auth: ApiKeyAuth) -> None:
+        """Test listing networks with empty response."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*networks.*"),
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                networks = await client.networks.get_all("site-1")
+                assert networks == []
+
+    async def test_networks_get(self, auth: ApiKeyAuth) -> None:
+        """Test getting a specific network."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/networks/net-1",
+                payload={"data": {"id": "net-1", "name": "Corporate", "type": "corporate"}},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                network = await client.networks.get("site-1", "net-1")
+                assert network.id == "net-1"
+                assert network.name == "Corporate"
+
+    async def test_networks_get_list_response(self, auth: ApiKeyAuth) -> None:
+        """Test getting network when response is a list."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/networks/net-1",
+                payload={"data": [{"id": "net-1", "name": "Corporate", "type": "corporate"}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                network = await client.networks.get("site-1", "net-1")
+                assert network.id == "net-1"
+
+    async def test_networks_get_not_found(self, auth: ApiKeyAuth) -> None:
+        """Test getting network that doesn't exist."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/networks/net-999",
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                with pytest.raises(ValueError, match="not found"):
+                    await client.networks.get("site-1", "net-999")
+
+    async def test_networks_create(self, auth: ApiKeyAuth) -> None:
+        """Test creating a network."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/networks",
+                payload={"data": {"id": "net-new", "name": "New Network", "type": "guest"}},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                from unifi_official_api.network.models import NetworkType
+
+                network = await client.networks.create("site-1", name="New Network", type=NetworkType.GUEST)
+                assert network.id == "net-new"
+                assert network.name == "New Network"
+
+    async def test_networks_create_failed(self, auth: ApiKeyAuth) -> None:
+        """Test network creation failure."""
+        with aioresponses() as m:
+            m.post(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/networks",
+                payload=[],  # Empty list response
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                from unifi_official_api.network.models import NetworkType
+
+                with pytest.raises(ValueError, match="Failed to create"):
+                    await client.networks.create("site-1", name="New", type=NetworkType.CORPORATE)
+
+    async def test_networks_update(self, auth: ApiKeyAuth) -> None:
+        """Test updating a network."""
+        with aioresponses() as m:
+            m.patch(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/networks/net-1",
+                payload={"data": {"id": "net-1", "name": "Updated Network", "type": "corporate"}},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                network = await client.networks.update("site-1", "net-1", name="Updated Network")
+                assert network.name == "Updated Network"
+
+    async def test_networks_update_failed(self, auth: ApiKeyAuth) -> None:
+        """Test network update failure."""
+        with aioresponses() as m:
+            m.patch(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/networks/net-1",
+                payload=[],  # Empty list response
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                with pytest.raises(ValueError, match="Failed to update"):
+                    await client.networks.update("site-1", "net-1", name="Updated")
+
+    async def test_networks_delete(self, auth: ApiKeyAuth) -> None:
+        """Test deleting a network."""
+        with aioresponses() as m:
+            m.delete(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/networks/net-1",
+                payload={},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                result = await client.networks.delete("site-1", "net-1")
+                assert result is True
+
+    async def test_networks_get_references(self, auth: ApiKeyAuth) -> None:
+        """Test getting network references."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/networks/net-1/references",
+                payload={"data": {"devices": ["dev-1"], "wifi": ["wifi-1"]}},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                refs = await client.networks.get_references("site-1", "net-1")
+                assert refs == {"devices": ["dev-1"], "wifi": ["wifi-1"]}
+
+    async def test_networks_get_references_empty(self, auth: ApiKeyAuth) -> None:
+        """Test getting network references with empty/invalid response."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/networks/net-1/references",
+                payload=[],  # Empty list response returns empty dict
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                refs = await client.networks.get_references("site-1", "net-1")
+                assert refs == {}
+
+
+class TestSitesEndpoint:
+    """Tests for Sites endpoint."""
+
+    @pytest.fixture
+    def auth(self) -> ApiKeyAuth:
+        """Create test auth."""
+        return ApiKeyAuth(api_key="test-api-key")
+
+    async def test_sites_get_all(self, auth: ApiKeyAuth) -> None:
+        """Test listing sites."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*sites.*"),
+                payload={
+                    "data": [
+                        {"id": "site-1", "name": "Default", "desc": "Default site"},
+                        {"id": "site-2", "name": "Branch", "desc": "Branch office"},
+                    ]
+                },
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                sites = await client.sites.get_all()
+                assert len(sites) == 2
+                assert sites[0].name == "Default"
+
+    async def test_sites_get_all_with_params(self, auth: ApiKeyAuth) -> None:
+        """Test listing sites with pagination."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*sites\?.*"),
+                payload={"data": [{"id": "site-2", "name": "Branch", "desc": "Branch office"}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                sites = await client.sites.get_all(offset=1, limit=5, filter_str="branch")
+                assert len(sites) == 1
+
+    async def test_sites_get_all_empty(self, auth: ApiKeyAuth) -> None:
+        """Test listing sites with empty response."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*sites.*"),
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                sites = await client.sites.get_all()
+                assert sites == []
+
+    async def test_sites_get(self, auth: ApiKeyAuth) -> None:
+        """Test getting a specific site."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1",
+                payload={"data": {"id": "site-1", "name": "Default", "desc": "Default site"}},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                site = await client.sites.get("site-1")
+                assert site.id == "site-1"
+                assert site.name == "Default"
+
+    async def test_sites_get_list_response(self, auth: ApiKeyAuth) -> None:
+        """Test getting site when response is a list."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1",
+                payload={"data": [{"id": "site-1", "name": "Default", "desc": "Default site"}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                site = await client.sites.get("site-1")
+                assert site.id == "site-1"
+
+    async def test_sites_get_not_found(self, auth: ApiKeyAuth) -> None:
+        """Test getting site that doesn't exist."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-999",
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                with pytest.raises(ValueError, match="not found"):
+                    await client.sites.get("site-999")
+
+
+class TestResourcesComprehensive:
+    """Comprehensive tests for resources endpoint."""
+
+    @pytest.fixture
+    def auth(self) -> ApiKeyAuth:
+        """Create test auth."""
+        return ApiKeyAuth(api_key="test-api-key")
+
+    # WAN Interfaces Tests
+
+    async def test_wan_interfaces_get_all(self, auth: ApiKeyAuth) -> None:
+        """Test listing WAN interfaces."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*sites/site-1/wans.*"),
+                payload={
+                    "data": [
+                        {
+                            "id": "wan-1",
+                            "name": "WAN1",
+                            "status": "UP",
+                            "ipAddress": "1.2.3.4",
+                            "isPrimary": True,
+                            "isConnected": True,
+                        },
+                        {
+                            "id": "wan-2",
+                            "name": "WAN2",
+                            "status": "DOWN",
+                            "ipAddress": "5.6.7.8",
+                            "isPrimary": False,
+                            "isConnected": False,
+                        },
+                    ]
+                },
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                wan_interfaces = await client.resources.get_wan_interfaces("site-1")
+                assert len(wan_interfaces) == 2
+                assert wan_interfaces[0].id == "wan-1"
+                assert wan_interfaces[0].name == "WAN1"
+                assert wan_interfaces[0].is_primary is True
+                assert wan_interfaces[1].id == "wan-2"
+                assert wan_interfaces[1].is_connected is False
+
+    async def test_wan_interfaces_get_all_with_offset(self, auth: ApiKeyAuth) -> None:
+        """Test listing WAN interfaces with offset parameter."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*wans\?.*offset=10.*"),
+                payload={"data": [{"id": "wan-1", "name": "WAN1"}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                wan_interfaces = await client.resources.get_wan_interfaces("site-1", offset=10)
+                assert len(wan_interfaces) == 1
+
+    async def test_wan_interfaces_get_all_with_limit(self, auth: ApiKeyAuth) -> None:
+        """Test listing WAN interfaces with limit parameter."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*wans\?.*limit=5.*"),
+                payload={"data": [{"id": "wan-1", "name": "WAN1"}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                wan_interfaces = await client.resources.get_wan_interfaces("site-1", limit=5)
+                assert len(wan_interfaces) == 1
+
+    async def test_wan_interfaces_get_all_with_filter(self, auth: ApiKeyAuth) -> None:
+        """Test listing WAN interfaces with filter parameter."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*wans\?.*filter=.*"),
+                payload={"data": [{"id": "wan-1", "name": "WAN1"}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                wan_interfaces = await client.resources.get_wan_interfaces("site-1", filter_str="status==UP")
+                assert len(wan_interfaces) == 1
+
+    async def test_wan_interfaces_get_all_with_all_params(self, auth: ApiKeyAuth) -> None:
+        """Test listing WAN interfaces with all parameters."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*wans\?.*"),
+                payload={"data": [{"id": "wan-1", "name": "WAN1"}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                wan_interfaces = await client.resources.get_wan_interfaces(
+                    "site-1", offset=10, limit=20, filter_str="status==UP"
+                )
+                assert len(wan_interfaces) == 1
+
+    async def test_wan_interfaces_get_all_empty(self, auth: ApiKeyAuth) -> None:
+        """Test listing WAN interfaces with empty response."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*wans.*"),
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                wan_interfaces = await client.resources.get_wan_interfaces("site-1")
+                assert wan_interfaces == []
+
+    async def test_wan_interfaces_get_all_none_response(self, auth: ApiKeyAuth) -> None:
+        """Test listing WAN interfaces with None response."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*wans.*"),
+                payload=None,
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                wan_interfaces = await client.resources.get_wan_interfaces("site-1")
+                assert wan_interfaces == []
+
+    async def test_wan_interfaces_get_all_raw_list(self, auth: ApiKeyAuth) -> None:
+        """Test listing WAN interfaces with raw list response."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*wans.*"),
+                payload=[{"id": "wan-1", "name": "WAN1"}],
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                wan_interfaces = await client.resources.get_wan_interfaces("site-1")
+                assert len(wan_interfaces) == 1
+                assert wan_interfaces[0].id == "wan-1"
+
+    # VPN Tunnels Tests
+
+    async def test_vpn_tunnels_get_all(self, auth: ApiKeyAuth) -> None:
+        """Test listing VPN tunnels."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*vpn/tunnels.*"),
+                payload={
+                    "data": [
+                        {
+                            "id": "tunnel-1",
+                            "name": "Site A to Site B",
+                            "status": "UP",
+                            "localNetwork": "192.168.1.0/24",
+                            "remoteNetwork": "192.168.2.0/24",
+                            "remoteIp": "203.0.113.1",
+                        },
+                        {
+                            "id": "tunnel-2",
+                            "name": "Site B to Site C",
+                            "status": "DOWN",
+                        },
+                    ]
+                },
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                tunnels = await client.resources.get_vpn_tunnels("site-1")
+                assert len(tunnels) == 2
+                assert tunnels[0].id == "tunnel-1"
+                assert tunnels[0].name == "Site A to Site B"
+                assert tunnels[1].status.value == "DOWN"
+
+    async def test_vpn_tunnels_get_all_with_offset(self, auth: ApiKeyAuth) -> None:
+        """Test listing VPN tunnels with offset parameter."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*vpn/tunnels\?.*offset=5.*"),
+                payload={"data": [{"id": "tunnel-1", "name": "Test"}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                tunnels = await client.resources.get_vpn_tunnels("site-1", offset=5)
+                assert len(tunnels) == 1
+
+    async def test_vpn_tunnels_get_all_with_limit(self, auth: ApiKeyAuth) -> None:
+        """Test listing VPN tunnels with limit parameter."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*vpn/tunnels\?.*limit=10.*"),
+                payload={"data": [{"id": "tunnel-1", "name": "Test"}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                tunnels = await client.resources.get_vpn_tunnels("site-1", limit=10)
+                assert len(tunnels) == 1
+
+    async def test_vpn_tunnels_get_all_with_filter(self, auth: ApiKeyAuth) -> None:
+        """Test listing VPN tunnels with filter parameter."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*vpn/tunnels\?.*filter=.*"),
+                payload={"data": [{"id": "tunnel-1", "name": "Test"}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                tunnels = await client.resources.get_vpn_tunnels("site-1", filter_str="status==UP")
+                assert len(tunnels) == 1
+
+    async def test_vpn_tunnels_get_all_with_all_params(self, auth: ApiKeyAuth) -> None:
+        """Test listing VPN tunnels with all parameters."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*vpn/tunnels\?.*"),
+                payload={"data": [{"id": "tunnel-1", "name": "Test"}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                tunnels = await client.resources.get_vpn_tunnels(
+                    "site-1", offset=5, limit=15, filter_str="status==UP"
+                )
+                assert len(tunnels) == 1
+
+    async def test_vpn_tunnels_get_all_empty(self, auth: ApiKeyAuth) -> None:
+        """Test listing VPN tunnels with empty response."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*vpn/tunnels.*"),
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                tunnels = await client.resources.get_vpn_tunnels("site-1")
+                assert tunnels == []
+
+    async def test_vpn_tunnels_get_all_none_response(self, auth: ApiKeyAuth) -> None:
+        """Test listing VPN tunnels with None response."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*vpn/tunnels.*"),
+                payload=None,
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                tunnels = await client.resources.get_vpn_tunnels("site-1")
+                assert tunnels == []
+
+    async def test_vpn_tunnels_get_all_raw_list(self, auth: ApiKeyAuth) -> None:
+        """Test listing VPN tunnels with raw list response."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*vpn/tunnels.*"),
+                payload=[{"id": "tunnel-1", "name": "Test"}],
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                tunnels = await client.resources.get_vpn_tunnels("site-1")
+                assert len(tunnels) == 1
+                assert tunnels[0].id == "tunnel-1"
+
+    # VPN Servers Tests
+
+    async def test_vpn_servers_get_all(self, auth: ApiKeyAuth) -> None:
+        """Test listing VPN servers."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*vpn/servers.*"),
+                payload={
+                    "data": [
+                        {
+                            "id": "server-1",
+                            "name": "WireGuard VPN",
+                            "type": "WIREGUARD",
+                            "enabled": True,
+                            "port": 51820,
+                            "network": "10.8.0.0/24",
+                        },
+                        {
+                            "id": "server-2",
+                            "name": "OpenVPN Server",
+                            "type": "OPENVPN",
+                            "enabled": False,
+                            "port": 1194,
+                        },
+                    ]
+                },
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                servers = await client.resources.get_vpn_servers("site-1")
+                assert len(servers) == 2
+                assert servers[0].id == "server-1"
+                assert servers[0].name == "WireGuard VPN"
+                assert servers[0].enabled is True
+                assert servers[1].type == "OPENVPN"
+
+    async def test_vpn_servers_get_all_with_offset(self, auth: ApiKeyAuth) -> None:
+        """Test listing VPN servers with offset parameter."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*vpn/servers\?.*offset=3.*"),
+                payload={"data": [{"id": "server-1", "name": "Test", "enabled": True}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                servers = await client.resources.get_vpn_servers("site-1", offset=3)
+                assert len(servers) == 1
+
+    async def test_vpn_servers_get_all_with_limit(self, auth: ApiKeyAuth) -> None:
+        """Test listing VPN servers with limit parameter."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*vpn/servers\?.*limit=8.*"),
+                payload={"data": [{"id": "server-1", "name": "Test", "enabled": True}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                servers = await client.resources.get_vpn_servers("site-1", limit=8)
+                assert len(servers) == 1
+
+    async def test_vpn_servers_get_all_with_filter(self, auth: ApiKeyAuth) -> None:
+        """Test listing VPN servers with filter parameter."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*vpn/servers\?.*filter=.*"),
+                payload={"data": [{"id": "server-1", "name": "Test", "enabled": True}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                servers = await client.resources.get_vpn_servers("site-1", filter_str="enabled==true")
+                assert len(servers) == 1
+
+    async def test_vpn_servers_get_all_with_all_params(self, auth: ApiKeyAuth) -> None:
+        """Test listing VPN servers with all parameters."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*vpn/servers\?.*"),
+                payload={"data": [{"id": "server-1", "name": "Test", "enabled": True}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                servers = await client.resources.get_vpn_servers(
+                    "site-1", offset=3, limit=12, filter_str="enabled==true"
+                )
+                assert len(servers) == 1
+
+    async def test_vpn_servers_get_all_empty(self, auth: ApiKeyAuth) -> None:
+        """Test listing VPN servers with empty response."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*vpn/servers.*"),
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                servers = await client.resources.get_vpn_servers("site-1")
+                assert servers == []
+
+    async def test_vpn_servers_get_all_none_response(self, auth: ApiKeyAuth) -> None:
+        """Test listing VPN servers with None response."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*vpn/servers.*"),
+                payload=None,
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                servers = await client.resources.get_vpn_servers("site-1")
+                assert servers == []
+
+    async def test_vpn_servers_get_all_raw_list(self, auth: ApiKeyAuth) -> None:
+        """Test listing VPN servers with raw list response."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*vpn/servers.*"),
+                payload=[{"id": "server-1", "name": "Test", "enabled": True}],
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                servers = await client.resources.get_vpn_servers("site-1")
+                assert len(servers) == 1
+                assert servers[0].id == "server-1"
+
+    # RADIUS Profiles Tests
+
+    async def test_radius_profiles_get_all(self, auth: ApiKeyAuth) -> None:
+        """Test listing RADIUS profiles."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*radius/profiles.*"),
+                payload={
+                    "data": [
+                        {
+                            "id": "radius-1",
+                            "name": "Primary RADIUS",
+                            "authServer": "radius1.example.com",
+                            "authPort": 1812,
+                            "acctServer": "radius1.example.com",
+                            "acctPort": 1813,
+                            "enabled": True,
+                        },
+                        {
+                            "id": "radius-2",
+                            "name": "Secondary RADIUS",
+                            "authServer": "radius2.example.com",
+                            "enabled": False,
+                        },
+                    ]
+                },
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                profiles = await client.resources.get_radius_profiles("site-1")
+                assert len(profiles) == 2
+                assert profiles[0].id == "radius-1"
+                assert profiles[0].name == "Primary RADIUS"
+                assert profiles[0].auth_server == "radius1.example.com"
+                assert profiles[0].enabled is True
+                assert profiles[1].enabled is False
+
+    async def test_radius_profiles_get_all_with_offset(self, auth: ApiKeyAuth) -> None:
+        """Test listing RADIUS profiles with offset parameter."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*radius/profiles\?.*offset=2.*"),
+                payload={"data": [{"id": "radius-1", "name": "Test"}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                profiles = await client.resources.get_radius_profiles("site-1", offset=2)
+                assert len(profiles) == 1
+
+    async def test_radius_profiles_get_all_with_limit(self, auth: ApiKeyAuth) -> None:
+        """Test listing RADIUS profiles with limit parameter."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*radius/profiles\?.*limit=6.*"),
+                payload={"data": [{"id": "radius-1", "name": "Test"}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                profiles = await client.resources.get_radius_profiles("site-1", limit=6)
+                assert len(profiles) == 1
+
+    async def test_radius_profiles_get_all_with_filter(self, auth: ApiKeyAuth) -> None:
+        """Test listing RADIUS profiles with filter parameter."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*radius/profiles\?.*filter=.*"),
+                payload={"data": [{"id": "radius-1", "name": "Test"}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                profiles = await client.resources.get_radius_profiles("site-1", filter_str="enabled==true")
+                assert len(profiles) == 1
+
+    async def test_radius_profiles_get_all_with_all_params(self, auth: ApiKeyAuth) -> None:
+        """Test listing RADIUS profiles with all parameters."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*radius/profiles\?.*"),
+                payload={"data": [{"id": "radius-1", "name": "Test"}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                profiles = await client.resources.get_radius_profiles(
+                    "site-1", offset=2, limit=9, filter_str="enabled==true"
+                )
+                assert len(profiles) == 1
+
+    async def test_radius_profiles_get_all_empty(self, auth: ApiKeyAuth) -> None:
+        """Test listing RADIUS profiles with empty response."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*radius/profiles.*"),
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                profiles = await client.resources.get_radius_profiles("site-1")
+                assert profiles == []
+
+    async def test_radius_profiles_get_all_none_response(self, auth: ApiKeyAuth) -> None:
+        """Test listing RADIUS profiles with None response."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*radius/profiles.*"),
+                payload=None,
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                profiles = await client.resources.get_radius_profiles("site-1")
+                assert profiles == []
+
+    async def test_radius_profiles_get_all_raw_list(self, auth: ApiKeyAuth) -> None:
+        """Test listing RADIUS profiles with raw list response."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*radius/profiles.*"),
+                payload=[{"id": "radius-1", "name": "Test"}],
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                profiles = await client.resources.get_radius_profiles("site-1")
+                assert len(profiles) == 1
+                assert profiles[0].id == "radius-1"
+
+    # Device Tags Tests
+
+    async def test_device_tags_get_all(self, auth: ApiKeyAuth) -> None:
+        """Test listing device tags."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*device-tags.*"),
+                payload={
+                    "data": [
+                        {
+                            "id": "tag-1",
+                            "name": "Production",
+                            "color": "#FF0000",
+                            "deviceCount": 15,
+                        },
+                        {
+                            "id": "tag-2",
+                            "name": "Staging",
+                            "color": "#00FF00",
+                            "deviceCount": 5,
+                        },
+                    ]
+                },
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                tags = await client.resources.get_device_tags("site-1")
+                assert len(tags) == 2
+                assert tags[0].id == "tag-1"
+                assert tags[0].name == "Production"
+                assert tags[0].color == "#FF0000"
+                assert tags[0].device_count == 15
+                assert tags[1].device_count == 5
+
+    async def test_device_tags_get_all_with_offset(self, auth: ApiKeyAuth) -> None:
+        """Test listing device tags with offset parameter."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*device-tags\?.*offset=1.*"),
+                payload={"data": [{"id": "tag-1", "name": "Test", "deviceCount": 0}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                tags = await client.resources.get_device_tags("site-1", offset=1)
+                assert len(tags) == 1
+
+    async def test_device_tags_get_all_with_limit(self, auth: ApiKeyAuth) -> None:
+        """Test listing device tags with limit parameter."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*device-tags\?.*limit=3.*"),
+                payload={"data": [{"id": "tag-1", "name": "Test", "deviceCount": 0}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                tags = await client.resources.get_device_tags("site-1", limit=3)
+                assert len(tags) == 1
+
+    async def test_device_tags_get_all_with_filter(self, auth: ApiKeyAuth) -> None:
+        """Test listing device tags with filter parameter."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*device-tags\?.*filter=.*"),
+                payload={"data": [{"id": "tag-1", "name": "Test", "deviceCount": 0}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                tags = await client.resources.get_device_tags("site-1", filter_str="name==Production")
+                assert len(tags) == 1
+
+    async def test_device_tags_get_all_with_all_params(self, auth: ApiKeyAuth) -> None:
+        """Test listing device tags with all parameters."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*device-tags\?.*"),
+                payload={"data": [{"id": "tag-1", "name": "Test", "deviceCount": 0}]},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                tags = await client.resources.get_device_tags(
+                    "site-1", offset=1, limit=7, filter_str="name==Production"
+                )
+                assert len(tags) == 1
+
+    async def test_device_tags_get_all_empty(self, auth: ApiKeyAuth) -> None:
+        """Test listing device tags with empty response."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*device-tags.*"),
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                tags = await client.resources.get_device_tags("site-1")
+                assert tags == []
+
+    async def test_device_tags_get_all_none_response(self, auth: ApiKeyAuth) -> None:
+        """Test listing device tags with None response."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*device-tags.*"),
+                payload=None,
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                tags = await client.resources.get_device_tags("site-1")
+                assert tags == []
+
+    async def test_device_tags_get_all_raw_list(self, auth: ApiKeyAuth) -> None:
+        """Test listing device tags with raw list response."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*device-tags.*"),
+                payload=[{"id": "tag-1", "name": "Test", "deviceCount": 0}],
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                tags = await client.resources.get_device_tags("site-1")
+                assert len(tags) == 1
+                assert tags[0].id == "tag-1"
+
+    async def test_wan_interfaces_invalid_data_format(self, auth: ApiKeyAuth) -> None:
+        """Test listing WAN interfaces with invalid data format (not a list)."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*wans.*"),
+                payload={"data": {"id": "wan-1"}},  # Data is a dict, not a list
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                wan_interfaces = await client.resources.get_wan_interfaces("site-1")
+                assert wan_interfaces == []
+
+    async def test_vpn_tunnels_invalid_data_format(self, auth: ApiKeyAuth) -> None:
+        """Test listing VPN tunnels with invalid data format (not a list)."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*vpn/tunnels.*"),
+                payload={"data": {"id": "tunnel-1"}},  # Data is a dict, not a list
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                tunnels = await client.resources.get_vpn_tunnels("site-1")
+                assert tunnels == []
+
+    async def test_vpn_servers_invalid_data_format(self, auth: ApiKeyAuth) -> None:
+        """Test listing VPN servers with invalid data format (not a list)."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*vpn/servers.*"),
+                payload={"data": {"id": "server-1"}},  # Data is a dict, not a list
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                servers = await client.resources.get_vpn_servers("site-1")
+                assert servers == []
+
+    async def test_radius_profiles_invalid_data_format(self, auth: ApiKeyAuth) -> None:
+        """Test listing RADIUS profiles with invalid data format (not a list)."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*radius/profiles.*"),
+                payload={"data": {"id": "radius-1"}},  # Data is a dict, not a list
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                profiles = await client.resources.get_radius_profiles("site-1")
+                assert profiles == []
+
+    async def test_device_tags_invalid_data_format(self, auth: ApiKeyAuth) -> None:
+        """Test listing device tags with invalid data format (not a list)."""
+        with aioresponses() as m:
+            m.get(
+                re.compile(r".*device-tags.*"),
+                payload={"data": {"id": "tag-1"}},  # Data is a dict, not a list
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
+            ) as client:
+                tags = await client.resources.get_device_tags("site-1")
+                assert tags == []
