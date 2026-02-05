@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class CameraType(str, Enum):
+class CameraType(StrEnum):
     """Types of UniFi cameras."""
 
     UVC_G3 = "UVC G3"
@@ -33,7 +33,7 @@ class CameraType(str, Enum):
     UNKNOWN = "Unknown"
 
 
-class CameraState(str, Enum):
+class CameraState(StrEnum):
     """Camera connection states."""
 
     CONNECTED = "CONNECTED"
@@ -44,7 +44,7 @@ class CameraState(str, Enum):
     UNKNOWN = "UNKNOWN"
 
 
-class RecordingMode(str, Enum):
+class RecordingMode(StrEnum):
     """Recording modes for cameras."""
 
     ALWAYS = "always"
@@ -54,7 +54,7 @@ class RecordingMode(str, Enum):
     NEVER = "never"
 
 
-class VideoMode(str, Enum):
+class VideoMode(StrEnum):
     """Video modes for cameras."""
 
     DEFAULT = "default"

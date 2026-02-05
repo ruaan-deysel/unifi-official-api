@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 
-class TrafficMatchingType(str, Enum):
+class TrafficMatchingType(StrEnum):
     """Traffic matching list type."""
 
     IP_ADDRESS = "IP_ADDRESS"
@@ -17,7 +17,7 @@ class TrafficMatchingType(str, Enum):
     REGION = "REGION"
 
 
-class MetadataOrigin(str, Enum):
+class MetadataOrigin(StrEnum):
     """Metadata origin type."""
 
     USER_DEFINED = "USER_DEFINED"

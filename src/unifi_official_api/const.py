@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from typing import Final
 
 from ._version import __version__
 
 
-class ConnectionType(str, Enum):
+class ConnectionType(StrEnum):
     """Connection type for UniFi API access.
 
     LOCAL: Direct connection to the UniFi console (e.g., https://192.168.1.1)

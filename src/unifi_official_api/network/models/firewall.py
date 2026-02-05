@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
@@ -18,7 +18,7 @@ class FirewallZone(BaseModel):
     model_config = {"populate_by_name": True, "extra": "allow"}
 
 
-class FirewallAction(str, Enum):
+class FirewallAction(StrEnum):
     """Firewall rule actions."""
 
     ACCEPT = "accept"
@@ -26,7 +26,7 @@ class FirewallAction(str, Enum):
     REJECT = "reject"
 
 
-class FirewallProtocol(str, Enum):
+class FirewallProtocol(StrEnum):
     """Firewall protocols."""
 
     ALL = "all"

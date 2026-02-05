@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 
-class ClientType(str, Enum):
+class ClientType(StrEnum):
     """Types of network clients.
 
     The API returns either uppercase (WIRED/WIRELESS) or lowercase (wired/wireless).

@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 
-class WANStatus(str, Enum):
+class WANStatus(StrEnum):
     """WAN interface status."""
 
     UP = "UP"
@@ -36,7 +36,7 @@ class WANInterface(BaseModel):
     model_config = {"populate_by_name": True, "extra": "allow"}
 
 
-class VPNTunnelStatus(str, Enum):
+class VPNTunnelStatus(StrEnum):
     """VPN tunnel status."""
 
     UP = "UP"
@@ -59,7 +59,7 @@ class VPNTunnel(BaseModel):
     model_config = {"populate_by_name": True, "extra": "allow"}
 
 
-class VPNServerType(str, Enum):
+class VPNServerType(StrEnum):
     """VPN server type."""
 
     WIREGUARD = "WIREGUARD"
