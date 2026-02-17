@@ -153,3 +153,111 @@ class TestSiteModel:
         assert site.name == "Main Office"
         assert site.device_count == 25
         assert site.client_count == 100
+
+
+class TestDNSPolicyModel:
+    """Tests for DNS Policy model."""
+
+    def test_create_dns_policy(self) -> None:
+        """Test creating a DNS policy from dict."""
+        from unifi_official_api.network.models.dns import DNSPolicy, DNSRecordType
+
+        data = {
+            "id": "dns-1",
+            "type": "A_RECORD",
+            "enabled": True,
+            "domain": "test.local",
+            "ipv4Address": "192.168.1.100",
+            "ttlSeconds": 300,
+        }
+        policy = DNSPolicy.model_validate(data)
+        assert policy.id == "dns-1"
+        assert policy.type == DNSRecordType.A_RECORD
+        assert policy.enabled is True
+        assert policy.domain == "test.local"
+        assert policy.ipv4_address == "192.168.1.100"
+        assert policy.ttl_seconds == 300
+
+    def test_dns_policy_with_metadata(self) -> None:
+        """Test DNS policy with metadata."""
+        from unifi_official_api.network.models.dns import DNSPolicy
+
+        data = {
+            "id": "dns-2",
+            "type": "CNAME_RECORD",
+            "enabled": False,
+            "domain": "alias.local",
+            "metadata": {"origin": "USER_DEFINED"},
+        }
+        policy = DNSPolicy.model_validate(data)
+        assert policy.metadata is not None
+        assert policy.metadata.origin == "USER_DEFINED"
+
+    def test_dns_policy_extra_fields(self) -> None:
+        """Test DNS policy allows extra fields."""
+        from unifi_official_api.network.models.dns import DNSPolicy
+
+        data = {
+            "id": "dns-3",
+            "type": "A_RECORD",
+            "enabled": True,
+            "domain": "extra.local",
+            "unknownField": "value",
+        }
+        policy = DNSPolicy.model_validate(data)
+        assert policy.id == "dns-3"
+
+
+class TestFirewallPolicyOrderingModel:
+    """Tests for FirewallPolicyOrdering model."""
+
+    def test_create_ordering(self) -> None:
+        """Test creating a firewall policy ordering from dict."""
+        from unifi_official_api.network.models.firewall import FirewallPolicyOrdering
+
+        data = {
+            "orderedFirewallPolicyIds": {
+                "beforeSystemDefined": ["p-1", "p-2"],
+                "afterSystemDefined": ["p-3"],
+            }
+        }
+        ordering = FirewallPolicyOrdering.model_validate(data)
+        assert ordering.ordered_firewall_policy_ids.before_system_defined == [
+            "p-1",
+            "p-2",
+        ]
+        assert ordering.ordered_firewall_policy_ids.after_system_defined == ["p-3"]
+
+    def test_ordering_empty_lists(self) -> None:
+        """Test ordering with empty lists."""
+        from unifi_official_api.network.models.firewall import FirewallPolicyOrdering
+
+        data = {
+            "orderedFirewallPolicyIds": {
+                "beforeSystemDefined": [],
+                "afterSystemDefined": [],
+            }
+        }
+        ordering = FirewallPolicyOrdering.model_validate(data)
+        assert ordering.ordered_firewall_policy_ids.before_system_defined == []
+        assert ordering.ordered_firewall_policy_ids.after_system_defined == []
+
+
+class TestACLRuleOrderingModel:
+    """Tests for ACLRuleOrdering model."""
+
+    def test_create_ordering(self) -> None:
+        """Test creating an ACL rule ordering from dict."""
+        from unifi_official_api.network.models.acl import ACLRuleOrdering
+
+        data = {"orderedAclRuleIds": ["acl-1", "acl-2", "acl-3"]}
+        ordering = ACLRuleOrdering.model_validate(data)
+        assert ordering.ordered_acl_rule_ids == ["acl-1", "acl-2", "acl-3"]
+
+    def test_ordering_empty(self) -> None:
+        """Test ACL ordering with empty list."""
+        from unifi_official_api.network.models.acl import ACLRuleOrdering
+
+        data = {"orderedAclRuleIds": []}
+        ordering = ACLRuleOrdering.model_validate(data)
+        assert ordering.ordered_acl_rule_ids == []

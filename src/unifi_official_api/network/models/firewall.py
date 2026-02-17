@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -22,8 +23,19 @@ class FirewallAction(str, Enum):
     """Firewall rule actions."""
 
     ACCEPT = "accept"
+    ALLOW = "ALLOW"
     DROP = "drop"
     REJECT = "reject"
+    DENY = "DENY"
+
+
+class FirewallActionConfig(BaseModel):
+    """Firewall action configuration (structured format from API v10+)."""
+
+    type: str = Field(description="Action type (e.g. ALLOW, DENY)")
+    allow_return_traffic: bool | None = Field(default=None, alias="allowReturnTraffic")
+
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
 
 class FirewallProtocol(str, Enum):
@@ -43,8 +55,11 @@ class FirewallRule(BaseModel):
     name: str
     site_id: str | None = Field(default=None, alias="siteId")
     enabled: bool = True
-    action: FirewallAction = FirewallAction.DROP
-    protocol: FirewallProtocol = FirewallProtocol.ALL
+    action: FirewallActionConfig | str = Field(
+        default="drop",
+        description="Action - either a string or structured config object",
+    )
+    protocol: str | None = Field(default=None)
     source_zone_id: str | None = Field(default=None, alias="sourceZoneId")
     destination_zone_id: str | None = Field(default=None, alias="destinationZoneId")
     source_address: str | None = Field(default=None, alias="sourceAddress")
@@ -53,5 +68,33 @@ class FirewallRule(BaseModel):
     destination_port: str | None = Field(default=None, alias="destinationPort")
     index: int | None = None
     logging: bool = False
+
+    model_config = {"populate_by_name": True, "extra": "allow"}
+
+    @property
+    def action_type(self) -> str:
+        """Get the action type as a string regardless of format.
+
+        Returns:
+            The action type string (e.g., 'ALLOW', 'DENY', 'drop').
+        """
+        if isinstance(self.action, FirewallActionConfig):
+            return self.action.type
+        return str(self.action)
+
+
+class OrderedFirewallPolicyIds(BaseModel):
+    """Ordered firewall policy IDs, split around system-defined rules."""
+
+    before_system_defined: list[str] = Field(default_factory=list, alias="beforeSystemDefined")
+    after_system_defined: list[str] = Field(default_factory=list, alias="afterSystemDefined")
+
+    model_config = {"populate_by_name": True, "extra": "allow"}
+
+
+class FirewallPolicyOrdering(BaseModel):
+    """Model representing the ordering of user-defined firewall policies."""
+
+    ordered_firewall_policy_ids: OrderedFirewallPolicyIds = Field(alias="orderedFirewallPolicyIds")
 
     model_config = {"populate_by_name": True, "extra": "allow"}

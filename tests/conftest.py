@@ -151,4 +151,5 @@ def sample_sensor() -> dict[str, Any]:
         "isConnected": True,
         "isOpened": False,
         "batteryLevel": 95,
+        "batteryStatus": {"percentage": 95, "isLow": False},
     }

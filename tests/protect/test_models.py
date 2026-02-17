@@ -74,12 +74,16 @@ class TestSensorModel:
             "isConnected": True,
             "isOpened": False,
             "batteryLevel": 85,
+            "batteryStatus": {"percentage": 85, "isLow": False},
         }
         sensor = Sensor.model_validate(data)
         assert sensor.id == "sensor-123"
         assert sensor.name == "Door Sensor"
         assert sensor.is_opened is False
         assert sensor.battery_level == 85
+        assert sensor.battery_status is not None
+        assert sensor.battery_status.percentage == 85
+        assert sensor.battery_status.is_low is False
 
 
 class TestLightModel:

@@ -22,6 +22,15 @@ class SensorType(str, Enum):
     UNKNOWN = "unknown"
 
 
+class BatteryStatus(BaseModel):
+    """Model representing battery status for a UniFi Protect sensor."""
+
+    percentage: int | None = None
+    is_low: bool = Field(default=False, alias="isLow")
+
+    model_config = {"populate_by_name": True, "extra": "allow"}
+
+
 class Sensor(BaseModel):
     """Model representing a UniFi Protect sensor."""
 
@@ -37,7 +46,7 @@ class Sensor(BaseModel):
     last_seen: datetime | None = Field(default=None, alias="lastSeen")
     connected_since: datetime | None = Field(default=None, alias="connectedSince")
     is_connected: bool = Field(default=False, alias="isConnected")
-    battery_status: str | None = Field(default=None, alias="batteryStatus")
+    battery_status: BatteryStatus | None = Field(default=None, alias="batteryStatus")
     battery_level: int | None = Field(default=None, alias="batteryLevel")
     is_opened: bool | None = Field(default=None, alias="isOpened")
     is_motion_detected: bool | None = Field(default=None, alias="isMotionDetected")

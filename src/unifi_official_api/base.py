@@ -296,17 +296,19 @@ class BaseUniFiClient(ABC):
         path: str,
         *,
         json_data: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
     ) -> dict[str, Any] | list[Any] | None:
         """Make a PUT request.
 
         Args:
             path: API path.
             json_data: JSON body data.
+            params: Query parameters.
 
         Returns:
             Response data.
         """
-        return await self._request("PUT", path, json_data=json_data)
+        return await self._request("PUT", path, json_data=json_data, params=params)
 
     async def _patch(
         self,

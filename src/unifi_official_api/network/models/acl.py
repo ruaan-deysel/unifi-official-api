@@ -91,3 +91,11 @@ class ACLRule(BaseModel):
         if self.metadata is None:
             return True
         return self.metadata.origin == MetadataOrigin.USER_DEFINED
+
+
+class ACLRuleOrdering(BaseModel):
+    """Model representing the ordering of user-defined ACL rules."""
+
+    ordered_acl_rule_ids: list[str] = Field(default_factory=list, alias="orderedAclRuleIds")
+
+    model_config = {"populate_by_name": True, "extra": "allow"}

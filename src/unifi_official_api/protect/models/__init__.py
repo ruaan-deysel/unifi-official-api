@@ -9,7 +9,7 @@ from .files import ApplicationInfo, DeviceFile, FileType, RTSPSStream, TalkbackS
 from .light import Light, LightMode
 from .liveview import LiveView
 from .nvr import NVR
-from .sensor import Sensor, SensorType
+from .sensor import BatteryStatus, Sensor, SensorType
 from .viewer import Viewer, ViewerState
 
 __all__ = [
@@ -38,6 +38,7 @@ __all__ = [
     # NVR
     "NVR",
     # Sensor
+    "BatteryStatus",
     "Sensor",
     "SensorType",
     # Viewer

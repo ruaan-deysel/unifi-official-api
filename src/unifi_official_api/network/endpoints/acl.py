@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from ..models.acl import ACLAction, ACLRule, ACLRuleType
+from ..models.acl import ACLAction, ACLRule, ACLRuleOrdering, ACLRuleType
 
 if TYPE_CHECKING:
     from ..client import UniFiNetworkClient
@@ -163,3 +163,54 @@ class ACLEndpoint:
         path = self._client.build_api_path(f"/sites/{site_id}/acl-rules/{rule_id}")
         await self._client._delete(path)
         return True
+
+    async def get_ordering(self, site_id: str) -> ACLRuleOrdering:
+        """Get user-defined ACL rule ordering.
+
+        Args:
+            site_id: The site ID.
+
+        Returns:
+            The ACL rule ordering.
+
+        Raises:
+            ValueError: If the ordering cannot be retrieved.
+        """
+        path = self._client.build_api_path(f"/sites/{site_id}/acl-rules/ordering")
+        response = await self._client._get(path)
+
+        if isinstance(response, dict):
+            data = response.get("data", response)
+            if isinstance(data, dict):
+                return ACLRuleOrdering.model_validate(data)
+        raise ValueError("Failed to get ACL rule ordering")
+
+    async def update_ordering(
+        self,
+        site_id: str,
+        *,
+        ordered_rule_ids: list[str],
+    ) -> ACLRuleOrdering:
+        """Reorder user-defined ACL rules.
+
+        Args:
+            site_id: The site ID.
+            ordered_rule_ids: List of ACL rule IDs in desired order.
+
+        Returns:
+            The updated ACL rule ordering.
+
+        Raises:
+            ValueError: If the reordering fails.
+        """
+        path = self._client.build_api_path(f"/sites/{site_id}/acl-rules/ordering")
+        data: dict[str, Any] = {
+            "orderedAclRuleIds": ordered_rule_ids,
+        }
+        response = await self._client._put(path, json_data=data)
+
+        if isinstance(response, dict):
+            result = response.get("data", response)
+            if isinstance(result, dict):
+                return ACLRuleOrdering.model_validate(result)
+        raise ValueError("Failed to update ACL rule ordering")

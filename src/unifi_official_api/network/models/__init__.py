@@ -8,13 +8,21 @@ from .acl import (
     ACLDeviceFilter,
     ACLMetadata,
     ACLRule,
+    ACLRuleOrdering,
     ACLRuleType,
     ACLSourceFilter,
     MetadataOrigin,
 )
 from .client import Client, ClientType
 from .device import Device, DevicePort, DeviceState, DeviceType
-from .firewall import FirewallRule, FirewallZone
+from .dns import DNSPolicy, DNSPolicyMetadata, DNSRecordType
+from .firewall import (
+    FirewallActionConfig,
+    FirewallPolicyOrdering,
+    FirewallRule,
+    FirewallZone,
+    OrderedFirewallPolicyIds,
+)
 from .network import Network, NetworkPurpose, NetworkType
 from .resources import (
     DeviceTag,
@@ -44,6 +52,7 @@ __all__ = [
     "ACLDeviceFilter",
     "ACLMetadata",
     "ACLRule",
+    "ACLRuleOrdering",
     "ACLRuleType",
     "ACLSourceFilter",
     "MetadataOrigin",
@@ -55,9 +64,16 @@ __all__ = [
     "DevicePort",
     "DeviceState",
     "DeviceType",
+    # DNS
+    "DNSPolicy",
+    "DNSPolicyMetadata",
+    "DNSRecordType",
     # Firewall
+    "FirewallActionConfig",
+    "FirewallPolicyOrdering",
     "FirewallRule",
     "FirewallZone",
+    "OrderedFirewallPolicyIds",
     # Network
     "Network",
     "NetworkPurpose",

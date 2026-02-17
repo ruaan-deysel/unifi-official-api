@@ -5,6 +5,7 @@ from __future__ import annotations
 from .acl import ACLEndpoint
 from .clients import ClientsEndpoint
 from .devices import DevicesEndpoint
+from .dns import DNSEndpoint
 from .firewall import FirewallEndpoint
 from .networks import NetworksEndpoint
 from .resources import ResourcesEndpoint
@@ -17,6 +18,7 @@ __all__ = [
     "ACLEndpoint",
     "ClientsEndpoint",
     "DevicesEndpoint",
+    "DNSEndpoint",
     "FirewallEndpoint",
     "NetworksEndpoint",
     "ResourcesEndpoint",

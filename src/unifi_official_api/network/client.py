@@ -19,6 +19,7 @@ from .endpoints import (
     ACLEndpoint,
     ClientsEndpoint,
     DevicesEndpoint,
+    DNSEndpoint,
     FirewallEndpoint,
     NetworksEndpoint,
     ResourcesEndpoint,
@@ -133,6 +134,7 @@ class UniFiNetworkClient(BaseUniFiClient):
         self._acl = ACLEndpoint(self)
         self._traffic = TrafficEndpoint(self)
         self._resources = ResourcesEndpoint(self)
+        self._dns = DNSEndpoint(self)
 
     @property
     def connection_type(self) -> ConnectionType:
@@ -213,6 +215,11 @@ class UniFiNetworkClient(BaseUniFiClient):
     def resources(self) -> ResourcesEndpoint:
         """Access supporting resources (WAN, VPN, RADIUS, etc)."""
         return self._resources
+
+    @property
+    def dns(self) -> DNSEndpoint:
+        """Access DNS policy management endpoints."""
+        return self._dns
 
     async def validate_connection(self) -> bool:
         """Validate the connection to the UniFi Network API.
