@@ -330,16 +330,19 @@ class BaseUniFiClient(ABC):
     async def _delete(
         self,
         path: str,
+        *,
+        params: dict[str, Any] | None = None,
     ) -> dict[str, Any] | list[Any] | None:
         """Make a DELETE request.
 
         Args:
             path: API path.
+            params: Query parameters.
 
         Returns:
             Response data.
         """
-        return await self._request("DELETE", path)
+        return await self._request("DELETE", path, params=params)
 
     @abstractmethod
     async def validate_connection(self) -> bool:

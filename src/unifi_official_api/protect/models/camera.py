@@ -126,3 +126,42 @@ class Camera(BaseModel):
     def display_name(self) -> str:
         """Get the display name for the camera."""
         return self.name or self.mac
+
+    def construct_rtsp_url(
+        self,
+        nvr_host: str,
+        port: int = 7441,
+        channel: int = 0,
+        *,
+        use_srtp: bool = True,
+    ) -> str:
+        """Construct an RTSP URL for this camera using the static format.
+
+        WARNING: This constructs a static URL that may not work with all setups.
+        The recommended approach is to use `cameras.create_rtsps_stream()` which
+        provides dynamic, token-based URLs that are more secure and reliable.
+
+        The integration API does not provide RTSP URLs directly in the camera
+        response. This helper constructs a URL based on the standard UniFi
+        Protect static format (camera_id + channel index).
+
+        Args:
+            nvr_host: The NVR/Protect device IP or hostname.
+            port: RTSPS port (default 7441 for RTSPS).
+            channel: Video channel index (0 for high quality, 1 for medium, 2 for low).
+            use_srtp: Whether to use SRTP encryption (default True for secure streams).
+
+        Returns:
+            Constructed RTSPS URL string.
+
+        Example:
+            # Preferred method - dynamic URL
+            stream = await client.cameras.create_rtsps_stream(camera.id)
+            url = stream.high  # e.g., rtsps://192.168.1.1:7441/abc123?enableSrtp
+
+            # Alternative - static URL construction
+            url = camera.construct_rtsp_url('192.168.1.1')
+        """
+        scheme = "rtsps" if use_srtp else "rtsp"
+        srtp_param = "?enableSrtp" if use_srtp else ""
+        return f"{scheme}://{nvr_host}:{port}/{self.id}_{channel}{srtp_param}"

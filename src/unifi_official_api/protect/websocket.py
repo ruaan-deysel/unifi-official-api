@@ -18,6 +18,22 @@ class ProtectWebSocket:
     """WebSocket subscription manager for UniFi Protect.
 
     Provides real-time event streaming for device updates and Protect events.
+
+    To use WebSocket subscriptions, you need a `host_id` and `site_id`:
+    - `host_id`: The NVR ID, obtainable via `await client.get_host_id()`
+    - `site_id`: For local connections, use "default". For remote, get from cloud API.
+
+    Example:
+        ```python
+        # Get the host_id (NVR ID)
+        host_id = await client.get_host_id()
+        site_id = "default"  # For local connections
+
+        # Subscribe to events
+        async with client.websocket.subscribe_events(host_id, site_id) as events:
+            async for event in events:
+                print(f"Event type: {event.get('type')}")
+        ```
     """
 
     def __init__(self, client: UniFiProtectClient) -> None:

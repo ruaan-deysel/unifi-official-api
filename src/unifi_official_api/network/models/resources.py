@@ -16,15 +16,20 @@ class WANStatus(str, Enum):
 
 
 class WANInterface(BaseModel):
-    """WAN Interface model."""
+    """WAN Interface model.
+
+    The integration API returns a simplified view with id and name.
+    Additional fields like status and speeds may be available in some contexts.
+    """
 
     id: str = Field(..., description="Interface identifier")
     name: str = Field(..., description="Interface name")
-    status: WANStatus = Field(..., description="Interface status")
+    status: WANStatus | None = Field(None, description="Interface status")
     ip_address: str | None = Field(None, alias="ipAddress")
     gateway: str | None = Field(None, description="Gateway address")
     dns: list[str] | None = Field(None, description="DNS servers")
     is_primary: bool = Field(False, alias="isPrimary")
+    is_connected: bool = Field(False, alias="isConnected")
     upload_speed: int | None = Field(None, alias="uploadSpeed", description="Mbps")
     download_speed: int | None = Field(None, alias="downloadSpeed", description="Mbps")
 
@@ -44,8 +49,8 @@ class VPNTunnel(BaseModel):
     """Site-to-Site VPN Tunnel model."""
 
     id: str = Field(..., description="Tunnel identifier")
-    name: str = Field(..., description="Tunnel name")
-    status: VPNTunnelStatus = Field(..., description="Tunnel status")
+    name: str | None = Field(None, description="Tunnel name")
+    status: VPNTunnelStatus | None = Field(None, description="Tunnel status")
     local_network: str | None = Field(None, alias="localNetwork")
     remote_network: str | None = Field(None, alias="remoteNetwork")
     remote_ip: str | None = Field(None, alias="remoteIp")
@@ -66,8 +71,8 @@ class VPNServer(BaseModel):
     """VPN Server model."""
 
     id: str = Field(..., description="Server identifier")
-    name: str = Field(..., description="Server name")
-    type: VPNServerType = Field(..., description="Server type")
+    name: str | None = Field(None, description="Server name")
+    type: VPNServerType | str | None = Field(None, description="Server type")
     enabled: bool = Field(True, description="Whether server is enabled")
     port: int | None = Field(None, description="Server port")
     network: str | None = Field(None, description="VPN network CIDR")

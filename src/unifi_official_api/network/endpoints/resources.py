@@ -35,6 +35,7 @@ class ResourcesEndpoint:
         *,
         offset: int | None = None,
         limit: int | None = None,
+        filter_str: str | None = None,
     ) -> list[WANInterface]:
         """List all WAN interfaces.
 
@@ -42,6 +43,7 @@ class ResourcesEndpoint:
             site_id: The site ID.
             offset: Pagination offset.
             limit: Maximum results.
+            filter_str: Filter query string using API filter syntax.
 
         Returns:
             List of WAN interfaces.
@@ -51,8 +53,10 @@ class ResourcesEndpoint:
             params["offset"] = offset
         if limit is not None:
             params["limit"] = limit
+        if filter_str:
+            params["filter"] = filter_str
 
-        path = self._client.build_api_path(f"/sites/{site_id}/wan")
+        path = self._client.build_api_path(f"/sites/{site_id}/wans")
         response = await self._client._get(path, params=params if params else None)
 
         if response is None:
@@ -71,6 +75,7 @@ class ResourcesEndpoint:
         *,
         offset: int | None = None,
         limit: int | None = None,
+        filter_str: str | None = None,
     ) -> list[VPNTunnel]:
         """List all site-to-site VPN tunnels.
 
@@ -78,6 +83,7 @@ class ResourcesEndpoint:
             site_id: The site ID.
             offset: Pagination offset.
             limit: Maximum results.
+            filter_str: Filter query string using API filter syntax.
 
         Returns:
             List of VPN tunnels.
@@ -87,6 +93,8 @@ class ResourcesEndpoint:
             params["offset"] = offset
         if limit is not None:
             params["limit"] = limit
+        if filter_str:
+            params["filter"] = filter_str
 
         path = self._client.build_api_path(f"/sites/{site_id}/vpn/tunnels")
         response = await self._client._get(path, params=params if params else None)
@@ -107,6 +115,7 @@ class ResourcesEndpoint:
         *,
         offset: int | None = None,
         limit: int | None = None,
+        filter_str: str | None = None,
     ) -> list[VPNServer]:
         """List all VPN servers.
 
@@ -114,6 +123,7 @@ class ResourcesEndpoint:
             site_id: The site ID.
             offset: Pagination offset.
             limit: Maximum results.
+            filter_str: Filter query string using API filter syntax.
 
         Returns:
             List of VPN servers.
@@ -123,6 +133,8 @@ class ResourcesEndpoint:
             params["offset"] = offset
         if limit is not None:
             params["limit"] = limit
+        if filter_str:
+            params["filter"] = filter_str
 
         path = self._client.build_api_path(f"/sites/{site_id}/vpn/servers")
         response = await self._client._get(path, params=params if params else None)
@@ -143,6 +155,7 @@ class ResourcesEndpoint:
         *,
         offset: int | None = None,
         limit: int | None = None,
+        filter_str: str | None = None,
     ) -> list[RADIUSProfile]:
         """List all RADIUS profiles.
 
@@ -150,6 +163,7 @@ class ResourcesEndpoint:
             site_id: The site ID.
             offset: Pagination offset.
             limit: Maximum results.
+            filter_str: Filter query string using API filter syntax.
 
         Returns:
             List of RADIUS profiles.
@@ -159,6 +173,8 @@ class ResourcesEndpoint:
             params["offset"] = offset
         if limit is not None:
             params["limit"] = limit
+        if filter_str:
+            params["filter"] = filter_str
 
         path = self._client.build_api_path(f"/sites/{site_id}/radius/profiles")
         response = await self._client._get(path, params=params if params else None)
@@ -179,6 +195,7 @@ class ResourcesEndpoint:
         *,
         offset: int | None = None,
         limit: int | None = None,
+        filter_str: str | None = None,
     ) -> list[DeviceTag]:
         """List all device tags.
 
@@ -186,6 +203,7 @@ class ResourcesEndpoint:
             site_id: The site ID.
             offset: Pagination offset.
             limit: Maximum results.
+            filter_str: Filter query string using API filter syntax.
 
         Returns:
             List of device tags.
@@ -195,6 +213,8 @@ class ResourcesEndpoint:
             params["offset"] = offset
         if limit is not None:
             params["limit"] = limit
+        if filter_str:
+            params["filter"] = filter_str
 
         path = self._client.build_api_path(f"/sites/{site_id}/device-tags")
         response = await self._client._get(path, params=params if params else None)

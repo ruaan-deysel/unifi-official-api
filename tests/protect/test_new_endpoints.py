@@ -334,11 +334,34 @@ class TestCameraNewMethods:
         """Test creating RTSPS stream."""
         mock_aioresponse.post(
             "https://192.168.1.1/proxy/protect/integration/v1/cameras/cam-1/rtsps-stream",
-            payload={"data": {"url": "rtsps://192.168.1.1:7441/stream", "channel": 0}},
+            payload={"data": {"high": "rtsps://192.168.1.1:7441/stream"}},
         )
 
         stream = await protect_client.cameras.create_rtsps_stream("cam-1")
-        assert stream.url == "rtsps://192.168.1.1:7441/stream"
+        assert stream.high == "rtsps://192.168.1.1:7441/stream"
+        assert stream.get_url("high") == "rtsps://192.168.1.1:7441/stream"
+
+    async def test_camera_create_rtsps_stream_with_qualities(
+        self,
+        protect_client: UniFiProtectClient,
+        mock_aioresponse: aioresponses,
+    ) -> None:
+        """Test creating RTSPS stream with multiple qualities."""
+        mock_aioresponse.post(
+            "https://192.168.1.1/proxy/protect/integration/v1/cameras/cam-1/rtsps-stream",
+            payload={
+                "data": {
+                    "high": "rtsps://192.168.1.1:7441/stream-high",
+                    "medium": "rtsps://192.168.1.1:7441/stream-medium",
+                }
+            },
+        )
+
+        stream = await protect_client.cameras.create_rtsps_stream(
+            "cam-1", qualities=["high", "medium"]
+        )
+        assert stream.high == "rtsps://192.168.1.1:7441/stream-high"
+        assert stream.medium == "rtsps://192.168.1.1:7441/stream-medium"
 
     async def test_camera_create_rtsps_stream_failed(
         self,
@@ -388,12 +411,29 @@ class TestCameraNewMethods:
         mock_aioresponse: aioresponses,
     ) -> None:
         """Test deleting RTSPS stream."""
+        # Note: aioresponses doesn't match query params by default, so we use a pattern
         mock_aioresponse.delete(
-            "https://192.168.1.1/proxy/protect/integration/v1/cameras/cam-1/rtsps-stream",
+            "https://192.168.1.1/proxy/protect/integration/v1/cameras/cam-1/rtsps-stream?qualities=high",
             status=204,
         )
 
         result = await protect_client.cameras.delete_rtsps_stream("cam-1")
+        assert result is True
+
+    async def test_camera_delete_rtsps_stream_with_qualities(
+        self,
+        protect_client: UniFiProtectClient,
+        mock_aioresponse: aioresponses,
+    ) -> None:
+        """Test deleting RTSPS stream with multiple qualities."""
+        mock_aioresponse.delete(
+            "https://192.168.1.1/proxy/protect/integration/v1/cameras/cam-1/rtsps-stream?qualities=high&qualities=medium",
+            status=204,
+        )
+
+        result = await protect_client.cameras.delete_rtsps_stream(
+            "cam-1", qualities=["high", "medium"]
+        )
         assert result is True
 
     async def test_camera_create_talkback_session(

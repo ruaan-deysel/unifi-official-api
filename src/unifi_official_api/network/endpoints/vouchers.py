@@ -27,7 +27,7 @@ class VouchersEndpoint:
         *,
         offset: int = 0,
         limit: int = 100,
-        filter_query: str | None = None,
+        filter_str: str | None = None,
     ) -> list[Voucher]:
         """List all vouchers.
 
@@ -35,15 +35,16 @@ class VouchersEndpoint:
             site_id: The site ID.
             offset: Pagination offset.
             limit: Maximum results (max 1000).
-            filter_query: Optional filter query string.
+            filter_str: Filter query string using API filter syntax.
+                Example: "expired.eq(false)" or "and(name.like('guest*'), expired.eq(false))"
 
         Returns:
             List of vouchers.
         """
         path = self._client.build_api_path(f"/sites/{site_id}/hotspot/vouchers")
         params: dict[str, Any] = {"offset": offset, "limit": min(limit, 1000)}
-        if filter_query:
-            params["filter"] = filter_query
+        if filter_str:
+            params["filter"] = filter_str
 
         response = await self._client._get(path, params=params)
 

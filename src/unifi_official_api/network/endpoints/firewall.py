@@ -22,17 +22,36 @@ class FirewallEndpoint:
         """
         self._client = client
 
-    async def list_zones(self, site_id: str) -> list[FirewallZone]:
+    async def list_zones(
+        self,
+        site_id: str,
+        *,
+        offset: int | None = None,
+        limit: int | None = None,
+        filter_str: str | None = None,
+    ) -> list[FirewallZone]:
         """List all firewall zones.
 
         Args:
             site_id: The site ID.
+            offset: Number of items to skip (pagination).
+            limit: Maximum number of items to return.
+            filter_str: Filter query string using API filter syntax.
+                Example: "name.like('Internal*')" or "and(name.isNotNull(), id.eq('zone-1'))"
 
         Returns:
             List of firewall zones.
         """
+        params: dict[str, Any] = {}
+        if offset is not None:
+            params["offset"] = offset
+        if limit is not None:
+            params["limit"] = limit
+        if filter_str:
+            params["filter"] = filter_str
+
         path = self._client.build_api_path(f"/sites/{site_id}/firewall/zones")
-        response = await self._client._get(path)
+        response = await self._client._get(path, params=params if params else None)
 
         if response is None:
             return []
@@ -47,13 +66,10 @@ class FirewallEndpoint:
 
         Args:
             site_id: The site ID.
-            zone_id: The firewall zone ID.
+            zone_id: The zone ID.
 
         Returns:
             The firewall zone.
-
-        Raises:
-            ValueError: If the zone is not found.
         """
         path = self._client.build_api_path(f"/sites/{site_id}/firewall/zones/{zone_id}")
         response = await self._client._get(path)
@@ -71,28 +87,20 @@ class FirewallEndpoint:
         site_id: str,
         *,
         name: str,
-        network_ids: list[str] | None = None,
         **kwargs: Any,
     ) -> FirewallZone:
-        """Create a new custom firewall zone.
+        """Create a custom firewall zone.
 
         Args:
             site_id: The site ID.
-            name: Name of the firewall zone.
-            network_ids: List of network IDs to attach to the zone.
+            name: Zone name.
             **kwargs: Additional parameters.
 
         Returns:
             The created firewall zone.
-
-        Raises:
-            ValueError: If the zone creation fails.
         """
         path = self._client.build_api_path(f"/sites/{site_id}/firewall/zones")
-        data: dict[str, Any] = {
-            "name": name,
-            "networkIds": network_ids or [],
-        }
+        data: dict[str, Any] = {"name": name}
         data.update(kwargs)
 
         response = await self._client._post(path, json_data=data)
@@ -106,34 +114,21 @@ class FirewallEndpoint:
         self,
         site_id: str,
         zone_id: str,
-        *,
-        name: str,
-        network_ids: list[str],
         **kwargs: Any,
     ) -> FirewallZone:
         """Update a firewall zone.
 
         Args:
             site_id: The site ID.
-            zone_id: The firewall zone ID.
-            name: Name of the firewall zone.
-            network_ids: List of network IDs to attach to the zone.
-            **kwargs: Additional parameters.
+            zone_id: The zone ID.
+            **kwargs: Parameters to update.
 
         Returns:
             The updated firewall zone.
-
-        Raises:
-            ValueError: If the zone update fails.
         """
         path = self._client.build_api_path(f"/sites/{site_id}/firewall/zones/{zone_id}")
-        data: dict[str, Any] = {
-            "name": name,
-            "networkIds": network_ids,
-        }
-        data.update(kwargs)
+        response = await self._client._put(path, json_data=kwargs)
 
-        response = await self._client._put(path, json_data=data)
         if isinstance(response, dict):
             result = response.get("data", response)
             if isinstance(result, dict):
@@ -143,11 +138,9 @@ class FirewallEndpoint:
     async def delete_zone(self, site_id: str, zone_id: str) -> bool:
         """Delete a custom firewall zone.
 
-        Only user-defined (custom) zones can be deleted.
-
         Args:
             site_id: The site ID.
-            zone_id: The firewall zone ID.
+            zone_id: The zone ID.
 
         Returns:
             True if successful.
@@ -156,17 +149,36 @@ class FirewallEndpoint:
         await self._client._delete(path)
         return True
 
-    async def list_rules(self, site_id: str) -> list[FirewallRule]:
+    async def list_rules(
+        self,
+        site_id: str,
+        *,
+        offset: int | None = None,
+        limit: int | None = None,
+        filter_str: str | None = None,
+    ) -> list[FirewallRule]:
         """List all firewall rules.
 
         Args:
             site_id: The site ID.
+            offset: Number of items to skip (pagination).
+            limit: Maximum number of items to return.
+            filter_str: Filter query string using API filter syntax.
+                Example: "action.eq('drop')" or "and(name.isNotNull(), enabled.eq(true))"
 
         Returns:
             List of firewall rules.
         """
+        params: dict[str, Any] = {}
+        if offset is not None:
+            params["offset"] = offset
+        if limit is not None:
+            params["limit"] = limit
+        if filter_str:
+            params["filter"] = filter_str
+
         path = self._client.build_api_path(f"/sites/{site_id}/firewall/policies")
-        response = await self._client._get(path)
+        response = await self._client._get(path, params=params if params else None)
 
         if response is None:
             return []
@@ -266,37 +278,6 @@ class FirewallEndpoint:
                 return FirewallRule.model_validate(result)
         raise ValueError("Failed to update firewall rule")
 
-    async def patch_rule(
-        self,
-        site_id: str,
-        rule_id: str,
-        **kwargs: Any,
-    ) -> FirewallRule:
-        """Partially update a firewall policy.
-
-        Unlike update_rule which replaces the entire policy, patch_rule
-        allows updating individual fields without sending the full object.
-
-        Args:
-            site_id: The site ID.
-            rule_id: The rule ID.
-            **kwargs: Parameters to patch (e.g., loggingEnabled=True).
-
-        Returns:
-            The patched firewall rule.
-
-        Raises:
-            ValueError: If the patch fails.
-        """
-        path = self._client.build_api_path(f"/sites/{site_id}/firewall/policies/{rule_id}")
-        response = await self._client._patch(path, json_data=kwargs)
-
-        if isinstance(response, dict):
-            result = response.get("data", response)
-            if isinstance(result, dict):
-                return FirewallRule.model_validate(result)
-        raise ValueError("Failed to patch firewall rule")
-
     async def delete_rule(self, site_id: str, rule_id: str) -> bool:
         """Delete a firewall rule.
 
@@ -311,31 +292,55 @@ class FirewallEndpoint:
         await self._client._delete(path)
         return True
 
+    async def patch_rule(
+        self,
+        site_id: str,
+        rule_id: str,
+        **kwargs: Any,
+    ) -> FirewallRule:
+        """Partially update a firewall rule.
+
+        Args:
+            site_id: The site ID.
+            rule_id: The rule ID.
+            **kwargs: Fields to update.
+
+        Returns:
+            The updated firewall rule.
+        """
+        path = self._client.build_api_path(f"/sites/{site_id}/firewall/policies/{rule_id}")
+        response = await self._client._patch(path, json_data=kwargs)
+
+        if isinstance(response, dict):
+            data = response.get("data", response)
+            if isinstance(data, dict):
+                return FirewallRule.model_validate(data)
+            if isinstance(data, list) and len(data) > 0:
+                return FirewallRule.model_validate(data[0])
+        raise ValueError(f"Failed to patch firewall rule {rule_id}")
+
     async def get_policy_ordering(
         self,
         site_id: str,
         *,
-        source_zone_id: str,
-        destination_zone_id: str,
+        access_zone_id: str,
+        infrastructure_zone_id: str,
     ) -> FirewallPolicyOrdering:
-        """Get user-defined firewall policy ordering for a zone pair.
+        """Get firewall policy ordering for a zone pair.
 
         Args:
             site_id: The site ID.
-            source_zone_id: The source firewall zone ID.
-            destination_zone_id: The destination firewall zone ID.
+            access_zone_id: The source/access zone ID.
+            infrastructure_zone_id: The destination zone ID.
 
         Returns:
-            The firewall policy ordering.
-
-        Raises:
-            ValueError: If the ordering cannot be retrieved.
+            The policy ordering configuration.
         """
-        path = self._client.build_api_path(f"/sites/{site_id}/firewall/policies/ordering")
-        params: dict[str, Any] = {
-            "sourceFirewallZoneId": source_zone_id,
-            "destinationFirewallZoneId": destination_zone_id,
+        params = {
+            "accessZoneId": access_zone_id,
+            "infrastructureZoneId": infrastructure_zone_id,
         }
+        path = self._client.build_api_path(f"/sites/{site_id}/firewall/policy-orderings")
         response = await self._client._get(path, params=params)
 
         if isinstance(response, dict):
@@ -348,37 +353,29 @@ class FirewallEndpoint:
         self,
         site_id: str,
         *,
-        source_zone_id: str,
-        destination_zone_id: str,
-        before_system_defined: list[str] | None = None,
-        after_system_defined: list[str] | None = None,
+        access_zone_id: str,
+        infrastructure_zone_id: str,
+        ordered_policy_ids: list[str],
     ) -> FirewallPolicyOrdering:
-        """Reorder user-defined firewall policies for a zone pair.
+        """Update firewall policy ordering for a zone pair.
 
         Args:
             site_id: The site ID.
-            source_zone_id: The source firewall zone ID.
-            destination_zone_id: The destination firewall zone ID.
-            before_system_defined: Policy IDs to place before system-defined rules.
-            after_system_defined: Policy IDs to place after system-defined rules.
+            access_zone_id: The source/access zone ID.
+            infrastructure_zone_id: The destination zone ID.
+            ordered_policy_ids: List of user-defined policy IDs in desired order.
 
         Returns:
-            The updated firewall policy ordering.
-
-        Raises:
-            ValueError: If the reordering fails.
+            The updated policy ordering configuration.
         """
-        path = self._client.build_api_path(f"/sites/{site_id}/firewall/policies/ordering")
-        params: dict[str, Any] = {
-            "sourceFirewallZoneId": source_zone_id,
-            "destinationFirewallZoneId": destination_zone_id,
+        params = {
+            "accessZoneId": access_zone_id,
+            "infrastructureZoneId": infrastructure_zone_id,
         }
-        data: dict[str, Any] = {
-            "orderedFirewallPolicyIds": {
-                "beforeSystemDefined": before_system_defined or [],
-                "afterSystemDefined": after_system_defined or [],
-            }
+        data = {
+            "orderedPolicyIds": ordered_policy_ids,
         }
+        path = self._client.build_api_path(f"/sites/{site_id}/firewall/policy-orderings")
         response = await self._client._put(path, json_data=data, params=params)
 
         if isinstance(response, dict):
