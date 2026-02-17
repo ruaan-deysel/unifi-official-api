@@ -160,23 +160,12 @@ class NetworksEndpoint:
         await self._client._delete(path)
         return True
 
-<<<<<<< HEAD
-    async def get_references(
-        self,
-        site_id: str,
-        network_id: str,
-    ) -> dict[str, Any]:
-        """Get references to a specific network.
-
-        Returns resources that reference this network (clients, firewall zones, etc).
-=======
     async def get_references(self, site_id: str, network_id: str) -> dict[str, Any]:
         """Get references to a network.
 
         Returns information about what resources reference this network,
         such as WiFi broadcasts, firewall rules, or other configurations
         that use this network.
->>>>>>> 308384bc4ee457932ce6908311c7f479fa17a99a
 
         Args:
             site_id: The site ID.
@@ -192,8 +181,4 @@ class NetworksEndpoint:
             data = response.get("data", response)
             if isinstance(data, dict):
                 return data
-<<<<<<< HEAD
-        raise ValueError(f"Failed to get references for network {network_id}")
-=======
         return {}
->>>>>>> 308384bc4ee457932ce6908311c7f479fa17a99a

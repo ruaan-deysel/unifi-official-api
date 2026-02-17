@@ -1970,7 +1970,7 @@ class TestFirewallPatchAndOrdering:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policies/ordering.*"
+                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policy-orderings.*"
                 ),
                 payload={
                     "data": {
@@ -1987,8 +1987,8 @@ class TestFirewallPatchAndOrdering:
             ) as client:
                 ordering = await client.firewall.get_policy_ordering(
                     "site-1",
-                    source_zone_id="zone-a",
-                    destination_zone_id="zone-b",
+                    access_zone_id="zone-a",
+                    infrastructure_zone_id="zone-b",
                 )
                 assert ordering.ordered_firewall_policy_ids.before_system_defined == [
                     "policy-1",
@@ -2001,7 +2001,7 @@ class TestFirewallPatchAndOrdering:
         with aioresponses() as m:
             m.put(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policies/ordering.*"
+                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policy-orderings.*"
                 ),
                 payload={
                     "data": {
@@ -2018,10 +2018,9 @@ class TestFirewallPatchAndOrdering:
             ) as client:
                 ordering = await client.firewall.update_policy_ordering(
                     "site-1",
-                    source_zone_id="zone-a",
-                    destination_zone_id="zone-b",
-                    before_system_defined=["policy-2", "policy-1"],
-                    after_system_defined=[],
+                    access_zone_id="zone-a",
+                    infrastructure_zone_id="zone-b",
+                    ordered_policy_ids=["policy-2", "policy-1"],
                 )
                 assert ordering.ordered_firewall_policy_ids.before_system_defined == [
                     "policy-2",
