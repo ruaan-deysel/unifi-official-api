@@ -11,7 +11,9 @@ class TrafficMatchingType(str, Enum):
     """Traffic matching list type."""
 
     IP_ADDRESS = "IP_ADDRESS"
+    IPV4_ADDRESSES = "IPV4_ADDRESSES"
     PORT = "PORT"
+    PORTS = "PORTS"
     DOMAIN = "DOMAIN"
     APP = "APP"
     REGION = "REGION"
