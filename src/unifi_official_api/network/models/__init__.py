@@ -13,6 +13,7 @@ from .acl import (
     ACLSourceFilter,
     MetadataOrigin,
 )
+from .application import ApplicationInfo
 from .client import Client, ClientType
 from .device import Device, DevicePort, DeviceState, DeviceType
 from .dns import DNSPolicy, DNSPolicyMetadata, DNSRecordType
@@ -46,6 +47,8 @@ from .voucher import Voucher, VoucherCreateRequest
 from .wifi import WifiNetwork, WifiSecurity
 
 __all__ = [
+    # Application
+    "ApplicationInfo",
     # ACL
     "ACLAction",
     "ACLDestinationFilter",

@@ -800,29 +800,29 @@ class TestNetworkClientApplicationInfo:
         """Test getting application info."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/application",
-                payload={"data": {"version": "10.0.162", "name": "UniFi Network"}},
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/info",
+                payload={"applicationVersion": "10.0.162"},
             )
 
             async with UniFiNetworkClient(
                 auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
             ) as client:
                 info = await client.get_application_info()
-                assert info["version"] == "10.0.162"
+                assert info.application_version == "10.0.162"
 
-    async def test_get_application_info_empty(self, auth: ApiKeyAuth) -> None:
-        """Test getting application info with empty response."""
+    async def test_get_application_info_error(self, auth: ApiKeyAuth) -> None:
+        """Test getting application info with non-dict response raises ValueError."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/application",
-                payload={"data": []},
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/info",
+                payload=[],
             )
 
             async with UniFiNetworkClient(
                 auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
             ) as client:
-                info = await client.get_application_info()
-                assert info == {}
+                with pytest.raises(ValueError, match="Unable to retrieve application info"):
+                    await client.get_application_info()
 
 
 class TestAdditionalCoverage:

@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 import aiohttp
 
 from ..auth import ApiKeyAuth, LocalAuth
@@ -28,6 +26,7 @@ from .endpoints import (
     VouchersEndpoint,
     WifiEndpoint,
 )
+from .models import ApplicationInfo
 
 
 class UniFiNetworkClient(BaseUniFiClient):
@@ -237,33 +236,23 @@ class UniFiNetworkClient(BaseUniFiClient):
         response = await self._get(self.build_api_path("/sites"))
         return response is not None
 
-    async def get_sites(self) -> list[dict[str, Any]]:
-        """Get list of available sites.
+    async def get_application_info(self) -> ApplicationInfo:
+        """Get UniFi Network application information.
+
+        Returns the application version and other metadata.
+        Official endpoint: GET /v1/info
 
         Returns:
-            List of site information dictionaries.
-        """
-        response = await self._get(self.build_api_path("/sites"))
-        if response is None:
-            return []
-        data = response.get("data", response) if isinstance(response, dict) else response
-        if isinstance(data, list):
-            return data
-        return []
+            ApplicationInfo with the application version.
 
-    async def get_application_info(self) -> dict[str, Any]:
-        """Get application information.
-
-        Returns:
-            Application information dictionary.
+        Raises:
+            ValueError: If the response cannot be parsed.
         """
-        # Note: This endpoint may vary; for local it's typically at the root
-        if self._connection_type == ConnectionType.LOCAL:
-            response = await self._get("/api/system")
-        else:
-            response = await self._get(self.build_api_path("/application"))
+        path = self.build_api_path("/info")
+        response = await self._get(path)
+
         if isinstance(response, dict):
             data = response.get("data", response)
             if isinstance(data, dict):
-                return data
-        return {}
+                return ApplicationInfo.model_validate(data)
+        raise ValueError("Unable to retrieve application info")
