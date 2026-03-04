@@ -49,17 +49,9 @@ Use `ruff format src/ tests/` when formatting is needed.
 Consult `.github/instructions/*.instructions.md` for path-level rules:
 
 - `api.instructions.md`
-- `config_flow.instructions.md`
-- `configuration_yaml.instructions.md`
-- `coordinator.instructions.md`
 - `diagnostics.instructions.md`
-- `entities.instructions.md`
 - `python.instructions.md`
-- `repairs.instructions.md`
-- `service_actions.instructions.md`
-- `services_yaml.instructions.md`
 - `tests.instructions.md`
-- `translations.instructions.md`
 - `manifest.instructions.md`
 - `json.instructions.md`
 - `yaml.instructions.md`

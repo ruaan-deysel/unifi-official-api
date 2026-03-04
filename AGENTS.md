@@ -133,17 +133,9 @@ Additional guidance is in `.github/instructions/*.instructions.md`.
 Use the file that matches the path you are editing.
 
 - `api.instructions.md` - API/client/endpoint/model architecture details
-- `config_flow.instructions.md` - client configuration input and validation patterns
-- `configuration_yaml.instructions.md` - guidance for optional YAML config examples
-- `coordinator.instructions.md` - client orchestration and update flow guidance
 - `diagnostics.instructions.md` - logging/redaction/diagnostic error context rules
-- `entities.instructions.md` - endpoint-model resource mapping conventions
 - `python.instructions.md` - Python style and async coding conventions
-- `repairs.instructions.md` - compatibility-safe fixes and repair patterns
-- `service_actions.instructions.md` - mutating endpoint method guidance
-- `services_yaml.instructions.md` - optional `services.yaml` documentation guidance
 - `tests.instructions.md` - testing and fixture patterns
-- `translations.instructions.md` - user-facing wording consistency guidance
 - `manifest.instructions.md` - packaging/version metadata (`pyproject.toml`)
 - `json.instructions.md` - JSON formatting rules
 - `yaml.instructions.md` - YAML formatting rules
