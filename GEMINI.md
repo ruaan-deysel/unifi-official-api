@@ -1,4 +1,4 @@
-# Claude Code Instructions
+# Gemini Instructions
 
 This repository uses a shared AI instruction system.
 

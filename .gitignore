@@ -117,7 +117,8 @@ docs/_build/
 # -----------------------------------------------------------------------------
 
 # Visual Studio Code
-.vscode/
+.vscode/*
+!.vscode/tasks.json
 *.code-workspace
 
 # PyCharm / JetBrains
