@@ -258,7 +258,7 @@ class DevicesEndpoint:
             idx = port.get("port_idx")
             if idx is None:
                 idx = port.get("portIdx")
-            return idx if isinstance(idx, int) else None
+            return _to_int(idx)
 
         def _to_float(value: Any) -> float | None:
             try:

@@ -6,6 +6,8 @@ from typing import Any
 
 from aioresponses import aioresponses
 
+import pytest
+
 from unifi_official_api import ApiKeyAuth, ConnectionType
 from unifi_official_api.network import UniFiNetworkClient
 
@@ -142,12 +144,9 @@ class TestUniFiNetworkClient:
             base_url="https://192.168.1.1",
             connection_type=ConnectionType.LOCAL,
         ) as client:
-            try:
+            with pytest.raises(ValueError) as excinfo:
                 client.build_legacy_api_path("", "/stat/device/aa:bb:cc")
-            except ValueError as err:
-                assert str(err) == "site_name is required"
-            else:
-                assert False, "Expected ValueError for empty site_name"
+            assert str(excinfo.value) == "site_name is required"
 
 
 class TestDevicesEndpoint:

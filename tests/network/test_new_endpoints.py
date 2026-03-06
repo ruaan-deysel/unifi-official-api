@@ -1201,6 +1201,49 @@ class TestDeviceActions:
                 assert metrics.port_bytes[2].rx_bytes == 300
                 assert metrics.port_bytes[2].tx_bytes == 400
 
+    async def test_device_get_port_metrics_derived_total(self, auth: ApiKeyAuth) -> None:
+        """Test deriving total PoE when top-level total is missing."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff",
+                payload={
+                    "data": [
+                        {
+                            "port_table": [
+                                {
+                                    "port_idx": 1,
+                                    "poe_power": "1.25",
+                                    "rx_bytes": 10,
+                                    "tx_bytes": 20,
+                                },
+                                {
+                                    "portIdx": "2",
+                                    "poePower": "2.75",
+                                    "rxBytes": 30,
+                                    "txBytes": 40,
+                                },
+                            ]
+                        }
+                    ]
+                },
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth,
+                connection_type=ConnectionType.REMOTE,
+                console_id="test-console-id",
+            ) as client:
+                metrics = await client.devices.get_port_metrics(
+                    "default", "aa:bb:cc:dd:ee:ff"
+                )
+                assert metrics.poe_total_w == 4.0
+                assert metrics.poe_ports[1] == 1.25
+                assert metrics.poe_ports[2] == 2.75
+                assert metrics.port_bytes[1].rx_bytes == 10
+                assert metrics.port_bytes[1].tx_bytes == 20
+                assert metrics.port_bytes[2].rx_bytes == 30
+                assert metrics.port_bytes[2].tx_bytes == 40
+
     async def test_device_get_port_metrics_empty(self, auth: ApiKeyAuth) -> None:
         """Test getting normalized legacy port metrics when response is empty."""
         with aioresponses() as m:
