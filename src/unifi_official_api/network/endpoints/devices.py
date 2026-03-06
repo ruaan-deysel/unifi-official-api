@@ -224,9 +224,11 @@ class DevicesEndpoint:
         response = await self._client._get(path)
 
         if isinstance(response, dict):
-            data = response.get("data")
+            data = response.get("data", response)
             if isinstance(data, list) and len(data) > 0 and isinstance(data[0], dict):
                 return data[0]
+            if isinstance(data, dict):
+                return data
         return {}
 
     async def get_port_metrics(
