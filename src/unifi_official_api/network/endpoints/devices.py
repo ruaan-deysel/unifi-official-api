@@ -244,7 +244,7 @@ class DevicesEndpoint:
             Normalized per-port legacy metrics.
         """
         legacy = await self.get_legacy_device_stats(site_name, device_mac)
-        if not isinstance(legacy, dict):
+        if not legacy:
             return LegacyPortMetrics()
 
         port_table = legacy.get("port_table")
@@ -253,12 +253,6 @@ class DevicesEndpoint:
 
         poe_ports: dict[int, float] = {}
         port_bytes: dict[int, PortBytesMetrics] = {}
-
-        def _get_port_idx(port: dict[str, Any]) -> int | None:
-            idx = port.get("port_idx")
-            if idx is None:
-                idx = port.get("portIdx")
-            return _to_int(idx)
 
         def _to_float(value: Any) -> float | None:
             try:
@@ -271,6 +265,12 @@ class DevicesEndpoint:
                 return int(value)
             except (TypeError, ValueError):
                 return None
+
+        def _get_port_idx(port: dict[str, Any]) -> int | None:
+            idx = port.get("port_idx")
+            if idx is None:
+                idx = port.get("portIdx")
+            return _to_int(idx)
 
         for port in port_table:
             if not isinstance(port, dict):
