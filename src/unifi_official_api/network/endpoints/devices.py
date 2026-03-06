@@ -243,7 +243,9 @@ class DevicesEndpoint:
             device_mac: The device MAC address used by the legacy endpoint.
 
         Returns:
-            Normalized per-port legacy metrics.
+            Normalized per-port legacy metrics. Port dictionary keys preserve the
+            index reported by the legacy API and are not normalized to the
+            0-based numbering expected by ``execute_port_action()``.
         """
         legacy = await self.get_legacy_device_stats(site_name, device_mac)
         if not legacy:

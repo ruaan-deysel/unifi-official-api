@@ -89,7 +89,13 @@ class PortBytesMetrics(BaseModel):
 
 
 class LegacyPortMetrics(BaseModel):
-    """Normalized legacy per-port metrics for a device."""
+    """Normalized per-port metrics from the legacy Network API.
+
+    Note:
+        Keys in ``poe_ports`` and ``port_bytes`` preserve the port index reported
+        by the legacy API. These keys are not normalized to the 0-based
+        ``port_idx`` numbering expected by ``execute_port_action()``.
+    """
 
     poe_total_w: float | None = None
     poe_ports: dict[int, float] = Field(default_factory=dict)
