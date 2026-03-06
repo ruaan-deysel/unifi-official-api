@@ -77,3 +77,22 @@ class Device(BaseModel):
     extra: dict[str, Any] = Field(default_factory=dict)
 
     model_config = {"populate_by_name": True, "extra": "allow"}
+
+
+class PortBytesMetrics(BaseModel):
+    """Normalized per-port byte counters from legacy device stats."""
+
+    rx_bytes: int
+    tx_bytes: int
+
+    model_config = {"populate_by_name": True, "extra": "allow"}
+
+
+class LegacyPortMetrics(BaseModel):
+    """Normalized legacy per-port metrics for a device."""
+
+    poe_total_w: float | None = None
+    poe_ports: dict[int, float] = Field(default_factory=dict)
+    port_bytes: dict[int, PortBytesMetrics] = Field(default_factory=dict)
+
+    model_config = {"populate_by_name": True, "extra": "allow"}

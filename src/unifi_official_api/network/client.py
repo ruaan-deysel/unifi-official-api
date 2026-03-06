@@ -11,6 +11,7 @@ from ..const import (
     DEFAULT_TIMEOUT,
     NETWORK_API_BASE_URL,
     NETWORK_INTEGRATION_PATH,
+    NETWORK_LEGACY_PATH,
     ConnectionType,
 )
 from .endpoints import (
@@ -164,6 +165,32 @@ class UniFiNetworkClient(BaseUniFiClient):
         else:
             # Remote: /v1/connector/consoles/{consoleId}/proxy/network/integration/v1{endpoint}
             return f"/v1/connector/consoles/{self._console_id}{NETWORK_INTEGRATION_PATH}{endpoint}"
+
+    def build_legacy_api_path(self, site_name: str, endpoint: str) -> str:
+        """Build the full legacy API path based on connection type.
+
+        Args:
+            site_name: The UniFi site name (for example, "default").
+            endpoint: The legacy endpoint path after `/s/{site_name}`
+                (for example, "/stat/device/{device_mac}").
+
+        Returns:
+            Full legacy API path with proper prefix for the connection type.
+        """
+        if not site_name:
+            raise ValueError("site_name is required")
+
+        # Ensure endpoint starts with /
+        if not endpoint.startswith("/"):
+            endpoint = f"/{endpoint}"
+
+        if self._connection_type == ConnectionType.LOCAL:
+            return f"{NETWORK_LEGACY_PATH}/s/{site_name}{endpoint}"
+        else:
+            return (
+                f"/v1/connector/consoles/{self._console_id}"
+                f"{NETWORK_LEGACY_PATH}/s/{site_name}{endpoint}"
+            )
 
     @property
     def devices(self) -> DevicesEndpoint:

@@ -98,6 +98,58 @@ class TestUniFiNetworkClient:
             assert client.firewall is not None
 
 
+    async def test_build_legacy_api_path_remote(self, auth: ApiKeyAuth) -> None:
+        """Test building legacy API path for remote connections."""
+        async with UniFiNetworkClient(
+            auth=auth,
+            connection_type=ConnectionType.REMOTE,
+            console_id="test-console-id",
+        ) as client:
+            path = client.build_legacy_api_path("default", "/stat/device/aa:bb:cc")
+            assert (
+                path
+                == "/v1/connector/consoles/test-console-id/proxy/network/api/s/default/stat/device/aa:bb:cc"
+            )
+
+    async def test_build_legacy_api_path_local(self, auth: ApiKeyAuth) -> None:
+        """Test building legacy API path for local connections."""
+        async with UniFiNetworkClient(
+            auth=auth,
+            base_url="https://192.168.1.1",
+            connection_type=ConnectionType.LOCAL,
+        ) as client:
+            path = client.build_legacy_api_path("default", "/stat/device/aa:bb:cc")
+            assert path == "/proxy/network/api/s/default/stat/device/aa:bb:cc"
+
+    async def test_build_legacy_api_path_adds_leading_slash(
+        self, auth: ApiKeyAuth
+    ) -> None:
+        """Test legacy path builder adds a leading slash to endpoint."""
+        async with UniFiNetworkClient(
+            auth=auth,
+            base_url="https://192.168.1.1",
+            connection_type=ConnectionType.LOCAL,
+        ) as client:
+            path = client.build_legacy_api_path("default", "stat/device/aa:bb:cc")
+            assert path == "/proxy/network/api/s/default/stat/device/aa:bb:cc"
+
+    async def test_build_legacy_api_path_requires_site_name(
+        self, auth: ApiKeyAuth
+    ) -> None:
+        """Test legacy path builder rejects empty site names."""
+        async with UniFiNetworkClient(
+            auth=auth,
+            base_url="https://192.168.1.1",
+            connection_type=ConnectionType.LOCAL,
+        ) as client:
+            try:
+                client.build_legacy_api_path("", "/stat/device/aa:bb:cc")
+            except ValueError as err:
+                assert str(err) == "site_name is required"
+            else:
+                assert False, "Expected ValueError for empty site_name"
+
+
 class TestDevicesEndpoint:
     """Tests for devices endpoint."""
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from ..models import Device
+from ..models import Device, LegacyPortMetrics, PortBytesMetrics
 
 if TYPE_CHECKING:
     from ..client import UniFiNetworkClient
@@ -201,6 +201,124 @@ class DevicesEndpoint:
             if isinstance(data, dict):
                 return data
         return {}
+
+
+    async def get_legacy_device_stats(
+        self,
+        site_name: str,
+        device_mac: str,
+    ) -> dict[str, Any]:
+        """Get raw legacy device statistics for a device.
+
+        Args:
+            site_name: The UniFi site name (for example, "default").
+            device_mac: The device MAC address used by the legacy endpoint.
+
+        Returns:
+            Raw legacy device statistics dictionary from `data[0]`, or an empty
+            dictionary if the response is missing or malformed.
+        """
+        path = self._client.build_legacy_api_path(
+            site_name, f"/stat/device/{device_mac}"
+        )
+        response = await self._client._get(path)
+
+        if isinstance(response, dict):
+            data = response.get("data")
+            if isinstance(data, list) and len(data) > 0 and isinstance(data[0], dict):
+                return data[0]
+        return {}
+
+    async def get_port_metrics(
+        self,
+        site_name: str,
+        device_mac: str,
+    ) -> LegacyPortMetrics:
+        """Get normalized legacy per-port metrics for a device.
+
+        Args:
+            site_name: The UniFi site name (for example, "default").
+            device_mac: The device MAC address used by the legacy endpoint.
+
+        Returns:
+            Normalized per-port legacy metrics.
+        """
+        legacy = await self.get_legacy_device_stats(site_name, device_mac)
+        if not isinstance(legacy, dict):
+            return LegacyPortMetrics()
+
+        port_table = legacy.get("port_table")
+        if not isinstance(port_table, list):
+            port_table = []
+
+        poe_ports: dict[int, float] = {}
+        port_bytes: dict[int, PortBytesMetrics] = {}
+
+        def _get_port_idx(port: dict[str, Any]) -> int | None:
+            idx = port.get("port_idx")
+            if idx is None:
+                idx = port.get("portIdx")
+            return idx if isinstance(idx, int) else None
+
+        def _to_float(value: Any) -> float | None:
+            try:
+                return float(value)
+            except (TypeError, ValueError):
+                return None
+
+        def _to_int(value: Any) -> int | None:
+            try:
+                return int(value)
+            except (TypeError, ValueError):
+                return None
+
+        for port in port_table:
+            if not isinstance(port, dict):
+                continue
+
+            port_idx = _get_port_idx(port)
+            if port_idx is None:
+                continue
+
+            poe_power = port.get("poe_power")
+            if poe_power is None:
+                poe_power = port.get("poePower")
+            poe_w = _to_float(poe_power)
+            if poe_w is not None:
+                poe_ports[port_idx] = poe_w
+
+            rx_bytes = port.get("rx_bytes")
+            if rx_bytes is None:
+                rx_bytes = port.get("rxBytes")
+            tx_bytes = port.get("tx_bytes")
+            if tx_bytes is None:
+                tx_bytes = port.get("txBytes")
+
+            rx_i = _to_int(rx_bytes)
+            tx_i = _to_int(tx_bytes)
+            if rx_i is not None or tx_i is not None:
+                port_bytes[port_idx] = PortBytesMetrics(
+                    rx_bytes=rx_i if rx_i is not None else 0,
+                    tx_bytes=tx_i if tx_i is not None else 0,
+                )
+
+        total_used = legacy.get("total_used_power")
+        if total_used is None:
+            total_used = legacy.get("totalUsedPower")
+        if total_used is None:
+            total_used = legacy.get("total_poe_power")
+        if total_used is None:
+            total_used = legacy.get("poe_total_power")
+
+        poe_total_w = _to_float(total_used)
+        if poe_total_w is None and poe_ports:
+            poe_total_w = float(sum(poe_ports.values()))
+
+        return LegacyPortMetrics(
+            poe_total_w=poe_total_w,
+            poe_ports=poe_ports,
+            port_bytes=port_bytes,
+        )
 
     async def execute_port_action(
         self,
