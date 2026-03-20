@@ -6,6 +6,8 @@ from typing import Any
 
 from aioresponses import aioresponses
 
+import pytest
+
 from unifi_official_api import ApiKeyAuth, ConnectionType
 from unifi_official_api.network import UniFiNetworkClient
 
@@ -96,6 +98,55 @@ class TestUniFiNetworkClient:
             assert client.wifi is not None
             assert client.sites is not None
             assert client.firewall is not None
+
+
+    async def test_build_legacy_api_path_remote(self, auth: ApiKeyAuth) -> None:
+        """Test building legacy API path for remote connections."""
+        async with UniFiNetworkClient(
+            auth=auth,
+            connection_type=ConnectionType.REMOTE,
+            console_id="test-console-id",
+        ) as client:
+            path = client.build_legacy_api_path("default", "/stat/device/aa:bb:cc")
+            assert (
+                path
+                == "/v1/connector/consoles/test-console-id/proxy/network/api/s/default/stat/device/aa:bb:cc"
+            )
+
+    async def test_build_legacy_api_path_local(self, auth: ApiKeyAuth) -> None:
+        """Test building legacy API path for local connections."""
+        async with UniFiNetworkClient(
+            auth=auth,
+            base_url="https://192.168.1.1",
+            connection_type=ConnectionType.LOCAL,
+        ) as client:
+            path = client.build_legacy_api_path("default", "/stat/device/aa:bb:cc")
+            assert path == "/proxy/network/api/s/default/stat/device/aa:bb:cc"
+
+    async def test_build_legacy_api_path_adds_leading_slash(
+        self, auth: ApiKeyAuth
+    ) -> None:
+        """Test legacy path builder adds a leading slash to endpoint."""
+        async with UniFiNetworkClient(
+            auth=auth,
+            base_url="https://192.168.1.1",
+            connection_type=ConnectionType.LOCAL,
+        ) as client:
+            path = client.build_legacy_api_path("default", "stat/device/aa:bb:cc")
+            assert path == "/proxy/network/api/s/default/stat/device/aa:bb:cc"
+
+    async def test_build_legacy_api_path_requires_site_name(
+        self, auth: ApiKeyAuth
+    ) -> None:
+        """Test legacy path builder rejects empty site names."""
+        async with UniFiNetworkClient(
+            auth=auth,
+            base_url="https://192.168.1.1",
+            connection_type=ConnectionType.LOCAL,
+        ) as client:
+            with pytest.raises(ValueError) as excinfo:
+                client.build_legacy_api_path("", "/stat/device/aa:bb:cc")
+            assert str(excinfo.value) == "site_name is required"
 
 
 class TestDevicesEndpoint:

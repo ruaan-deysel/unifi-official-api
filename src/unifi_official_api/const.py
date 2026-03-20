@@ -35,6 +35,9 @@ PROTECT_API_VERSION: Final[str] = "v1"
 # Network Integration API path prefix (used for both local and remote)
 NETWORK_INTEGRATION_PATH: Final[str] = "/proxy/network/integration/v1"
 
+# Network legacy API path prefix (used for both local and remote)
+NETWORK_LEGACY_PATH: Final[str] = "/proxy/network/api"
+
 # Protect Integration API path prefix (used for both local and remote)
 PROTECT_INTEGRATION_PATH: Final[str] = "/proxy/protect/integration/v1"
 

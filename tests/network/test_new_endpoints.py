@@ -1109,6 +1109,161 @@ class TestDeviceActions:
                 stats = await client.devices.get_statistics("site-1", "dev-1")
                 assert stats == {}
 
+    async def test_device_get_legacy_device_stats(self, auth: ApiKeyAuth) -> None:
+        """Test getting raw legacy device statistics."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff",
+                payload={
+                    "data": [
+                        {
+                            "_id": "legacy-1",
+                            "port_table": [
+                                {"port_idx": 1, "poe_power": "3.50"},
+                            ],
+                            "total_used_power": "3.50",
+                        }
+                    ]
+                },
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth,
+                connection_type=ConnectionType.REMOTE,
+                console_id="test-console-id",
+            ) as client:
+                stats = await client.devices.get_legacy_device_stats(
+                    "default", "aa:bb:cc:dd:ee:ff"
+                )
+                assert stats["_id"] == "legacy-1"
+                assert isinstance(stats["port_table"], list)
+                assert stats["total_used_power"] == "3.50"
+
+    async def test_device_get_legacy_device_stats_empty(self, auth: ApiKeyAuth) -> None:
+        """Test getting raw legacy device statistics when response is empty."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff",
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth,
+                connection_type=ConnectionType.REMOTE,
+                console_id="test-console-id",
+            ) as client:
+                stats = await client.devices.get_legacy_device_stats(
+                    "default", "aa:bb:cc:dd:ee:ff"
+                )
+                assert stats == {}
+
+    async def test_device_get_port_metrics(self, auth: ApiKeyAuth) -> None:
+        """Test getting normalized legacy port metrics."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff",
+                payload={
+                    "data": [
+                        {
+                            "port_table": [
+                                {
+                                    "port_idx": 1,
+                                    "poe_power": "3.50",
+                                    "rx_bytes": 100,
+                                    "tx_bytes": 200,
+                                },
+                                {
+                                    "portIdx": 2,
+                                    "poePower": "0.00",
+                                    "rxBytes": 300,
+                                    "txBytes": 400,
+                                },
+                            ],
+                            "total_used_power": "3.50",
+                        }
+                    ]
+                },
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth,
+                connection_type=ConnectionType.REMOTE,
+                console_id="test-console-id",
+            ) as client:
+                metrics = await client.devices.get_port_metrics(
+                    "default", "aa:bb:cc:dd:ee:ff"
+                )
+                assert metrics.poe_total_w == 3.50
+                assert metrics.poe_ports[1] == 3.50
+                assert metrics.poe_ports[2] == 0.0
+                assert metrics.port_bytes[1].rx_bytes == 100
+                assert metrics.port_bytes[1].tx_bytes == 200
+                assert metrics.port_bytes[2].rx_bytes == 300
+                assert metrics.port_bytes[2].tx_bytes == 400
+
+    async def test_device_get_port_metrics_derived_total(self, auth: ApiKeyAuth) -> None:
+        """Test deriving total PoE when top-level total is missing."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff",
+                payload={
+                    "data": [
+                        {
+                            "port_table": [
+                                {
+                                    "port_idx": 1,
+                                    "poe_power": "1.25",
+                                    "rx_bytes": 10,
+                                    "tx_bytes": 20,
+                                },
+                                {
+                                    "portIdx": "2",
+                                    "poePower": "2.75",
+                                    "rxBytes": 30,
+                                    "txBytes": 40,
+                                },
+                            ]
+                        }
+                    ]
+                },
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth,
+                connection_type=ConnectionType.REMOTE,
+                console_id="test-console-id",
+            ) as client:
+                metrics = await client.devices.get_port_metrics(
+                    "default", "aa:bb:cc:dd:ee:ff"
+                )
+                assert metrics.poe_total_w == 4.0
+                assert metrics.poe_ports[1] == 1.25
+                assert metrics.poe_ports[2] == 2.75
+                assert metrics.port_bytes[1].rx_bytes == 10
+                assert metrics.port_bytes[1].tx_bytes == 20
+                assert metrics.port_bytes[2].rx_bytes == 30
+                assert metrics.port_bytes[2].tx_bytes == 40
+
+    async def test_device_get_port_metrics_empty(self, auth: ApiKeyAuth) -> None:
+        """Test getting normalized legacy port metrics when response is empty."""
+        with aioresponses() as m:
+            m.get(
+                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff",
+                payload={"data": []},
+            )
+
+            async with UniFiNetworkClient(
+                auth=auth,
+                connection_type=ConnectionType.REMOTE,
+                console_id="test-console-id",
+            ) as client:
+                metrics = await client.devices.get_port_metrics(
+                    "default", "aa:bb:cc:dd:ee:ff"
+                )
+                assert metrics.poe_total_w is None
+                assert metrics.poe_ports == {}
+                assert metrics.port_bytes == {}
+
     async def test_device_port_action(self, auth: ApiKeyAuth) -> None:
         """Test device port action."""
         with aioresponses() as m:

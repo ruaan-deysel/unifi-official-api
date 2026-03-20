@@ -15,7 +15,14 @@ from .acl import (
 )
 from .application import ApplicationInfo
 from .client import Client, ClientType
-from .device import Device, DevicePort, DeviceState, DeviceType
+from .device import (
+    Device,
+    DevicePort,
+    DeviceState,
+    DeviceType,
+    LegacyPortMetrics,
+    PortBytesMetrics,
+)
 from .dns import DNSPolicy, DNSPolicyMetadata, DNSRecordType
 from .firewall import (
     FirewallActionConfig,
@@ -67,6 +74,8 @@ __all__ = [
     "DevicePort",
     "DeviceState",
     "DeviceType",
+    "LegacyPortMetrics",
+    "PortBytesMetrics",
     # DNS
     "DNSPolicy",
     "DNSPolicyMetadata",

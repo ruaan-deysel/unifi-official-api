@@ -8,9 +8,11 @@ from unifi_official_api.network import (
     Device,
     DeviceState,
     DeviceType,
+    LegacyPortMetrics,
     Network,
     NetworkPurpose,
     NetworkType,
+    PortBytesMetrics,
     Site,
     WifiNetwork,
     WifiSecurity,
@@ -261,3 +263,50 @@ class TestACLRuleOrderingModel:
         data = {"orderedAclRuleIds": []}
         ordering = ACLRuleOrdering.model_validate(data)
         assert ordering.ordered_acl_rule_ids == []
+
+
+class TestLegacyPortMetricsModel:
+    """Tests for legacy port metrics models."""
+
+    def test_create_port_bytes_metrics(self) -> None:
+        """Test creating PortBytesMetrics."""
+        metrics = PortBytesMetrics(rx_bytes=123, tx_bytes=456)
+        assert metrics.rx_bytes == 123
+        assert metrics.tx_bytes == 456
+
+    def test_create_legacy_port_metrics(self) -> None:
+        """Test creating LegacyPortMetrics."""
+        metrics = LegacyPortMetrics(
+            poe_total_w=3.5,
+            poe_ports={1: 3.5, 2: 0.0},
+            port_bytes={
+                1: PortBytesMetrics(rx_bytes=100, tx_bytes=200),
+                2: PortBytesMetrics(rx_bytes=300, tx_bytes=400),
+            },
+        )
+        assert metrics.poe_total_w == 3.5
+        assert metrics.poe_ports[1] == 3.5
+        assert metrics.poe_ports[2] == 0.0
+        assert metrics.port_bytes[1].rx_bytes == 100
+        assert metrics.port_bytes[2].tx_bytes == 400
+
+    def test_legacy_port_metrics_defaults(self) -> None:
+        """Test LegacyPortMetrics default values."""
+        metrics = LegacyPortMetrics()
+        assert metrics.poe_total_w is None
+        assert metrics.poe_ports == {}
+        assert metrics.port_bytes == {}
+
+    def test_legacy_port_metrics_allows_extra_fields(self) -> None:
+        """Test LegacyPortMetrics allows extra fields."""
+        metrics = LegacyPortMetrics.model_validate(
+            {
+                "poe_total_w": 1.25,
+                "poe_ports": {1: 1.25},
+                "port_bytes": {1: {"rx_bytes": 10, "tx_bytes": 20}},
+                "unexpectedField": "value",
+            }
+        )
+        assert metrics.poe_total_w == 1.25
+        assert metrics.poe_ports[1] == 1.25
+        assert metrics.port_bytes[1].rx_bytes == 10
