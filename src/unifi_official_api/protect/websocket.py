@@ -15,7 +15,8 @@ if TYPE_CHECKING:
 
 
 class ProtectWebSocket:
-    """WebSocket subscription manager for UniFi Protect.
+    """
+    WebSocket subscription manager for UniFi Protect.
 
     Provides real-time event streaming for device updates and Protect events.
 
@@ -34,26 +35,31 @@ class ProtectWebSocket:
             async for event in events:
                 print(f"Event type: {event.get('type')}")
         ```
+
     """
 
     def __init__(self, client: UniFiProtectClient) -> None:
-        """Initialize WebSocket manager.
+        """
+        Initialize WebSocket manager.
 
         Args:
             client: The UniFi Protect client.
+
         """
         self._client = client
         self._ws: aiohttp.ClientWebSocketResponse | None = None
         self._running = False
 
     async def _connect(self, path: str) -> aiohttp.ClientWebSocketResponse:  # pragma: no cover
-        """Establish WebSocket connection.
+        """
+        Establish WebSocket connection.
 
         Args:
             path: WebSocket endpoint path.
 
         Returns:
             WebSocket connection.
+
         """
         session = await self._client._ensure_session()
         url = str(self._client._build_url(path)).replace("https://", "wss://")
@@ -68,7 +74,8 @@ class ProtectWebSocket:
         host_id: str,
         site_id: str,
     ) -> AsyncIterator[AsyncIterator[dict[str, Any]]]:
-        """Subscribe to device update messages.
+        """
+        Subscribe to device update messages.
 
         Args:
             host_id: The host ID.
@@ -81,6 +88,7 @@ class ProtectWebSocket:
             async with client.websocket.subscribe_devices(host_id, site_id) as updates:
                 async for update in updates:
                     print(f"Device update: {update}")
+
         """
         path = f"/ea/hosts/{host_id}/sites/{site_id}/subscribe/devices"
         ws = await self._connect(path)
@@ -95,7 +103,10 @@ class ProtectWebSocket:
                             yield data
                         except json.JSONDecodeError:
                             continue
-                    elif msg.type in (aiohttp.WSMsgType.ERROR, aiohttp.WSMsgType.CLOSED):
+                    elif msg.type in (
+                        aiohttp.WSMsgType.ERROR,
+                        aiohttp.WSMsgType.CLOSED,
+                    ):
                         break
             finally:
                 self._running = False
@@ -112,7 +123,8 @@ class ProtectWebSocket:
         host_id: str,
         site_id: str,
     ) -> AsyncIterator[AsyncIterator[dict[str, Any]]]:
-        """Subscribe to Protect event messages.
+        """
+        Subscribe to Protect event messages.
 
         Args:
             host_id: The host ID.
@@ -125,6 +137,7 @@ class ProtectWebSocket:
             async with client.websocket.subscribe_events(host_id, site_id) as events:
                 async for event in events:
                     print(f"Event: {event}")
+
         """
         path = f"/ea/hosts/{host_id}/sites/{site_id}/subscribe/events"
         ws = await self._connect(path)
@@ -139,7 +152,10 @@ class ProtectWebSocket:
                             yield data
                         except json.JSONDecodeError:
                             continue
-                    elif msg.type in (aiohttp.WSMsgType.ERROR, aiohttp.WSMsgType.CLOSED):
+                    elif msg.type in (
+                        aiohttp.WSMsgType.ERROR,
+                        aiohttp.WSMsgType.CLOSED,
+                    ):
                         break
             finally:
                 self._running = False
@@ -160,7 +176,8 @@ class ProtectWebSocket:
         reconnect: bool = True,
         reconnect_delay: float = 5.0,
     ) -> None:
-        """Subscribe with a callback function.
+        """
+        Subscribe with a callback function.
 
         Args:
             host_id: The host ID.
@@ -169,6 +186,7 @@ class ProtectWebSocket:
             callback: Function to call for each message.
             reconnect: Whether to automatically reconnect on disconnect.
             reconnect_delay: Delay in seconds before reconnecting.
+
         """
         if subscription_type not in ("devices", "events"):
             raise ValueError("subscription_type must be 'devices' or 'events'")
@@ -189,7 +207,10 @@ class ProtectWebSocket:
                             callback(data)
                         except json.JSONDecodeError:
                             continue
-                    elif msg.type in (aiohttp.WSMsgType.ERROR, aiohttp.WSMsgType.CLOSED):
+                    elif msg.type in (
+                        aiohttp.WSMsgType.ERROR,
+                        aiohttp.WSMsgType.CLOSED,
+                    ):
                         break
 
                 await ws.close()

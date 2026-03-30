@@ -11,17 +11,20 @@ if TYPE_CHECKING:
 
 
 class DNSEndpoint:
-    """Endpoint for managing DNS policies.
+    """
+    Endpoint for managing DNS policies.
 
     DNS policies allow custom DNS record management on a UniFi site,
     including A, AAAA, CNAME, MX, TXT, SRV records, and domain forwarding.
     """
 
     def __init__(self, client: UniFiNetworkClient) -> None:
-        """Initialize the DNS endpoint.
+        """
+        Initialize the DNS endpoint.
 
         Args:
             client: The UniFi Network client.
+
         """
         self._client = client
 
@@ -33,7 +36,8 @@ class DNSEndpoint:
         limit: int = 25,
         filter_query: str | None = None,
     ) -> list[DNSPolicy]:
-        """List all DNS policies.
+        """
+        List all DNS policies.
 
         Args:
             site_id: The site ID.
@@ -43,6 +47,7 @@ class DNSEndpoint:
 
         Returns:
             List of DNS policies.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/dns/policies")
         params: dict[str, Any] = {"offset": offset, "limit": limit}
@@ -60,7 +65,8 @@ class DNSEndpoint:
         return []
 
     async def get(self, site_id: str, policy_id: str) -> DNSPolicy:
-        """Get a specific DNS policy.
+        """
+        Get a specific DNS policy.
 
         Args:
             site_id: The site ID.
@@ -71,6 +77,7 @@ class DNSEndpoint:
 
         Raises:
             ValueError: If the policy is not found.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/dns/policies/{policy_id}")
         response = await self._client._get(path)
@@ -94,7 +101,8 @@ class DNSEndpoint:
         ttl_seconds: int | None = None,
         **kwargs: Any,
     ) -> DNSPolicy:
-        """Create a new DNS policy.
+        """
+        Create a new DNS policy.
 
         Args:
             site_id: The site ID.
@@ -110,6 +118,7 @@ class DNSEndpoint:
 
         Raises:
             ValueError: If the policy creation fails.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/dns/policies")
         type_value = record_type.value if isinstance(record_type, DNSRecordType) else record_type
@@ -144,7 +153,8 @@ class DNSEndpoint:
         ttl_seconds: int | None = None,
         **kwargs: Any,
     ) -> DNSPolicy:
-        """Update a DNS policy.
+        """
+        Update a DNS policy.
 
         Args:
             site_id: The site ID.
@@ -161,6 +171,7 @@ class DNSEndpoint:
 
         Raises:
             ValueError: If the policy update fails.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/dns/policies/{policy_id}")
         data: dict[str, Any] = {}
@@ -186,7 +197,8 @@ class DNSEndpoint:
         raise ValueError("Failed to update DNS policy")
 
     async def delete(self, site_id: str, policy_id: str) -> bool:
-        """Delete a DNS policy.
+        """
+        Delete a DNS policy.
 
         Args:
             site_id: The site ID.
@@ -194,6 +206,7 @@ class DNSEndpoint:
 
         Returns:
             True if successful.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/dns/policies/{policy_id}")
         await self._client._delete(path)

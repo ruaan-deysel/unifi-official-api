@@ -58,13 +58,19 @@ class VoucherCreateRequest(BaseModel):
     name: str | None = Field(None, description="Voucher note/label")
     count: int = Field(1, ge=1, le=10000, description="Number of vouchers to create")
     authorized_guest_limit: int | None = Field(
-        None, alias="authorizedGuestLimit", ge=1, description="Maximum guests per voucher"
+        None,
+        alias="authorizedGuestLimit",
+        ge=1,
+        description="Maximum guests per voucher",
     )
     time_limit_minutes: int | None = Field(
         None, alias="timeLimitMinutes", ge=1, description="Access duration in minutes"
     )
     data_usage_limit_mbytes: int | None = Field(
-        None, alias="dataUsageLimitMBytes", ge=1, description="Download limit in megabytes"
+        None,
+        alias="dataUsageLimitMBytes",
+        ge=1,
+        description="Download limit in megabytes",
     )
     rx_rate_limit_kbps: int | None = Field(
         None, alias="rxRateLimitKbps", ge=1, description="Download speed limit"

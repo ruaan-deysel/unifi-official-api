@@ -14,10 +14,12 @@ class NetworksEndpoint:
     """Endpoint for managing network configurations."""
 
     def __init__(self, client: UniFiNetworkClient) -> None:
-        """Initialize the networks endpoint.
+        """
+        Initialize the networks endpoint.
 
         Args:
             client: The UniFi Network client.
+
         """
         self._client = client
 
@@ -29,7 +31,8 @@ class NetworksEndpoint:
         limit: int | None = None,
         filter_str: str | None = None,
     ) -> list[Network]:
-        """List all networks.
+        """
+        List all networks.
 
         Args:
             site_id: The site ID.
@@ -39,6 +42,7 @@ class NetworksEndpoint:
 
         Returns:
             List of networks.
+
         """
         params: dict[str, Any] = {}
         if offset is not None:
@@ -60,7 +64,8 @@ class NetworksEndpoint:
         return []
 
     async def get(self, site_id: str, network_id: str) -> Network:
-        """Get a specific network.
+        """
+        Get a specific network.
 
         Args:
             site_id: The site ID.
@@ -68,6 +73,7 @@ class NetworksEndpoint:
 
         Returns:
             The network.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/networks/{network_id}")
         response = await self._client._get(path)
@@ -90,7 +96,8 @@ class NetworksEndpoint:
         dhcp_enabled: bool = True,
         **kwargs: Any,
     ) -> Network:
-        """Create a new network.
+        """
+        Create a new network.
 
         Args:
             site_id: The site ID.
@@ -102,6 +109,7 @@ class NetworksEndpoint:
 
         Returns:
             The created network.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/networks")
         data: dict[str, Any] = {
@@ -127,7 +135,8 @@ class NetworksEndpoint:
         network_id: str,
         **kwargs: Any,
     ) -> Network:
-        """Update a network.
+        """
+        Update a network.
 
         Args:
             site_id: The site ID.
@@ -136,6 +145,7 @@ class NetworksEndpoint:
 
         Returns:
             The updated network.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/networks/{network_id}")
         response = await self._client._patch(path, json_data=kwargs)
@@ -147,7 +157,8 @@ class NetworksEndpoint:
         raise ValueError("Failed to update network")
 
     async def delete(self, site_id: str, network_id: str) -> bool:
-        """Delete a network.
+        """
+        Delete a network.
 
         Args:
             site_id: The site ID.
@@ -155,13 +166,15 @@ class NetworksEndpoint:
 
         Returns:
             True if successful.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/networks/{network_id}")
         await self._client._delete(path)
         return True
 
     async def get_references(self, site_id: str, network_id: str) -> dict[str, Any]:
-        """Get references to a network.
+        """
+        Get references to a network.
 
         Returns information about what resources reference this network,
         such as WiFi broadcasts, firewall rules, or other configurations
@@ -173,6 +186,7 @@ class NetworksEndpoint:
 
         Returns:
             Dictionary containing references to this network.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/networks/{network_id}/references")
         response = await self._client._get(path)

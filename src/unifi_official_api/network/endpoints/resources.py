@@ -20,10 +20,12 @@ class ResourcesEndpoint:
     """Endpoint for accessing supporting network resources."""
 
     def __init__(self, client: UniFiNetworkClient) -> None:
-        """Initialize the resources endpoint.
+        """
+        Initialize the resources endpoint.
 
         Args:
             client: The UniFi Network client.
+
         """
         self._client = client
 
@@ -37,7 +39,8 @@ class ResourcesEndpoint:
         limit: int | None = None,
         filter_str: str | None = None,
     ) -> list[WANInterface]:
-        """List all WAN interfaces.
+        """
+        List all WAN interfaces.
 
         Args:
             site_id: The site ID.
@@ -47,6 +50,7 @@ class ResourcesEndpoint:
 
         Returns:
             List of WAN interfaces.
+
         """
         params: dict[str, Any] = {}
         if offset is not None:
@@ -77,7 +81,8 @@ class ResourcesEndpoint:
         limit: int | None = None,
         filter_str: str | None = None,
     ) -> list[VPNTunnel]:
-        """List all site-to-site VPN tunnels.
+        """
+        List all site-to-site VPN tunnels.
 
         Args:
             site_id: The site ID.
@@ -87,6 +92,7 @@ class ResourcesEndpoint:
 
         Returns:
             List of VPN tunnels.
+
         """
         params: dict[str, Any] = {}
         if offset is not None:
@@ -117,7 +123,8 @@ class ResourcesEndpoint:
         limit: int | None = None,
         filter_str: str | None = None,
     ) -> list[VPNServer]:
-        """List all VPN servers.
+        """
+        List all VPN servers.
 
         Args:
             site_id: The site ID.
@@ -127,6 +134,7 @@ class ResourcesEndpoint:
 
         Returns:
             List of VPN servers.
+
         """
         params: dict[str, Any] = {}
         if offset is not None:
@@ -157,7 +165,8 @@ class ResourcesEndpoint:
         limit: int | None = None,
         filter_str: str | None = None,
     ) -> list[RADIUSProfile]:
-        """List all RADIUS profiles.
+        """
+        List all RADIUS profiles.
 
         Args:
             site_id: The site ID.
@@ -167,6 +176,7 @@ class ResourcesEndpoint:
 
         Returns:
             List of RADIUS profiles.
+
         """
         params: dict[str, Any] = {}
         if offset is not None:
@@ -197,7 +207,8 @@ class ResourcesEndpoint:
         limit: int | None = None,
         filter_str: str | None = None,
     ) -> list[DeviceTag]:
-        """List all device tags.
+        """
+        List all device tags.
 
         Args:
             site_id: The site ID.
@@ -207,6 +218,7 @@ class ResourcesEndpoint:
 
         Returns:
             List of device tags.
+
         """
         params: dict[str, Any] = {}
         if offset is not None:

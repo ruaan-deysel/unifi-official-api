@@ -135,7 +135,8 @@ class Camera(BaseModel):
         *,
         use_srtp: bool = True,
     ) -> str:
-        """Construct an RTSP URL for this camera using the static format.
+        """
+        Construct an RTSP URL for this camera using the static format.
 
         WARNING: This constructs a static URL that may not work with all setups.
         The recommended approach is to use `cameras.create_rtsps_stream()` which
@@ -161,6 +162,7 @@ class Camera(BaseModel):
 
             # Alternative - static URL construction
             url = camera.construct_rtsp_url('192.168.1.1')
+
         """
         scheme = "rtsps" if use_srtp else "rtsp"
         srtp_param = "?enableSrtp" if use_srtp else ""

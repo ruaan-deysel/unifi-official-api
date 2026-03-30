@@ -16,7 +16,8 @@ class WANStatus(str, Enum):
 
 
 class WANInterface(BaseModel):
-    """WAN Interface model.
+    """
+    WAN Interface model.
 
     The integration API returns a simplified view with id and name.
     Additional fields like status and speeds may be available in some contexts.

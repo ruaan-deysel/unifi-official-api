@@ -14,10 +14,12 @@ class VouchersEndpoint:
     """Endpoint for managing hotspot vouchers."""
 
     def __init__(self, client: UniFiNetworkClient) -> None:
-        """Initialize the vouchers endpoint.
+        """
+        Initialize the vouchers endpoint.
 
         Args:
             client: The UniFi Network client.
+
         """
         self._client = client
 
@@ -29,7 +31,8 @@ class VouchersEndpoint:
         limit: int = 100,
         filter_str: str | None = None,
     ) -> list[Voucher]:
-        """List all vouchers.
+        """
+        List all vouchers.
 
         Args:
             site_id: The site ID.
@@ -40,6 +43,7 @@ class VouchersEndpoint:
 
         Returns:
             List of vouchers.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/hotspot/vouchers")
         params: dict[str, Any] = {"offset": offset, "limit": min(limit, 1000)}
@@ -57,7 +61,8 @@ class VouchersEndpoint:
         return []
 
     async def get(self, site_id: str, voucher_id: str) -> Voucher:
-        """Get a specific voucher.
+        """
+        Get a specific voucher.
 
         Args:
             site_id: The site ID.
@@ -65,6 +70,7 @@ class VouchersEndpoint:
 
         Returns:
             The voucher.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/hotspot/vouchers/{voucher_id}")
         response = await self._client._get(path)
@@ -89,7 +95,8 @@ class VouchersEndpoint:
         rx_rate_limit_kbps: int | None = None,
         tx_rate_limit_kbps: int | None = None,
     ) -> list[Voucher]:
-        """Generate new vouchers.
+        """
+        Generate new vouchers.
 
         Args:
             site_id: The site ID.
@@ -103,6 +110,7 @@ class VouchersEndpoint:
 
         Returns:
             List of created vouchers.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/hotspot/vouchers")
         data: dict[str, Any] = {"count": count}
@@ -130,7 +138,8 @@ class VouchersEndpoint:
         raise ValueError("Failed to create vouchers")
 
     async def delete(self, site_id: str, voucher_id: str) -> bool:
-        """Delete a specific voucher.
+        """
+        Delete a specific voucher.
 
         Args:
             site_id: The site ID.
@@ -138,13 +147,15 @@ class VouchersEndpoint:
 
         Returns:
             True if successful.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/hotspot/vouchers/{voucher_id}")
         await self._client._delete(path)
         return True
 
     async def delete_multiple(self, site_id: str, voucher_ids: list[str]) -> bool:
-        """Delete multiple vouchers.
+        """
+        Delete multiple vouchers.
 
         Args:
             site_id: The site ID.
@@ -152,6 +163,7 @@ class VouchersEndpoint:
 
         Returns:
             True if successful.
+
         """
         # Delete each voucher individually
         for voucher_id in voucher_ids:

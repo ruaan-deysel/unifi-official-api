@@ -72,10 +72,12 @@ class FirewallRule(BaseModel):
 
     @property
     def action_type(self) -> str:
-        """Get the action type as a string regardless of format.
+        """
+        Get the action type as a string regardless of format.
 
         Returns:
             The action type string (e.g., 'ALLOW', 'DENY', 'drop').
+
         """
         if isinstance(self.action, FirewallActionConfig):
             return self.action.type

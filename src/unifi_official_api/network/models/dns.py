@@ -28,7 +28,8 @@ class DNSPolicyMetadata(BaseModel):
 
 
 class DNSPolicy(BaseModel):
-    """Model representing a DNS policy.
+    """
+    Model representing a DNS policy.
 
     DNS policies allow custom DNS record management on a UniFi site,
     including A, AAAA, CNAME, MX, TXT, SRV records, and domain forwarding.
@@ -46,10 +47,12 @@ class DNSPolicy(BaseModel):
 
     @property
     def is_user_defined(self) -> bool:
-        """Check if this DNS policy was user-defined.
+        """
+        Check if this DNS policy was user-defined.
 
         Returns:
             True if the policy was created by a user (not system-defined).
+
         """
         if self.metadata and self.metadata.origin:
             return self.metadata.origin == "USER_DEFINED"

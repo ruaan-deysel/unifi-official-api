@@ -20,10 +20,12 @@ class TrafficEndpoint:
     """Endpoint for managing traffic matching lists and DPI resources."""
 
     def __init__(self, client: UniFiNetworkClient) -> None:
-        """Initialize the traffic endpoint.
+        """
+        Initialize the traffic endpoint.
 
         Args:
             client: The UniFi Network client.
+
         """
         self._client = client
 
@@ -37,7 +39,8 @@ class TrafficEndpoint:
         limit: int | None = None,
         filter_str: str | None = None,
     ) -> list[TrafficMatchingList]:
-        """List all traffic matching lists.
+        """
+        List all traffic matching lists.
 
         Args:
             site_id: The site ID.
@@ -48,6 +51,7 @@ class TrafficEndpoint:
 
         Returns:
             List of traffic matching lists.
+
         """
         params: dict[str, Any] = {}
         if offset is not None:
@@ -69,7 +73,8 @@ class TrafficEndpoint:
         return []
 
     async def get_list(self, site_id: str, list_id: str) -> TrafficMatchingList:
-        """Get a specific traffic matching list.
+        """
+        Get a specific traffic matching list.
 
         Args:
             site_id: The site ID.
@@ -77,6 +82,7 @@ class TrafficEndpoint:
 
         Returns:
             The traffic matching list.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/traffic-matching-lists/{list_id}")
         response = await self._client._get(path)
@@ -98,7 +104,8 @@ class TrafficEndpoint:
         entries: list[str] | None = None,
         description: str | None = None,
     ) -> TrafficMatchingList:
-        """Create a new traffic matching list.
+        """
+        Create a new traffic matching list.
 
         Args:
             site_id: The site ID.
@@ -109,6 +116,7 @@ class TrafficEndpoint:
 
         Returns:
             The created traffic matching list.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/traffic-matching-lists")
         data: dict[str, Any] = {
@@ -133,7 +141,8 @@ class TrafficEndpoint:
         list_id: str,
         **kwargs: Any,
     ) -> TrafficMatchingList:
-        """Update a traffic matching list.
+        """
+        Update a traffic matching list.
 
         Args:
             site_id: The site ID.
@@ -142,6 +151,7 @@ class TrafficEndpoint:
 
         Returns:
             The updated traffic matching list.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/traffic-matching-lists/{list_id}")
         response = await self._client._put(path, json_data=kwargs)
@@ -153,7 +163,8 @@ class TrafficEndpoint:
         raise ValueError("Failed to update traffic matching list")
 
     async def delete_list(self, site_id: str, list_id: str) -> bool:
-        """Delete a traffic matching list.
+        """
+        Delete a traffic matching list.
 
         Args:
             site_id: The site ID.
@@ -161,6 +172,7 @@ class TrafficEndpoint:
 
         Returns:
             True if successful.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/traffic-matching-lists/{list_id}")
         await self._client._delete(path)
@@ -169,13 +181,15 @@ class TrafficEndpoint:
     # DPI Resources
 
     async def get_dpi_categories(self, site_id: str) -> list[DPICategory]:
-        """List all DPI categories.
+        """
+        List all DPI categories.
 
         Args:
             site_id: The site ID.
 
         Returns:
             List of DPI categories.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/dpi/categories")
         response = await self._client._get(path)
@@ -189,13 +203,15 @@ class TrafficEndpoint:
         return []
 
     async def get_dpi_applications(self, site_id: str) -> list[DPIApplication]:
-        """List all DPI applications.
+        """
+        List all DPI applications.
 
         Args:
             site_id: The site ID.
 
         Returns:
             List of DPI applications.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/dpi/applications")
         response = await self._client._get(path)
@@ -209,13 +225,15 @@ class TrafficEndpoint:
         return []
 
     async def get_countries(self, site_id: str) -> list[Country]:
-        """List all countries/regions.
+        """
+        List all countries/regions.
 
         Args:
             site_id: The site ID.
 
         Returns:
             List of countries.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/geo/countries")
         response = await self._client._get(path)

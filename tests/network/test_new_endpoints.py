@@ -26,7 +26,7 @@ class TestVouchersEndpoint:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/hotspot/vouchers.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/hotspot/vouchers.*"
                 ),
                 payload={
                     "data": [
@@ -49,7 +49,7 @@ class TestVouchersEndpoint:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/hotspot/vouchers.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/hotspot/vouchers.*"
                 ),
                 payload={"data": []},
             )
@@ -64,7 +64,7 @@ class TestVouchersEndpoint:
         """Test getting a specific voucher."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/hotspot/vouchers/v-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/hotspot/vouchers/v-1",
                 payload={"data": {"id": "v-1", "code": "1234567890", "expired": False}},
             )
 
@@ -79,7 +79,7 @@ class TestVouchersEndpoint:
         """Test getting a voucher that doesn't exist."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/hotspot/vouchers/v-999",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/hotspot/vouchers/v-999",
                 payload={"data": []},
             )
 
@@ -93,7 +93,7 @@ class TestVouchersEndpoint:
         """Test creating vouchers."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/hotspot/vouchers",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/hotspot/vouchers",
                 payload={
                     "data": [
                         {"id": "v-1", "code": "1111111111", "expired": False},
@@ -117,7 +117,7 @@ class TestVouchersEndpoint:
         """Test creating vouchers failure."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/hotspot/vouchers",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/hotspot/vouchers",
                 payload={"data": []},
             )
 
@@ -131,7 +131,7 @@ class TestVouchersEndpoint:
         """Test deleting a voucher."""
         with aioresponses() as m:
             m.delete(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/hotspot/vouchers/v-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/hotspot/vouchers/v-1",
                 status=204,
             )
 
@@ -145,11 +145,11 @@ class TestVouchersEndpoint:
         """Test deleting multiple vouchers."""
         with aioresponses() as m:
             m.delete(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/hotspot/vouchers/v-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/hotspot/vouchers/v-1",
                 status=204,
             )
             m.delete(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/hotspot/vouchers/v-2",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/hotspot/vouchers/v-2",
                 status=204,
             )
 
@@ -173,7 +173,7 @@ class TestACLEndpoint:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/acl-rules.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/acl-rules.*"
                 ),
                 payload={
                     "data": [
@@ -202,7 +202,7 @@ class TestACLEndpoint:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/acl-rules.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/acl-rules.*"
                 ),
                 payload={"data": []},
             )
@@ -217,7 +217,7 @@ class TestACLEndpoint:
         """Test getting a specific ACL rule."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/acl-rules/acl-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/acl-rules/acl-1",
                 payload={
                     "data": {
                         "id": "acl-1",
@@ -240,7 +240,7 @@ class TestACLEndpoint:
         """Test getting an ACL rule that doesn't exist."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/acl-rules/acl-999",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/acl-rules/acl-999",
                 payload={"data": []},
             )
 
@@ -254,7 +254,7 @@ class TestACLEndpoint:
         """Test creating an ACL rule."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/acl-rules",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/acl-rules",
                 payload={
                     "data": {
                         "id": "acl-new",
@@ -283,7 +283,7 @@ class TestACLEndpoint:
         """Test creating an ACL rule failure."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/acl-rules",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/acl-rules",
                 payload={"data": []},
             )
 
@@ -297,7 +297,7 @@ class TestACLEndpoint:
         """Test updating an ACL rule."""
         with aioresponses() as m:
             m.put(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/acl-rules/acl-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/acl-rules/acl-1",
                 payload={
                     "data": {
                         "id": "acl-1",
@@ -320,7 +320,7 @@ class TestACLEndpoint:
         """Test updating an ACL rule failure."""
         with aioresponses() as m:
             m.put(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/acl-rules/acl-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/acl-rules/acl-1",
                 payload={"data": []},
             )
 
@@ -334,7 +334,7 @@ class TestACLEndpoint:
         """Test deleting an ACL rule."""
         with aioresponses() as m:
             m.delete(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/acl-rules/acl-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/acl-rules/acl-1",
                 status=204,
             )
 
@@ -358,7 +358,7 @@ class TestTrafficEndpoint:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/traffic-matching-lists.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/traffic-matching-lists.*"
                 ),
                 payload={
                     "data": [
@@ -379,7 +379,7 @@ class TestTrafficEndpoint:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/traffic-matching-lists.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/traffic-matching-lists.*"
                 ),
                 payload={"data": []},
             )
@@ -394,7 +394,7 @@ class TestTrafficEndpoint:
         """Test getting a specific traffic matching list."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/traffic-matching-lists/list-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/traffic-matching-lists/list-1",
                 payload={
                     "data": {
                         "id": "list-1",
@@ -416,7 +416,7 @@ class TestTrafficEndpoint:
         """Test getting a traffic matching list that doesn't exist."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/traffic-matching-lists/l-999",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/traffic-matching-lists/l-999",
                 payload={"data": []},
             )
 
@@ -430,7 +430,7 @@ class TestTrafficEndpoint:
         """Test creating a traffic matching list."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/traffic-matching-lists",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/traffic-matching-lists",
                 payload={
                     "data": {
                         "id": "list-new",
@@ -455,7 +455,7 @@ class TestTrafficEndpoint:
         """Test creating a traffic matching list failure."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/traffic-matching-lists",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/traffic-matching-lists",
                 payload={"data": []},
             )
 
@@ -471,7 +471,7 @@ class TestTrafficEndpoint:
         """Test updating a traffic matching list."""
         with aioresponses() as m:
             m.put(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/traffic-matching-lists/list-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/traffic-matching-lists/list-1",
                 payload={
                     "data": {
                         "id": "list-1",
@@ -494,7 +494,7 @@ class TestTrafficEndpoint:
         """Test updating a traffic matching list failure."""
         with aioresponses() as m:
             m.put(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/traffic-matching-lists/list-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/traffic-matching-lists/list-1",
                 payload={"data": []},
             )
 
@@ -508,7 +508,7 @@ class TestTrafficEndpoint:
         """Test deleting a traffic matching list."""
         with aioresponses() as m:
             m.delete(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/traffic-matching-lists/list-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/traffic-matching-lists/list-1",
                 status=204,
             )
 
@@ -522,7 +522,7 @@ class TestTrafficEndpoint:
         """Test getting DPI categories."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/dpi/categories",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/dpi/categories",
                 payload={"data": [{"id": "cat-1", "name": "Streaming"}]},
             )
 
@@ -537,7 +537,7 @@ class TestTrafficEndpoint:
         """Test getting DPI categories with empty response."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/dpi/categories",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/dpi/categories",
                 payload={"data": []},
             )
 
@@ -551,7 +551,7 @@ class TestTrafficEndpoint:
         """Test getting DPI applications."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/dpi/applications",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/dpi/applications",
                 payload={"data": [{"id": "app-1", "name": "Netflix"}]},
             )
 
@@ -566,7 +566,7 @@ class TestTrafficEndpoint:
         """Test getting DPI applications with empty response."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/dpi/applications",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/dpi/applications",
                 payload={"data": []},
             )
 
@@ -580,7 +580,7 @@ class TestTrafficEndpoint:
         """Test getting countries."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/geo/countries",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/geo/countries",
                 payload={"data": [{"code": "US", "name": "United States"}]},
             )
 
@@ -595,7 +595,7 @@ class TestTrafficEndpoint:
         """Test getting countries with empty response."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/geo/countries",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/geo/countries",
                 payload={"data": []},
             )
 
@@ -619,7 +619,7 @@ class TestResourcesEndpoint:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/wan.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/wan.*"
                 ),
                 payload={
                     "data": [{"id": "wan-1", "name": "WAN1", "status": "UP", "isPrimary": True}]
@@ -639,7 +639,7 @@ class TestResourcesEndpoint:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/wan.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/wan.*"
                 ),
                 payload={"data": []},
             )
@@ -655,7 +655,7 @@ class TestResourcesEndpoint:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/vpn/tunnels.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/vpn/tunnels.*"
                 ),
                 payload={"data": [{"id": "vpn-1", "name": "Site-to-Site VPN", "status": "UP"}]},
             )
@@ -672,7 +672,7 @@ class TestResourcesEndpoint:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/vpn/tunnels.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/vpn/tunnels.*"
                 ),
                 payload={"data": []},
             )
@@ -688,7 +688,7 @@ class TestResourcesEndpoint:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/vpn/servers.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/vpn/servers.*"
                 ),
                 payload={
                     "data": [
@@ -709,7 +709,7 @@ class TestResourcesEndpoint:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/vpn/servers.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/vpn/servers.*"
                 ),
                 payload={"data": []},
             )
@@ -725,7 +725,7 @@ class TestResourcesEndpoint:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/radius/profiles.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/radius/profiles.*"
                 ),
                 payload={"data": [{"id": "rad-1", "name": "Corp RADIUS", "authPort": 1812}]},
             )
@@ -742,7 +742,7 @@ class TestResourcesEndpoint:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/radius/profiles.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/radius/profiles.*"
                 ),
                 payload={"data": []},
             )
@@ -758,7 +758,7 @@ class TestResourcesEndpoint:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/device-tags.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/device-tags.*"
                 ),
                 payload={"data": [{"id": "tag-1", "name": "Production", "deviceCount": 5}]},
             )
@@ -776,7 +776,7 @@ class TestResourcesEndpoint:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/device-tags.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/device-tags.*"
                 ),
                 payload={"data": []},
             )
@@ -800,7 +800,7 @@ class TestNetworkClientApplicationInfo:
         """Test getting application info."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/info",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/info",
                 payload={"applicationVersion": "10.0.162"},
             )
 
@@ -814,7 +814,7 @@ class TestNetworkClientApplicationInfo:
         """Test getting application info with non-dict response raises ValueError."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/info",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/info",
                 payload=[],
             )
 
@@ -838,7 +838,7 @@ class TestAdditionalCoverage:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/hotspot/vouchers.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/hotspot/vouchers.*"
                 ),
                 payload={"data": [{"id": "v-1", "code": "123", "expired": False}]},
             )
@@ -853,7 +853,7 @@ class TestAdditionalCoverage:
         """Test creating vouchers with all options."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/hotspot/vouchers",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/hotspot/vouchers",
                 payload={"data": [{"id": "v-1", "code": "123", "expired": False}]},
             )
 
@@ -876,7 +876,7 @@ class TestAdditionalCoverage:
         """Test creating voucher with single dict response."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/hotspot/vouchers",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/hotspot/vouchers",
                 payload={"data": {"id": "v-1", "code": "123", "expired": False}},
             )
 
@@ -890,7 +890,7 @@ class TestAdditionalCoverage:
         """Test ACL with source and destination filters."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/acl-rules",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/acl-rules",
                 payload={
                     "data": {
                         "id": "acl-1",
@@ -924,7 +924,7 @@ class TestAdditionalCoverage:
         """Test creating traffic list with entries."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/traffic-matching-lists",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/traffic-matching-lists",
                 payload={
                     "data": {
                         "id": "list-1",
@@ -951,7 +951,7 @@ class TestAdditionalCoverage:
         """Test updating traffic list with entries."""
         with aioresponses() as m:
             m.put(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/traffic-matching-lists/list-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/traffic-matching-lists/list-1",
                 payload={
                     "data": {
                         "id": "list-1",
@@ -977,7 +977,7 @@ class TestAdditionalCoverage:
         """Test updating ACL with all options."""
         with aioresponses() as m:
             m.put(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/acl-rules/acl-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/acl-rules/acl-1",
                 payload={
                     "data": {
                         "id": "acl-1",
@@ -1011,7 +1011,7 @@ class TestAdditionalCoverage:
         """Test viewers get returning dict response instead of list."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/protect/integration/v1/sites/site-1/viewers",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/protect/integration/v1/viewers",
                 payload={
                     "data": {
                         "id": "v-1",
@@ -1043,7 +1043,7 @@ class TestDeviceActions:
         """Test device locate mode."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/devices/dev-1/locate",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/devices/dev-1/locate",
                 status=204,
             )
 
@@ -1057,7 +1057,7 @@ class TestDeviceActions:
         """Test getting devices pending adoption."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/pending-devices",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/pending-devices",
                 payload={"data": [{"id": "dev-1", "mac": "aa:bb:cc:dd:ee:ff"}]},
             )
 
@@ -1071,7 +1071,7 @@ class TestDeviceActions:
         """Test getting devices pending adoption when empty."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/pending-devices",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/pending-devices",
                 payload={"data": []},
             )
 
@@ -1085,7 +1085,7 @@ class TestDeviceActions:
         """Test getting device statistics."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/devices/dev-1/statistics/latest",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/devices/dev-1/statistics/latest",
                 payload={"data": {"cpu": 25, "memory": 50}},
             )
 
@@ -1099,7 +1099,7 @@ class TestDeviceActions:
         """Test getting device statistics when empty."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/devices/dev-1/statistics/latest",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/devices/dev-1/statistics/latest",
                 payload={"data": []},
             )
 
@@ -1113,7 +1113,7 @@ class TestDeviceActions:
         """Test getting raw legacy device statistics."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff",
                 payload={
                     "data": [
                         {
@@ -1132,9 +1132,7 @@ class TestDeviceActions:
                 connection_type=ConnectionType.REMOTE,
                 console_id="test-console-id",
             ) as client:
-                stats = await client.devices.get_legacy_device_stats(
-                    "default", "aa:bb:cc:dd:ee:ff"
-                )
+                stats = await client.devices.get_legacy_device_stats("default", "aa:bb:cc:dd:ee:ff")
                 assert stats["_id"] == "legacy-1"
                 assert isinstance(stats["port_table"], list)
                 assert stats["total_used_power"] == "3.50"
@@ -1143,7 +1141,7 @@ class TestDeviceActions:
         """Test getting raw legacy device statistics when response is empty."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff",
                 payload={"data": []},
             )
 
@@ -1152,28 +1150,28 @@ class TestDeviceActions:
                 connection_type=ConnectionType.REMOTE,
                 console_id="test-console-id",
             ) as client:
-                stats = await client.devices.get_legacy_device_stats(
-                    "default", "aa:bb:cc:dd:ee:ff"
-                )
+                stats = await client.devices.get_legacy_device_stats("default", "aa:bb:cc:dd:ee:ff")
                 assert stats == {}
 
     async def test_device_get_port_metrics(self, auth: ApiKeyAuth) -> None:
         """Test getting normalized legacy port metrics."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff",
                 payload={
                     "data": [
                         {
                             "port_table": [
                                 {
                                     "port_idx": 1,
+                                    "port_poe": True,
                                     "poe_power": "3.50",
                                     "rx_bytes": 100,
                                     "tx_bytes": 200,
                                 },
                                 {
                                     "portIdx": 2,
+                                    "portPoe": True,
                                     "poePower": "0.00",
                                     "rxBytes": 300,
                                     "txBytes": 400,
@@ -1190,9 +1188,7 @@ class TestDeviceActions:
                 connection_type=ConnectionType.REMOTE,
                 console_id="test-console-id",
             ) as client:
-                metrics = await client.devices.get_port_metrics(
-                    "default", "aa:bb:cc:dd:ee:ff"
-                )
+                metrics = await client.devices.get_port_metrics("default", "aa:bb:cc:dd:ee:ff")
                 assert metrics.poe_total_w == 3.50
                 assert metrics.poe_ports[1] == 3.50
                 assert metrics.poe_ports[2] == 0.0
@@ -1205,19 +1201,21 @@ class TestDeviceActions:
         """Test deriving total PoE when top-level total is missing."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff",
                 payload={
                     "data": [
                         {
                             "port_table": [
                                 {
                                     "port_idx": 1,
+                                    "port_poe": True,
                                     "poe_power": "1.25",
                                     "rx_bytes": 10,
                                     "tx_bytes": 20,
                                 },
                                 {
                                     "portIdx": "2",
+                                    "portPoe": True,
                                     "poePower": "2.75",
                                     "rxBytes": 30,
                                     "txBytes": 40,
@@ -1233,9 +1231,7 @@ class TestDeviceActions:
                 connection_type=ConnectionType.REMOTE,
                 console_id="test-console-id",
             ) as client:
-                metrics = await client.devices.get_port_metrics(
-                    "default", "aa:bb:cc:dd:ee:ff"
-                )
+                metrics = await client.devices.get_port_metrics("default", "aa:bb:cc:dd:ee:ff")
                 assert metrics.poe_total_w == 4.0
                 assert metrics.poe_ports[1] == 1.25
                 assert metrics.poe_ports[2] == 2.75
@@ -1248,7 +1244,7 @@ class TestDeviceActions:
         """Test getting normalized legacy port metrics when response is empty."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/api/s/default/stat/device/aa:bb:cc:dd:ee:ff",
                 payload={"data": []},
             )
 
@@ -1257,42 +1253,16 @@ class TestDeviceActions:
                 connection_type=ConnectionType.REMOTE,
                 console_id="test-console-id",
             ) as client:
-                metrics = await client.devices.get_port_metrics(
-                    "default", "aa:bb:cc:dd:ee:ff"
-                )
+                metrics = await client.devices.get_port_metrics("default", "aa:bb:cc:dd:ee:ff")
                 assert metrics.poe_total_w is None
                 assert metrics.poe_ports == {}
                 assert metrics.port_bytes == {}
-
-    async def test_device_port_action(self, auth: ApiKeyAuth) -> None:
-        """Test device port action."""
-        with aioresponses() as m:
-            m.patch(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/devices/dev-1/ports/1",
-                status=204,
-            )
-
-            async with UniFiNetworkClient(
-                auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
-            ) as client:
-                result = await client.devices.execute_port_action(
-                    "site-1", "dev-1", 1, poe_mode="auto", speed="1000", enabled=True
-                )
-                assert result is True
-
-    async def test_device_port_action_no_settings(self, auth: ApiKeyAuth) -> None:
-        """Test device port action without settings raises error."""
-        async with UniFiNetworkClient(
-            auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
-        ) as client:
-            with pytest.raises(ValueError, match="At least one"):
-                await client.devices.execute_port_action("site-1", "dev-1", 1)
 
     async def test_device_execute_action(self, auth: ApiKeyAuth) -> None:
         """Test device execute action."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/devices/dev-1/provision",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/devices/dev-1/provision",
                 status=204,
             )
 
@@ -1323,7 +1293,7 @@ class TestClientActions:
         """Test client forget."""
         with aioresponses() as m:
             m.delete(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/clients/aa:bb:cc:dd:ee:ff",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/clients/aa:bb:cc:dd:ee:ff",
                 status=204,
             )
 
@@ -1337,7 +1307,7 @@ class TestClientActions:
         """Test client execute action."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/clients/aa:bb:cc:dd:ee:ff/block",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/clients/aa:bb:cc:dd:ee:ff/block",
                 status=204,
             )
 
@@ -1369,7 +1339,7 @@ class TestResourcesAdditional:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/wan.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/wan.*"
                 ),
                 payload={"data": {"id": "wan-1", "name": "WAN1"}},
             )
@@ -1386,7 +1356,7 @@ class TestResourcesAdditional:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/vpn/tunnels.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/vpn/tunnels.*"
                 ),
                 payload={"data": {"id": "vpn-1", "name": "VPN1"}},
             )
@@ -1411,7 +1381,7 @@ class TestTrafficAdditional:
         """Test DPI categories when data is a single dict."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/dpi/categories",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/dpi/categories",
                 payload={"data": {"id": "cat-1", "name": "Test"}},
             )
 
@@ -1426,7 +1396,7 @@ class TestTrafficAdditional:
         """Test DPI applications when data is a single dict."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/dpi/applications",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/dpi/applications",
                 payload={"data": {"id": "app-1", "name": "Test"}},
             )
 
@@ -1441,7 +1411,7 @@ class TestTrafficAdditional:
         """Test countries when data is a single dict."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/geo/countries",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/geo/countries",
                 payload={"data": {"code": "US", "name": "USA"}},
             )
 
@@ -1457,7 +1427,7 @@ class TestTrafficAdditional:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/traffic-matching-lists.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/traffic-matching-lists.*"
                 ),
                 payload={
                     "data": {"id": "list-1", "type": "IP_ADDRESS", "name": "Test", "entries": []}
@@ -1485,7 +1455,7 @@ class TestFirewallEndpoint:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/zones.*"
                 ),
                 payload={
                     "data": [
@@ -1507,7 +1477,7 @@ class TestFirewallEndpoint:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/zones.*"
                 ),
                 payload={"data": []},
             )
@@ -1522,7 +1492,7 @@ class TestFirewallEndpoint:
         """Test getting a specific firewall zone."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones/zone-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/zones/zone-1",
                 payload={"data": {"id": "zone-1", "name": "Internal", "zoneKey": "INTERNAL"}},
             )
 
@@ -1537,7 +1507,7 @@ class TestFirewallEndpoint:
         """Test getting a firewall zone that doesn't exist."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones/zone-999",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/zones/zone-999",
                 payload={"data": []},
             )
 
@@ -1551,7 +1521,7 @@ class TestFirewallEndpoint:
         """Test creating a firewall zone."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/zones",
                 payload={"data": {"id": "zone-new", "name": "Custom Zone", "zoneKey": "CUSTOM"}},
             )
 
@@ -1566,7 +1536,7 @@ class TestFirewallEndpoint:
         """Test creating a firewall zone failure."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/zones",
                 payload={"data": []},
             )
 
@@ -1580,7 +1550,7 @@ class TestFirewallEndpoint:
         """Test updating a firewall zone."""
         with aioresponses() as m:
             m.put(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones/zone-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/zones/zone-1",
                 payload={"data": {"id": "zone-1", "name": "Updated Zone", "zoneKey": "CUSTOM"}},
             )
 
@@ -1594,7 +1564,7 @@ class TestFirewallEndpoint:
         """Test updating a firewall zone failure."""
         with aioresponses() as m:
             m.put(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones/zone-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/zones/zone-1",
                 payload={"data": []},
             )
 
@@ -1608,7 +1578,7 @@ class TestFirewallEndpoint:
         """Test deleting a firewall zone."""
         with aioresponses() as m:
             m.delete(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones/zone-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/zones/zone-1",
                 status=204,
             )
 
@@ -1623,7 +1593,7 @@ class TestFirewallEndpoint:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policies.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/policies.*"
                 ),
                 payload={
                     "data": [
@@ -1649,7 +1619,7 @@ class TestFirewallEndpoint:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policies.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/policies.*"
                 ),
                 payload={"data": []},
             )
@@ -1664,7 +1634,7 @@ class TestFirewallEndpoint:
         """Test getting a specific firewall rule."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policies/rule-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/policies/rule-1",
                 payload={
                     "data": {
                         "id": "rule-1",
@@ -1685,7 +1655,7 @@ class TestFirewallEndpoint:
         """Test getting a firewall rule that doesn't exist."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policies/rule-999",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/policies/rule-999",
                 payload={"data": []},
             )
 
@@ -1699,7 +1669,7 @@ class TestFirewallEndpoint:
         """Test creating a firewall rule."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policies",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/policies",
                 payload={
                     "data": {
                         "id": "rule-new",
@@ -1725,7 +1695,7 @@ class TestFirewallEndpoint:
         """Test creating a firewall rule failure."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policies",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/policies",
                 payload={"data": []},
             )
 
@@ -1737,9 +1707,23 @@ class TestFirewallEndpoint:
 
     async def test_firewall_update_rule(self, auth: ApiKeyAuth) -> None:
         """Test updating a firewall rule."""
+        rule_url = "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/policies/rule-1"
         with aioresponses() as m:
-            m.patch(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policies/rule-1",
+            # GET current rule
+            m.get(
+                rule_url,
+                payload={
+                    "data": {
+                        "id": "rule-1",
+                        "name": "Old Rule",
+                        "action": "accept",
+                        "protocol": "all",
+                    }
+                },
+            )
+            # PUT updated rule
+            m.put(
+                rule_url,
                 payload={
                     "data": {
                         "id": "rule-1",
@@ -1757,24 +1741,25 @@ class TestFirewallEndpoint:
                 assert rule.name == "Updated Rule"
 
     async def test_firewall_update_rule_failed(self, auth: ApiKeyAuth) -> None:
-        """Test updating a firewall rule failure."""
+        """Test updating a firewall rule failure when GET returns empty."""
+        rule_url = "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/policies/rule-1"
         with aioresponses() as m:
-            m.patch(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policies/rule-1",
+            m.get(
+                rule_url,
                 payload={"data": []},
             )
 
             async with UniFiNetworkClient(
                 auth=auth, connection_type=ConnectionType.REMOTE, console_id="test-console-id"
             ) as client:
-                with pytest.raises(ValueError, match="Failed"):
+                with pytest.raises(ValueError, match="not found"):
                     await client.firewall.update_rule("site-1", "rule-1", name="Test")
 
     async def test_firewall_delete_rule(self, auth: ApiKeyAuth) -> None:
         """Test deleting a firewall rule."""
         with aioresponses() as m:
             m.delete(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policies/rule-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/policies/rule-1",
                 status=204,
             )
 
@@ -1798,7 +1783,7 @@ class TestACLAdditional:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/acl-rules.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/acl-rules.*"
                 ),
                 payload={
                     "data": {
@@ -1833,7 +1818,7 @@ class TestDNSEndpoint:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/dns/policies.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/dns/policies.*"
                 ),
                 payload={
                     "data": [
@@ -1870,7 +1855,7 @@ class TestDNSEndpoint:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/dns/policies.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/dns/policies.*"
                 ),
                 payload={"data": []},
             )
@@ -1885,7 +1870,7 @@ class TestDNSEndpoint:
         """Test getting a specific DNS policy."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/dns/policies/dns-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/dns/policies/dns-1",
                 payload={
                     "data": {
                         "id": "dns-1",
@@ -1908,7 +1893,7 @@ class TestDNSEndpoint:
         """Test creating a DNS policy."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/dns/policies",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/dns/policies",
                 payload={
                     "data": {
                         "id": "dns-new",
@@ -1939,7 +1924,7 @@ class TestDNSEndpoint:
         """Test updating a DNS policy."""
         with aioresponses() as m:
             m.put(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/dns/policies/dns-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/dns/policies/dns-1",
                 payload={
                     "data": {
                         "id": "dns-1",
@@ -1968,7 +1953,7 @@ class TestDNSEndpoint:
         """Test deleting a DNS policy."""
         with aioresponses() as m:
             m.delete(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/dns/policies/dns-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/dns/policies/dns-1",
                 status=204,
             )
 
@@ -1991,7 +1976,7 @@ class TestFirewallZoneCRUD:
         """Test getting a specific firewall zone."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones/zone-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/zones/zone-1",
                 payload={
                     "data": {
                         "id": "zone-1",
@@ -2013,7 +1998,7 @@ class TestFirewallZoneCRUD:
         """Test getting a zone that doesn't exist."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones/zone-999",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/zones/zone-999",
                 payload={"data": []},
             )
 
@@ -2027,7 +2012,7 @@ class TestFirewallZoneCRUD:
         """Test creating a firewall zone."""
         with aioresponses() as m:
             m.post(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/zones",
                 payload={
                     "data": {
                         "id": "zone-new",
@@ -2052,7 +2037,7 @@ class TestFirewallZoneCRUD:
         """Test updating a firewall zone."""
         with aioresponses() as m:
             m.put(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones/zone-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/zones/zone-1",
                 payload={
                     "data": {
                         "id": "zone-1",
@@ -2078,7 +2063,7 @@ class TestFirewallZoneCRUD:
         """Test deleting a firewall zone."""
         with aioresponses() as m:
             m.delete(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/zones/zone-1",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/zones/zone-1",
                 status=204,
             )
 
@@ -2098,10 +2083,23 @@ class TestFirewallPatchAndOrdering:
         return ApiKeyAuth(api_key="test-api-key")
 
     async def test_patch_rule(self, auth: ApiKeyAuth) -> None:
-        """Test patching a firewall rule."""
+        """Test patching a firewall rule (delegates to update_rule: GET + PUT)."""
+        rule_url = "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/policies/rule-1"
         with aioresponses() as m:
-            m.patch(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policies/rule-1",
+            m.get(
+                rule_url,
+                payload={
+                    "data": {
+                        "id": "rule-1",
+                        "name": "Test Rule",
+                        "enabled": True,
+                        "action": "drop",
+                        "protocol": "all",
+                    }
+                },
+            )
+            m.put(
+                rule_url,
                 payload={
                     "data": {
                         "id": "rule-1",
@@ -2125,7 +2123,7 @@ class TestFirewallPatchAndOrdering:
         with aioresponses() as m:
             m.get(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policy-orderings.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/policy-orderings.*"
                 ),
                 payload={
                     "data": {
@@ -2156,7 +2154,7 @@ class TestFirewallPatchAndOrdering:
         with aioresponses() as m:
             m.put(
                 re.compile(
-                    r".*/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/firewall/policy-orderings.*"
+                    r".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/firewall/policy-orderings.*"
                 ),
                 payload={
                     "data": {
@@ -2195,7 +2193,7 @@ class TestACLOrdering:
         """Test getting ACL rule ordering."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/acl-rules/ordering",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/acl-rules/ordering",
                 payload={
                     "data": {
                         "orderedAclRuleIds": ["acl-2", "acl-1", "acl-3"],
@@ -2213,7 +2211,7 @@ class TestACLOrdering:
         """Test updating ACL rule ordering."""
         with aioresponses() as m:
             m.put(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/acl-rules/ordering",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/acl-rules/ordering",
                 payload={
                     "data": {
                         "orderedAclRuleIds": ["acl-3", "acl-1", "acl-2"],
@@ -2243,7 +2241,7 @@ class TestNetworkReferences:
         """Test getting network references."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/networks/net-1/references",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/networks/net-1/references",
                 payload={
                     "data": {
                         "referenceResources": [
@@ -2274,7 +2272,7 @@ class TestNetworkReferences:
         """Test getting network references when none exist."""
         with aioresponses() as m:
             m.get(
-                "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/site-1/networks/net-1/references",
+                "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/site-1/networks/net-1/references",
                 payload={
                     "data": {
                         "referenceResources": [],

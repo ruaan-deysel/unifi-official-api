@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 import pytest
 from aioresponses import aioresponses
 
@@ -324,8 +326,14 @@ class TestNetworkEndpoints:
         """Test listing firewall rules."""
         with aioresponses() as m:
             m.get(
-                f"{base_url}/proxy/network/integration/v1/sites/{site_id}/firewall/policies",
-                payload={"data": [{"id": "rule-1", "name": "Block", "action": "drop"}]},
+                re.compile(
+                    rf".*{re.escape(base_url)}/proxy/network/integration/v1/sites/{site_id}/firewall/policies.*"
+                ),
+                payload={
+                    "data": [{"id": "rule-1", "name": "Block", "action": "drop"}],
+                    "totalCount": 1,
+                    "count": 1,
+                },
             )
 
             async with UniFiNetworkClient(
@@ -364,10 +372,17 @@ class TestNetworkEndpoints:
                 assert rule.name == "Allow"
 
     async def test_firewall_update_rule(self, auth: LocalAuth, base_url: str, site_id: str) -> None:
-        """Test updating a firewall rule."""
+        """Test updating a firewall rule (GET + PUT)."""
+        rule_url = (
+            f"{base_url}/proxy/network/integration/v1/sites/{site_id}/firewall/policies/rule-1"
+        )
         with aioresponses() as m:
-            m.patch(
-                f"{base_url}/proxy/network/integration/v1/sites/{site_id}/firewall/policies/rule-1",
+            m.get(
+                rule_url,
+                payload={"data": {"id": "rule-1", "name": "Old"}},
+            )
+            m.put(
+                rule_url,
                 payload={"data": {"id": "rule-1", "name": "Updated"}},
             )
 

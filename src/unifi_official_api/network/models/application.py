@@ -6,7 +6,8 @@ from pydantic import BaseModel, Field
 
 
 class ApplicationInfo(BaseModel):
-    """UniFi Network application information.
+    """
+    UniFi Network application information.
 
     Returned by the GET /v1/info endpoint.
     """

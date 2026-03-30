@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import aiohttp
 
 from ..auth import ApiKeyAuth, LocalAuth
@@ -31,7 +33,8 @@ from .models import ApplicationInfo
 
 
 class UniFiNetworkClient(BaseUniFiClient):
-    """Async client for the UniFi Network API.
+    """
+    Async client for the UniFi Network API.
 
     This client provides access to the official UniFi Network API for managing
     network devices, clients, networks, WiFi configurations, and more.
@@ -86,20 +89,20 @@ class UniFiNetworkClient(BaseUniFiClient):
         timeout: int = DEFAULT_TIMEOUT,
         connect_timeout: int = DEFAULT_CONNECT_TIMEOUT,
     ) -> None:
-        """Initialize the UniFi Network client.
+        """
+        Initialize the UniFi Network client.
 
         Args:
             auth: API key authentication (ApiKeyAuth for cloud, LocalAuth for local).
             base_url: Base URL for the API. For LOCAL, this is the console IP
                 (e.g., https://192.168.1.1). For REMOTE, defaults to api.ui.com.
             connection_type: Connection type (LOCAL or REMOTE).
-            console_id: Console ID for REMOTE connections (required for REMOTE).
+            console_id: Console ID for REMOTE connections. Optional when using
+                discovery-only cloud endpoints like ``get_hosts()``.
             session: Optional aiohttp session to reuse.
             timeout: Request timeout in seconds.
             connect_timeout: Connection timeout in seconds.
 
-        Raises:
-            ValueError: If REMOTE connection type is used without console_id.
         """
         # Determine base URL
         if base_url is None:
@@ -107,10 +110,6 @@ class UniFiNetworkClient(BaseUniFiClient):
                 base_url = NETWORK_API_BASE_URL
             else:
                 raise ValueError("base_url is required for LOCAL connection type")
-
-        # Validate console_id for REMOTE
-        if connection_type == ConnectionType.REMOTE and not console_id:
-            raise ValueError("console_id is required for REMOTE connection type")
 
         super().__init__(
             auth=auth,
@@ -146,14 +145,23 @@ class UniFiNetworkClient(BaseUniFiClient):
         """Return the console ID (for REMOTE connections)."""
         return self._console_id
 
+    def _require_console_id(self) -> str:
+        """Return the configured console ID or raise when it is missing."""
+        if self._connection_type == ConnectionType.REMOTE and not self._console_id:
+            raise ValueError("console_id is required for REMOTE connection type")
+
+        return self._console_id or ""
+
     def build_api_path(self, endpoint: str) -> str:
-        """Build the full API path based on connection type.
+        """
+        Build the full API path based on connection type.
 
         Args:
             endpoint: The API endpoint path (e.g., "/sites", "/sites/{siteId}/devices").
 
         Returns:
             Full API path with proper prefix for the connection type.
+
         """
         # Ensure endpoint starts with /
         if not endpoint.startswith("/"):
@@ -162,35 +170,63 @@ class UniFiNetworkClient(BaseUniFiClient):
         if self._connection_type == ConnectionType.LOCAL:
             # Local: /proxy/network/integration/v1{endpoint}
             return f"{NETWORK_INTEGRATION_PATH}{endpoint}"
-        else:
-            # Remote: /v1/connector/consoles/{consoleId}/proxy/network/integration/v1{endpoint}
-            return f"/v1/connector/consoles/{self._console_id}{NETWORK_INTEGRATION_PATH}{endpoint}"
+
+        console_id = self._require_console_id()
+
+        # Remote: /v1/connector/consoles/{consoleId}/network/integration/v1{endpoint}
+        # The connector adds /proxy/ when forwarding to the console, so strip it.
+        connector_path = NETWORK_INTEGRATION_PATH.removeprefix("/proxy")
+        return f"/v1/connector/consoles/{console_id}{connector_path}{endpoint}"
 
     def build_legacy_api_path(self, site_name: str, endpoint: str) -> str:
-        """Build the full legacy API path based on connection type.
+        """
+        Build the full legacy Network API path based on connection type.
 
         Args:
-            site_name: The UniFi site name (for example, "default").
-            endpoint: The legacy endpoint path after `/s/{site_name}`
-                (for example, "/stat/device/{device_mac}").
+            site_name: The UniFi site name, for example ``default``.
+            endpoint: The legacy endpoint path after ``/s/{site_name}``, for
+                example ``/stat/device/{device_mac}``.
 
         Returns:
-            Full legacy API path with proper prefix for the connection type.
+            Full legacy API path with the proper prefix for the connection type.
+
         """
         if not site_name:
             raise ValueError("site_name is required")
 
-        # Ensure endpoint starts with /
         if not endpoint.startswith("/"):
             endpoint = f"/{endpoint}"
 
         if self._connection_type == ConnectionType.LOCAL:
             return f"{NETWORK_LEGACY_PATH}/s/{site_name}{endpoint}"
-        else:
-            return (
-                f"/v1/connector/consoles/{self._console_id}"
-                f"{NETWORK_LEGACY_PATH}/s/{site_name}{endpoint}"
-            )
+
+        console_id = self._require_console_id()
+
+        # The connector adds /proxy/ when forwarding to the console, so strip it.
+        connector_path = NETWORK_LEGACY_PATH.removeprefix("/proxy")
+        return f"/v1/connector/consoles/{console_id}" f"{connector_path}/s/{site_name}{endpoint}"
+
+    def build_legacy_global_api_path(self, endpoint: str) -> str:
+        """
+        Build a legacy Network API path that is not site-scoped.
+
+        Args:
+            endpoint: The legacy endpoint path after ``/proxy/network/api``.
+
+        Returns:
+            Full legacy API path with the proper prefix for the connection type.
+
+        """
+        if not endpoint.startswith("/"):
+            endpoint = f"/{endpoint}"
+
+        if self._connection_type == ConnectionType.LOCAL:
+            return f"{NETWORK_LEGACY_PATH}{endpoint}"
+
+        console_id = self._require_console_id()
+        # The connector adds /proxy/ when forwarding to the console, so strip it.
+        connector_path = NETWORK_LEGACY_PATH.removeprefix("/proxy")
+        return f"/v1/connector/consoles/{console_id}{connector_path}{endpoint}"
 
     @property
     def devices(self) -> DevicesEndpoint:
@@ -248,7 +284,8 @@ class UniFiNetworkClient(BaseUniFiClient):
         return self._dns
 
     async def validate_connection(self) -> bool:
-        """Validate the connection to the UniFi Network API.
+        """
+        Validate the connection to the UniFi Network API.
 
         Makes a simple API call to verify authentication and connectivity.
 
@@ -258,13 +295,39 @@ class UniFiNetworkClient(BaseUniFiClient):
         Raises:
             UniFiAuthenticationError: If authentication fails.
             UniFiConnectionError: If connection fails.
+
         """
         # Try to get sites list to validate connection
         response = await self._get(self.build_api_path("/sites"))
         return response is not None
 
+    async def get_hosts(self) -> list[dict[str, Any]]:
+        """
+        Get Site Manager hosts visible to the configured cloud API key.
+
+        Returns:
+            List of host dictionaries from ``GET /v1/hosts``.
+
+        Raises:
+            ValueError: If called for a local connection.
+
+        """
+        if self._connection_type != ConnectionType.REMOTE:
+            raise ValueError("get_hosts is only available for REMOTE connections")
+
+        response = await self._get("/v1/hosts")
+        if response is None:
+            return []
+
+        data = response.get("data", response) if isinstance(response, dict) else response
+        if isinstance(data, list):
+            return [item for item in data if isinstance(item, dict)]
+
+        return []
+
     async def get_application_info(self) -> ApplicationInfo:
-        """Get UniFi Network application information.
+        """
+        Get UniFi Network application information.
 
         Returns the application version and other metadata.
         Official endpoint: GET /v1/info
@@ -274,6 +337,7 @@ class UniFiNetworkClient(BaseUniFiClient):
 
         Raises:
             ValueError: If the response cannot be parsed.
+
         """
         path = self.build_api_path("/info")
         response = await self._get(path)

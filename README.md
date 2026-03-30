@@ -165,7 +165,7 @@ asyncio.run(main())
 | Endpoint | Methods |
 |----------|---------|
 | Sites | list, get |
-| Devices | list, get, restart, adopt, forget, locate, get_statistics, execute_port_action |
+| Devices | list, get, restart, adopt, forget, locate, get_statistics, execute_action |
 | Clients | list, get, block, unblock, reconnect, forget, execute_action |
 | Networks | list, get, create, update, delete, get_references |
 | WiFi | list, get, create, update, delete |

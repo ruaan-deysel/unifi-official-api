@@ -35,7 +35,8 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class BaseUniFiClient(ABC):
-    """Base async client for UniFi API interactions.
+    """
+    Base async client for UniFi API interactions.
 
     This class provides common functionality for both Network and Protect APIs.
     """
@@ -49,7 +50,8 @@ class BaseUniFiClient(ABC):
         timeout: int = DEFAULT_TIMEOUT,
         connect_timeout: int = DEFAULT_CONNECT_TIMEOUT,
     ) -> None:
-        """Initialize the base client.
+        """
+        Initialize the base client.
 
         Args:
             auth: Authentication configuration.
@@ -57,6 +59,7 @@ class BaseUniFiClient(ABC):
             session: Optional aiohttp session to reuse.
             timeout: Request timeout in seconds.
             connect_timeout: Connection timeout in seconds.
+
         """
         self._auth = auth
         self._base_url = URL(base_url)
@@ -79,10 +82,12 @@ class BaseUniFiClient(ABC):
         return self._closed
 
     async def _ensure_session(self) -> aiohttp.ClientSession:
-        """Ensure an aiohttp session exists.
+        """
+        Ensure an aiohttp session exists.
 
         Returns:
             The aiohttp session.
+
         """
         if self._session is None or self._session.closed:
             connector = aiohttp.TCPConnector(
@@ -96,20 +101,24 @@ class BaseUniFiClient(ABC):
         return self._session
 
     def _get_ssl_context(self) -> bool:
-        """Get SSL context based on auth configuration.
+        """
+        Get SSL context based on auth configuration.
 
         Returns:
             SSL verification setting.
+
         """
         if isinstance(self._auth, LocalAuth):
             return self._auth.verify_ssl
         return True
 
     def _get_headers(self) -> dict[str, str]:
-        """Get default headers for requests.
+        """
+        Get default headers for requests.
 
         Returns:
             Dictionary of headers.
+
         """
         headers = {
             HEADER_USER_AGENT: USER_AGENT,
@@ -120,13 +129,15 @@ class BaseUniFiClient(ABC):
         return headers
 
     def _build_url(self, path: str) -> URL:
-        """Build full URL from path.
+        """
+        Build full URL from path.
 
         Args:
             path: API path (should start with /).
 
         Returns:
             Full URL.
+
         """
         return self._base_url / path.lstrip("/")
 
@@ -139,7 +150,8 @@ class BaseUniFiClient(ABC):
         json_data: dict[str, Any] | None = None,
         headers: dict[str, str] | None = None,
     ) -> dict[str, Any] | list[Any] | None:
-        """Make an HTTP request to the API.
+        """
+        Make an HTTP request to the API.
 
         Args:
             method: HTTP method.
@@ -158,6 +170,7 @@ class BaseUniFiClient(ABC):
             UniFiRateLimitError: If rate limited.
             UniFiResponseError: If API returns an error.
             UniFiTimeoutError: If request times out.
+
         """
         session = await self._ensure_session()
         url = self._build_url(path)
@@ -193,7 +206,8 @@ class BaseUniFiClient(ABC):
         self,
         response: aiohttp.ClientResponse,
     ) -> dict[str, Any] | list[Any] | None:
-        """Handle API response.
+        """
+        Handle API response.
 
         Args:
             response: The aiohttp response.
@@ -206,6 +220,7 @@ class BaseUniFiClient(ABC):
             UniFiNotFoundError: If resource not found.
             UniFiRateLimitError: If rate limited.
             UniFiResponseError: If API returns an error.
+
         """
         status = response.status
         response_text = await response.text()
@@ -261,7 +276,8 @@ class BaseUniFiClient(ABC):
         *,
         params: dict[str, Any] | None = None,
     ) -> dict[str, Any] | list[Any] | None:
-        """Make a GET request.
+        """
+        Make a GET request.
 
         Args:
             path: API path.
@@ -269,6 +285,7 @@ class BaseUniFiClient(ABC):
 
         Returns:
             Response data.
+
         """
         return await self._request("GET", path, params=params)
 
@@ -279,7 +296,8 @@ class BaseUniFiClient(ABC):
         json_data: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
     ) -> dict[str, Any] | list[Any] | None:
-        """Make a POST request.
+        """
+        Make a POST request.
 
         Args:
             path: API path.
@@ -288,6 +306,7 @@ class BaseUniFiClient(ABC):
 
         Returns:
             Response data.
+
         """
         return await self._request("POST", path, json_data=json_data, params=params)
 
@@ -298,7 +317,8 @@ class BaseUniFiClient(ABC):
         json_data: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
     ) -> dict[str, Any] | list[Any] | None:
-        """Make a PUT request.
+        """
+        Make a PUT request.
 
         Args:
             path: API path.
@@ -307,6 +327,7 @@ class BaseUniFiClient(ABC):
 
         Returns:
             Response data.
+
         """
         return await self._request("PUT", path, json_data=json_data, params=params)
 
@@ -316,7 +337,8 @@ class BaseUniFiClient(ABC):
         *,
         json_data: dict[str, Any] | None = None,
     ) -> dict[str, Any] | list[Any] | None:
-        """Make a PATCH request.
+        """
+        Make a PATCH request.
 
         Args:
             path: API path.
@@ -324,6 +346,7 @@ class BaseUniFiClient(ABC):
 
         Returns:
             Response data.
+
         """
         return await self._request("PATCH", path, json_data=json_data)
 
@@ -333,7 +356,8 @@ class BaseUniFiClient(ABC):
         *,
         params: dict[str, Any] | None = None,
     ) -> dict[str, Any] | list[Any] | None:
-        """Make a DELETE request.
+        """
+        Make a DELETE request.
 
         Args:
             path: API path.
@@ -341,15 +365,18 @@ class BaseUniFiClient(ABC):
 
         Returns:
             Response data.
+
         """
         return await self._request("DELETE", path, params=params)
 
     @abstractmethod
     async def validate_connection(self) -> bool:
-        """Validate the connection to the API.
+        """
+        Validate the connection to the API.
 
         Returns:
             True if connection is valid.
+
         """
 
     async def close(self) -> None:

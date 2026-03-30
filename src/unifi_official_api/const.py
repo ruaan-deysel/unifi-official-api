@@ -9,7 +9,8 @@ from ._version import __version__
 
 
 class ConnectionType(str, Enum):
-    """Connection type for UniFi API access.
+    """
+    Connection type for UniFi API access.
 
     LOCAL: Direct connection to the UniFi console (e.g., https://192.168.1.1)
            - Uses local API key generated on the console
@@ -17,7 +18,7 @@ class ConnectionType(str, Enum):
 
     REMOTE: Cloud connection via Ubiquiti's API (https://api.ui.com)
             - Uses cloud API key from account.ui.com
-            - Endpoints: /v1/connector/consoles/{consoleId}/proxy/network/integration/v1/...
+            - Endpoints: /v1/connector/consoles/{consoleId}/network/integration/v1/...
     """
 
     LOCAL = "local"

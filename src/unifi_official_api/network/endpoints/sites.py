@@ -14,10 +14,12 @@ class SitesEndpoint:
     """Endpoint for managing UniFi sites."""
 
     def __init__(self, client: UniFiNetworkClient) -> None:
-        """Initialize the sites endpoint.
+        """
+        Initialize the sites endpoint.
 
         Args:
             client: The UniFi Network client.
+
         """
         self._client = client
 
@@ -28,7 +30,8 @@ class SitesEndpoint:
         limit: int | None = None,
         filter_str: str | None = None,
     ) -> list[Site]:
-        """List all sites.
+        """
+        List all sites.
 
         Args:
             offset: Number of sites to skip (pagination).
@@ -37,6 +40,7 @@ class SitesEndpoint:
 
         Returns:
             List of sites.
+
         """
         params: dict[str, Any] = {}
         if offset is not None:
@@ -58,13 +62,15 @@ class SitesEndpoint:
         return []
 
     async def get(self, site_id: str) -> Site:
-        """Get a specific site.
+        """
+        Get a specific site.
 
         Args:
             site_id: The site ID.
 
         Returns:
             The site.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}")
         response = await self._client._get(path)
@@ -76,3 +82,24 @@ class SitesEndpoint:
             if isinstance(data, list) and len(data) > 0:
                 return Site.model_validate(data[0])
         raise ValueError(f"Site {site_id} not found")
+
+    async def get_legacy_all(self) -> list[dict[str, Any]]:
+        """
+        List all sites from the legacy Network API.
+
+        Returns:
+            Raw legacy site dictionaries from ``/self/sites``.
+
+        """
+        path = self._client.build_legacy_global_api_path("/self/sites")
+        response = await self._client._get(path)
+
+        if response is None:
+            return []
+
+        data = response.get("data", response) if isinstance(response, dict) else response
+        if isinstance(data, list):
+            return [item for item in data if isinstance(item, dict)]
+        if isinstance(data, dict):
+            return [data]
+        return []

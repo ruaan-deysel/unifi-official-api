@@ -15,21 +15,25 @@ class CamerasEndpoint:
     """Endpoint for managing UniFi Protect cameras."""
 
     def __init__(self, client: UniFiProtectClient) -> None:
-        """Initialize the cameras endpoint.
+        """
+        Initialize the cameras endpoint.
 
         Args:
             client: The UniFi Protect client.
+
         """
         self._client = client
 
     async def get_all(self, site_id: str | None = None) -> list[Camera]:
-        """List all cameras.
+        """
+        List all cameras.
 
         Args:
             site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             List of cameras.
+
         """
         path = self._client.build_api_path("/cameras", site_id)
         response = await self._client._get(path)
@@ -43,7 +47,8 @@ class CamerasEndpoint:
         return []
 
     async def get(self, camera_id: str, site_id: str | None = None) -> Camera:
-        """Get a specific camera.
+        """
+        Get a specific camera.
 
         Args:
             camera_id: The camera ID.
@@ -51,6 +56,7 @@ class CamerasEndpoint:
 
         Returns:
             The camera.
+
         """
         path = self._client.build_api_path(f"/cameras/{camera_id}", site_id)
         response = await self._client._get(path)
@@ -69,7 +75,8 @@ class CamerasEndpoint:
         site_id: str | None = None,
         **kwargs: Any,
     ) -> Camera:
-        """Update camera settings.
+        """
+        Update camera settings.
 
         Args:
             camera_id: The camera ID.
@@ -78,6 +85,7 @@ class CamerasEndpoint:
 
         Returns:
             The updated camera.
+
         """
         path = self._client.build_api_path(f"/cameras/{camera_id}", site_id)
         response = await self._client._patch(path, json_data=kwargs)
@@ -94,7 +102,8 @@ class CamerasEndpoint:
         mode: RecordingMode,
         site_id: str | None = None,
     ) -> Camera:
-        """Set camera recording mode.
+        """
+        Set camera recording mode.
 
         Args:
             camera_id: The camera ID.
@@ -103,6 +112,7 @@ class CamerasEndpoint:
 
         Returns:
             The updated camera.
+
         """
         return await self.update(camera_id, site_id, recordingMode=mode.value)
 
@@ -113,7 +123,8 @@ class CamerasEndpoint:
         height: int | None = None,
         site_id: str | None = None,
     ) -> bytes:
-        """Get a snapshot from the camera.
+        """
+        Get a snapshot from the camera.
 
         Args:
             camera_id: The camera ID.
@@ -123,6 +134,7 @@ class CamerasEndpoint:
 
         Returns:
             The snapshot image bytes.
+
         """
         params: dict[str, Any] = {}
         if width:
@@ -134,7 +146,8 @@ class CamerasEndpoint:
         return await self._client._get_binary(path, params=params)
 
     async def restart(self, camera_id: str, site_id: str | None = None) -> bool:
-        """Restart a camera.
+        """
+        Restart a camera.
 
         Args:
             camera_id: The camera ID.
@@ -142,6 +155,7 @@ class CamerasEndpoint:
 
         Returns:
             True if successful.
+
         """
         path = self._client.build_api_path(f"/cameras/{camera_id}/restart", site_id)
         await self._client._post(path)
@@ -153,7 +167,8 @@ class CamerasEndpoint:
         volume: int,
         site_id: str | None = None,
     ) -> Camera:
-        """Set camera microphone volume.
+        """
+        Set camera microphone volume.
 
         Args:
             camera_id: The camera ID.
@@ -162,6 +177,7 @@ class CamerasEndpoint:
 
         Returns:
             The updated camera.
+
         """
         if not 0 <= volume <= 100:
             raise ValueError("Volume must be between 0 and 100")
@@ -173,7 +189,8 @@ class CamerasEndpoint:
         volume: int,
         site_id: str | None = None,
     ) -> Camera:
-        """Set camera speaker volume.
+        """
+        Set camera speaker volume.
 
         Args:
             camera_id: The camera ID.
@@ -182,6 +199,7 @@ class CamerasEndpoint:
 
         Returns:
             The updated camera.
+
         """
         if not 0 <= volume <= 100:
             raise ValueError("Volume must be between 0 and 100")
@@ -196,7 +214,8 @@ class CamerasEndpoint:
         zoom: float | None = None,
         site_id: str | None = None,
     ) -> bool:
-        """Move PTZ camera.
+        """
+        Move PTZ camera.
 
         Args:
             camera_id: The camera ID.
@@ -207,6 +226,7 @@ class CamerasEndpoint:
 
         Returns:
             True if successful.
+
         """
         data: dict[str, Any] = {}
         if pan is not None:
@@ -226,7 +246,8 @@ class CamerasEndpoint:
         preset_id: str,
         site_id: str | None = None,
     ) -> bool:
-        """Move PTZ camera to a preset position.
+        """
+        Move PTZ camera to a preset position.
 
         Args:
             camera_id: The camera ID.
@@ -235,6 +256,7 @@ class CamerasEndpoint:
 
         Returns:
             True if successful.
+
         """
         path = self._client.build_api_path(f"/cameras/{camera_id}/ptz/goto/{preset_id}", site_id)
         await self._client._post(path)
@@ -246,7 +268,8 @@ class CamerasEndpoint:
         slot: int,
         site_id: str | None = None,
     ) -> bool:
-        """Start PTZ patrol.
+        """
+        Start PTZ patrol.
 
         Args:
             camera_id: The camera ID.
@@ -255,6 +278,7 @@ class CamerasEndpoint:
 
         Returns:
             True if successful.
+
         """
         if not 0 <= slot <= 4:
             raise ValueError("Slot must be between 0 and 4")
@@ -267,7 +291,8 @@ class CamerasEndpoint:
         camera_id: str,
         site_id: str | None = None,
     ) -> bool:
-        """Stop active PTZ patrol.
+        """
+        Stop active PTZ patrol.
 
         Args:
             camera_id: The camera ID.
@@ -275,6 +300,7 @@ class CamerasEndpoint:
 
         Returns:
             True if successful.
+
         """
         path = self._client.build_api_path(f"/cameras/{camera_id}/ptz/patrol/stop", site_id)
         await self._client._post(path)
@@ -286,7 +312,8 @@ class CamerasEndpoint:
         qualities: list[str] | None = None,
         site_id: str | None = None,
     ) -> RTSPSStream:
-        """Create RTSPS stream for camera.
+        """
+        Create RTSPS stream for camera.
 
         Args:
             camera_id: The camera ID.
@@ -297,6 +324,7 @@ class CamerasEndpoint:
 
         Returns:
             RTSPS stream configuration.
+
         """
         path = self._client.build_api_path(f"/cameras/{camera_id}/rtsps-stream", site_id)
         body = {"qualities": qualities or ["high"]}
@@ -313,7 +341,8 @@ class CamerasEndpoint:
         camera_id: str,
         site_id: str | None = None,
     ) -> RTSPSStream:
-        """Get RTSPS stream configuration.
+        """
+        Get RTSPS stream configuration.
 
         Args:
             camera_id: The camera ID.
@@ -321,6 +350,7 @@ class CamerasEndpoint:
 
         Returns:
             RTSPS stream configuration.
+
         """
         path = self._client.build_api_path(f"/cameras/{camera_id}/rtsps-stream", site_id)
         response = await self._client._get(path)
@@ -337,7 +367,8 @@ class CamerasEndpoint:
         qualities: list[str] | None = None,
         site_id: str | None = None,
     ) -> bool:
-        """Delete RTSPS stream.
+        """
+        Delete RTSPS stream.
 
         Args:
             camera_id: The camera ID.
@@ -347,6 +378,7 @@ class CamerasEndpoint:
 
         Returns:
             True if successful.
+
         """
         path = self._client.build_api_path(f"/cameras/{camera_id}/rtsps-stream", site_id)
         params = {"qualities": qualities or ["high"]}
@@ -358,7 +390,8 @@ class CamerasEndpoint:
         camera_id: str,
         site_id: str | None = None,
     ) -> TalkbackSession:
-        """Create a talkback (two-way audio) session.
+        """
+        Create a talkback (two-way audio) session.
 
         Args:
             camera_id: The camera ID.
@@ -366,6 +399,7 @@ class CamerasEndpoint:
 
         Returns:
             Talkback session configuration with URL and audio settings.
+
         """
         path = self._client.build_api_path(f"/cameras/{camera_id}/talkback-session", site_id)
         response = await self._client._post(path)
@@ -381,7 +415,8 @@ class CamerasEndpoint:
         camera_id: str,
         site_id: str | None = None,
     ) -> Camera:
-        """Permanently disable camera microphone.
+        """
+        Permanently disable camera microphone.
 
         This action cannot be undone.
 
@@ -391,6 +426,7 @@ class CamerasEndpoint:
 
         Returns:
             The updated camera with microphone disabled.
+
         """
         path = self._client.build_api_path(f"/cameras/{camera_id}/disable-mic-permanently", site_id)
         response = await self._client._post(path)
@@ -407,7 +443,8 @@ class CamerasEndpoint:
         mode: str,
         site_id: str | None = None,
     ) -> Camera:
-        """Set camera HDR mode.
+        """
+        Set camera HDR mode.
 
         Args:
             camera_id: The camera ID.
@@ -416,6 +453,7 @@ class CamerasEndpoint:
 
         Returns:
             The updated camera.
+
         """
         if mode not in ("auto", "on", "off"):
             raise ValueError("HDR mode must be 'auto', 'on', or 'off'")
@@ -427,7 +465,8 @@ class CamerasEndpoint:
         mode: str,
         site_id: str | None = None,
     ) -> Camera:
-        """Set camera video mode.
+        """
+        Set camera video mode.
 
         Args:
             camera_id: The camera ID.
@@ -436,5 +475,6 @@ class CamerasEndpoint:
 
         Returns:
             The updated camera.
+
         """
         return await self.update(camera_id, site_id, videoMode=mode)

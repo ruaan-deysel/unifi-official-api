@@ -14,21 +14,25 @@ class ViewersEndpoint:
     """Endpoint for managing UniFi Protect viewers."""
 
     def __init__(self, client: UniFiProtectClient) -> None:
-        """Initialize the viewers endpoint.
+        """
+        Initialize the viewers endpoint.
 
         Args:
             client: The UniFi Protect client.
+
         """
         self._client = client
 
     async def get_all(self, site_id: str | None = None) -> list[Viewer]:
-        """List all viewers.
+        """
+        List all viewers.
 
         Args:
             site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             List of viewers.
+
         """
         path = self._client.build_api_path("/viewers", site_id)
         response = await self._client._get(path)
@@ -42,7 +46,8 @@ class ViewersEndpoint:
         return []
 
     async def get(self, viewer_id: str, site_id: str | None = None) -> Viewer:
-        """Get a specific viewer.
+        """
+        Get a specific viewer.
 
         Args:
             viewer_id: The viewer ID.
@@ -50,6 +55,7 @@ class ViewersEndpoint:
 
         Returns:
             The viewer.
+
         """
         path = self._client.build_api_path(f"/viewers/{viewer_id}", site_id)
         response = await self._client._get(path)
@@ -68,7 +74,8 @@ class ViewersEndpoint:
         site_id: str | None = None,
         **kwargs: Any,
     ) -> Viewer:
-        """Update viewer settings.
+        """
+        Update viewer settings.
 
         Args:
             viewer_id: The viewer ID.
@@ -77,6 +84,7 @@ class ViewersEndpoint:
 
         Returns:
             The updated viewer.
+
         """
         path = self._client.build_api_path(f"/viewers/{viewer_id}", site_id)
         response = await self._client._patch(path, json_data=kwargs)
@@ -93,7 +101,8 @@ class ViewersEndpoint:
         liveview_id: str | None,
         site_id: str | None = None,
     ) -> Viewer:
-        """Set the liveview for a viewer.
+        """
+        Set the liveview for a viewer.
 
         Args:
             viewer_id: The viewer ID.
@@ -102,5 +111,6 @@ class ViewersEndpoint:
 
         Returns:
             The updated viewer.
+
         """
         return await self.update(viewer_id, site_id, liveview=liveview_id)

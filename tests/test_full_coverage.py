@@ -31,7 +31,7 @@ from unifi_official_api.protect.models.nvr import StorageInfo
 # Base URL for mock endpoints
 NET_BASE = "https://192.168.1.1/proxy/network/integration/v1"
 PROTECT_BASE = "https://192.168.1.1/proxy/protect/integration/v1"
-REMOTE_NET = "https://api.ui.com/v1/connector/consoles/test-console/proxy/network/integration/v1"
+REMOTE_NET = "https://api.ui.com/v1/connector/consoles/test-console/network/integration/v1"
 
 
 # ===========================================================================
@@ -90,10 +90,11 @@ class TestNetworkClientCoverage:
             UniFiNetworkClient(auth=auth, connection_type=ConnectionType.LOCAL)
 
     async def test_remote_no_console_id_raises(self) -> None:
-        """REMOTE connection without console_id raises ValueError."""
+        """REMOTE connection without console_id raises ValueError lazily."""
         auth = ApiKeyAuth(api_key="test")
-        with pytest.raises(ValueError, match="console_id is required"):
-            UniFiNetworkClient(auth=auth, connection_type=ConnectionType.REMOTE)
+        async with UniFiNetworkClient(auth=auth, connection_type=ConnectionType.REMOTE) as client:
+            with pytest.raises(ValueError, match="console_id is required"):
+                client.build_api_path("/sites")
 
     async def test_connection_type_property(self, auth: LocalAuth) -> None:
         async with UniFiNetworkClient(
@@ -246,24 +247,6 @@ class TestNetworkEndpointPagination:
             ) as client:
                 stats = await client.devices.get_statistics("s1", "d1")
                 assert stats == {}
-
-    async def test_devices_execute_port_action(self, auth: LocalAuth) -> None:
-        with aioresponses() as m:
-            m.patch(re.compile(r".*/ports/.*"), payload={})
-            async with UniFiNetworkClient(
-                auth=auth, base_url="https://192.168.1.1", connection_type=ConnectionType.LOCAL
-            ) as client:
-                result = await client.devices.execute_port_action(
-                    "s1", "d1", 0, poe_mode="auto", speed="1000", enabled=True
-                )
-                assert result is True
-
-    async def test_devices_execute_port_action_no_params(self, auth: LocalAuth) -> None:
-        async with UniFiNetworkClient(
-            auth=auth, base_url="https://192.168.1.1", connection_type=ConnectionType.LOCAL
-        ) as client:
-            with pytest.raises(ValueError, match="At least one"):
-                await client.devices.execute_port_action("s1", "d1", 0)
 
     # --- Clients ---
     async def test_clients_get_all_pagination(self, auth: LocalAuth) -> None:
@@ -495,7 +478,11 @@ class TestNetworkEndpointPagination:
 
     async def test_wifi_update(self, auth: LocalAuth) -> None:
         with aioresponses() as m:
-            m.patch(
+            m.get(
+                re.compile(r".*/wifi/broadcasts/w1"),
+                payload={"data": {"id": "w1", "name": "Old", "ssid": "O"}},
+            )
+            m.put(
                 re.compile(r".*/wifi/broadcasts/w1"),
                 payload={"data": {"id": "w1", "name": "Updated", "ssid": "U"}},
             )
@@ -507,7 +494,7 @@ class TestNetworkEndpointPagination:
 
     async def test_wifi_update_error(self, auth: LocalAuth) -> None:
         with aioresponses() as m:
-            m.patch(re.compile(r".*/wifi/broadcasts/.*"), payload=[])
+            m.get(re.compile(r".*/wifi/broadcasts/.*"), payload={"data": []})
             async with UniFiNetworkClient(
                 auth=auth, base_url="https://192.168.1.1", connection_type=ConnectionType.LOCAL
             ) as client:
@@ -729,7 +716,11 @@ class TestNetworkEndpointPagination:
 
     async def test_firewall_update_rule(self, auth: LocalAuth) -> None:
         with aioresponses() as m:
-            m.patch(
+            m.get(
+                re.compile(r".*/firewall/policies/r1"),
+                payload={"data": {"id": "r1", "name": "Old", "action": "drop"}},
+            )
+            m.put(
                 re.compile(r".*/firewall/policies/r1"),
                 payload={"data": {"id": "r1", "name": "Updated", "action": "drop"}},
             )
@@ -741,7 +732,7 @@ class TestNetworkEndpointPagination:
 
     async def test_firewall_update_rule_error(self, auth: LocalAuth) -> None:
         with aioresponses() as m:
-            m.patch(re.compile(r".*/firewall/policies/.*"), payload=[])
+            m.get(re.compile(r".*/firewall/policies/.*"), payload={"data": []})
             async with UniFiNetworkClient(
                 auth=auth, base_url="https://192.168.1.1", connection_type=ConnectionType.LOCAL
             ) as client:
@@ -759,7 +750,11 @@ class TestNetworkEndpointPagination:
 
     async def test_firewall_patch_rule(self, auth: LocalAuth) -> None:
         with aioresponses() as m:
-            m.patch(
+            m.get(
+                re.compile(r".*/firewall/policies/r1"),
+                payload={"data": {"id": "r1", "name": "Old", "action": "drop"}},
+            )
+            m.put(
                 re.compile(r".*/firewall/policies/r1"),
                 payload={"data": {"id": "r1", "name": "Patched", "action": "drop"}},
             )
@@ -771,7 +766,11 @@ class TestNetworkEndpointPagination:
 
     async def test_firewall_patch_rule_list_response(self, auth: LocalAuth) -> None:
         with aioresponses() as m:
-            m.patch(
+            m.get(
+                re.compile(r".*/firewall/policies/r1"),
+                payload={"data": {"id": "r1", "name": "Old", "action": "drop"}},
+            )
+            m.put(
                 re.compile(r".*/firewall/policies/r1"),
                 payload={"data": [{"id": "r1", "name": "P", "action": "drop"}]},
             )
@@ -783,7 +782,7 @@ class TestNetworkEndpointPagination:
 
     async def test_firewall_patch_rule_error(self, auth: LocalAuth) -> None:
         with aioresponses() as m:
-            m.patch(re.compile(r".*/firewall/policies/.*"), payload=[])
+            m.get(re.compile(r".*/firewall/policies/.*"), payload={"data": []})
             async with UniFiNetworkClient(
                 auth=auth, base_url="https://192.168.1.1", connection_type=ConnectionType.LOCAL
             ) as client:
@@ -1199,17 +1198,21 @@ class TestProtectClientCoverage:
         async with UniFiProtectClient(
             auth=auth, connection_type=ConnectionType.REMOTE, console_id="c1"
         ) as client:
-            path = client.build_api_path("/cameras", site_id="s1")
+            path = client.build_api_path("/cameras")
             assert "/v1/connector/consoles/c1/" in path
-            assert "/sites/s1/cameras" in path
+            assert "/cameras" in path
+            assert "/sites/" not in path
 
-    async def test_build_api_path_remote_no_site_id_raises(self) -> None:
+    async def test_build_api_path_remote_site_id_ignored(self) -> None:
+        """Protect REMOTE build_api_path ignores site_id."""
         auth = ApiKeyAuth(api_key="test")
         async with UniFiProtectClient(
             auth=auth, connection_type=ConnectionType.REMOTE, console_id="c1"
         ) as client:
-            with pytest.raises(ValueError, match="site_id is required"):
-                client.build_api_path("/cameras")
+            path = client.build_api_path("/cameras", site_id="s1")
+            assert "/v1/connector/consoles/c1/" in path
+            assert "/cameras" in path
+            assert "/sites/" not in path
 
     async def test_build_api_path_no_leading_slash(self) -> None:
         auth = LocalAuth(api_key="test", verify_ssl=False)
@@ -2874,8 +2877,8 @@ class TestPartialBranches:
         async with UniFiNetworkClient(
             auth=auth, base_url="https://192.168.1.1", connection_type=ConnectionType.LOCAL
         ) as client:
-            with patch.object(client, "_patch", new_callable=AsyncMock, return_value=[]):
-                with pytest.raises(ValueError, match="Failed to update"):
+            with patch.object(client, "_get", new_callable=AsyncMock, return_value=[]):
+                with pytest.raises(ValueError, match="not found"):
                     await client.wifi.update("s1", "w1")
 
     async def test_wifi_delete_error(self, auth: LocalAuth) -> None:
@@ -3429,11 +3432,19 @@ class TestPartialBranches:
         async with UniFiNetworkClient(
             auth=auth, base_url="https://192.168.1.1", connection_type=ConnectionType.LOCAL
         ) as client:
-            with patch.object(
-                client,
-                "_patch",
-                new_callable=AsyncMock,
-                return_value={"id": "w1", "name": "Updated"},
+            with (
+                patch.object(
+                    client,
+                    "_get",
+                    new_callable=AsyncMock,
+                    return_value={"data": {"id": "w1", "name": "Old"}},
+                ),
+                patch.object(
+                    client,
+                    "_put",
+                    new_callable=AsyncMock,
+                    return_value={"id": "w1", "name": "Updated"},
+                ),
             ):
                 w = await client.wifi.update("s1", "w1", name="Updated")
                 assert w.id == "w1"
@@ -3479,8 +3490,8 @@ class TestPartialBranches:
         async with UniFiNetworkClient(
             auth=auth, base_url="https://192.168.1.1", connection_type=ConnectionType.LOCAL
         ) as client:
-            with patch.object(client, "_patch", new_callable=AsyncMock, return_value=[]):
-                with pytest.raises(ValueError, match="Failed to update"):
+            with patch.object(client, "_get", new_callable=AsyncMock, return_value={"data": []}):
+                with pytest.raises(ValueError, match="not found"):
                     await client.firewall.update_rule("s1", "r1")
 
     async def test_firewall_update_policy_ordering_error(self, auth: LocalAuth) -> None:

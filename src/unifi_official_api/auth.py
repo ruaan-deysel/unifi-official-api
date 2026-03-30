@@ -15,7 +15,8 @@ class ApiKeyType(Enum):
 
 @dataclass(frozen=True, slots=True)
 class ApiKeyAuth:
-    """API Key authentication for UniFi APIs.
+    """
+    API Key authentication for UniFi APIs.
 
     The API key is linked to a specific organization or UI account.
     """
@@ -24,17 +25,20 @@ class ApiKeyAuth:
     key_type: ApiKeyType | None = None
 
     def get_headers(self) -> dict[str, str]:
-        """Get authentication headers for API requests.
+        """
+        Get authentication headers for API requests.
 
         Returns:
             Dictionary of headers to include in requests.
+
         """
         return {"X-API-Key": self.api_key}
 
 
 @dataclass(frozen=True, slots=True)
 class LocalAuth:
-    """Local authentication for UniFi Protect (on-premise).
+    """
+    Local authentication for UniFi Protect (on-premise).
 
     Used when connecting directly to a local UniFi Protect installation.
     """
@@ -43,9 +47,11 @@ class LocalAuth:
     verify_ssl: bool = True
 
     def get_headers(self) -> dict[str, str]:
-        """Get authentication headers for API requests.
+        """
+        Get authentication headers for API requests.
 
         Returns:
             Dictionary of headers to include in requests.
+
         """
         return {"X-API-Key": self.api_key}

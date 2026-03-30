@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-03-30
+
+### Added
+
+#### Network API
+
+- **Sites**: `get_legacy_all()` method for retrieving raw legacy site dictionaries from `/self/sites`
+- **Auto-pagination**: `clients.get_all()` and `firewall.list_rules()` now automatically paginate to retrieve all results when called without explicit `offset`/`limit` parameters
+- **Device model**: Added `DeviceState.GETTING_READY` state and flexible `state`/`type` fields accepting raw strings for forward compatibility with new device states
+
+### Changed
+
+#### Network API
+
+- **REMOTE URL paths**: Removed `/proxy/` prefix from REMOTE connector URLs — the connector now adds this during forwarding
+- **Lazy console_id validation**: Network client no longer raises at `__init__` when `console_id` is missing for REMOTE connections; validation deferred to when API paths are built, allowing `get_hosts()` without a console_id
+- **`firewall.update_rule()`**: Changed from PATCH to GET+PUT pattern for compatibility with current UniFi controller versions
+- **`firewall.patch_rule()`**: Now delegates to `update_rule()` (GET+PUT)
+- **`wifi.update()`**: Changed from PATCH to GET+PUT pattern for compatibility with current UniFi controller versions
+- **PoE port metrics**: `get_port_metrics()` now requires `port_poe` flag on port data before including PoE metrics
+
+#### Protect API
+
+- **REMOTE URL paths**: Removed `/proxy/` prefix from REMOTE connector URLs
+- **REMOTE site paths**: REMOTE Protect API paths no longer include `/sites/{site_id}/` segments; all Protect endpoints now use site-agnostic paths
+
+### Removed
+
+- **`devices.execute_port_action()`**: Removed non-functional method
+
 ## [1.2.0] - 2026-02-17
 
 ### Added

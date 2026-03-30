@@ -9,11 +9,13 @@ class UniFiError(Exception):
     """Base exception for all UniFi API errors."""
 
     def __init__(self, message: str, *args: Any) -> None:
-        """Initialize the exception.
+        """
+        Initialize the exception.
 
         Args:
             message: The error message.
             *args: Additional arguments.
+
         """
         super().__init__(message, *args)
         self.message = message
@@ -36,12 +38,14 @@ class UniFiResponseError(UniFiError):
         status_code: int,
         response_body: str | None = None,
     ) -> None:
-        """Initialize the exception.
+        """
+        Initialize the exception.
 
         Args:
             message: The error message.
             status_code: The HTTP status code.
             response_body: The response body if available.
+
         """
         super().__init__(message)
         self.status_code = status_code
@@ -62,13 +66,15 @@ class UniFiRateLimitError(UniFiResponseError):
         response_body: str | None = None,
         retry_after: int | None = None,
     ) -> None:
-        """Initialize the exception.
+        """
+        Initialize the exception.
 
         Args:
             message: The error message.
             status_code: The HTTP status code.
             response_body: The response body if available.
             retry_after: Seconds to wait before retrying.
+
         """
         super().__init__(message, status_code, response_body)
         self.retry_after = retry_after

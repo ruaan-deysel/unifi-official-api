@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
-from aioresponses import aioresponses
-
 import pytest
+from aioresponses import aioresponses
 
 from unifi_official_api import ApiKeyAuth, ConnectionType
 from unifi_official_api.network import UniFiNetworkClient
@@ -53,7 +53,7 @@ class TestUniFiNetworkClient:
     ) -> None:
         """Test connection validation."""
         mock_aioresponse.get(
-            "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites",
+            "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites",
             payload={"data": []},
         )
 
@@ -72,7 +72,7 @@ class TestUniFiNetworkClient:
     ) -> None:
         """Test getting sites."""
         mock_aioresponse.get(
-            "https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites",
+            "https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites",
             payload={"data": [{"id": "site-1", "name": "Test Site"}]},
         )
 
@@ -99,7 +99,6 @@ class TestUniFiNetworkClient:
             assert client.sites is not None
             assert client.firewall is not None
 
-
     async def test_build_legacy_api_path_remote(self, auth: ApiKeyAuth) -> None:
         """Test building legacy API path for remote connections."""
         async with UniFiNetworkClient(
@@ -108,10 +107,11 @@ class TestUniFiNetworkClient:
             console_id="test-console-id",
         ) as client:
             path = client.build_legacy_api_path("default", "/stat/device/aa:bb:cc")
-            assert (
-                path
-                == "/v1/connector/consoles/test-console-id/proxy/network/api/s/default/stat/device/aa:bb:cc"
+            expected = (
+                "/v1/connector/consoles/test-console-id"
+                "/network/api/s/default/stat/device/aa:bb:cc"
             )
+            assert path == expected
 
     async def test_build_legacy_api_path_local(self, auth: ApiKeyAuth) -> None:
         """Test building legacy API path for local connections."""
@@ -123,9 +123,7 @@ class TestUniFiNetworkClient:
             path = client.build_legacy_api_path("default", "/stat/device/aa:bb:cc")
             assert path == "/proxy/network/api/s/default/stat/device/aa:bb:cc"
 
-    async def test_build_legacy_api_path_adds_leading_slash(
-        self, auth: ApiKeyAuth
-    ) -> None:
+    async def test_build_legacy_api_path_adds_leading_slash(self, auth: ApiKeyAuth) -> None:
         """Test legacy path builder adds a leading slash to endpoint."""
         async with UniFiNetworkClient(
             auth=auth,
@@ -135,9 +133,7 @@ class TestUniFiNetworkClient:
             path = client.build_legacy_api_path("default", "stat/device/aa:bb:cc")
             assert path == "/proxy/network/api/s/default/stat/device/aa:bb:cc"
 
-    async def test_build_legacy_api_path_requires_site_name(
-        self, auth: ApiKeyAuth
-    ) -> None:
+    async def test_build_legacy_api_path_requires_site_name(self, auth: ApiKeyAuth) -> None:
         """Test legacy path builder rejects empty site names."""
         async with UniFiNetworkClient(
             auth=auth,
@@ -161,7 +157,7 @@ class TestDevicesEndpoint:
     ) -> None:
         """Test listing devices."""
         mock_aioresponse.get(
-            f"https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/{site_id}/devices",
+            f"https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/{site_id}/devices",
             payload={"data": [sample_device]},
         )
 
@@ -185,7 +181,7 @@ class TestDevicesEndpoint:
         """Test getting a specific device."""
         device_id = sample_device["id"]
         mock_aioresponse.get(
-            f"https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/{site_id}/devices/{device_id}",
+            f"https://api.ui.com/v1/connector/consoles/test-console-id/network/integration/v1/sites/{site_id}/devices/{device_id}",
             payload={"data": sample_device},
         )
 
@@ -211,8 +207,10 @@ class TestClientsEndpoint:
     ) -> None:
         """Test listing clients."""
         mock_aioresponse.get(
-            f"https://api.ui.com/v1/connector/consoles/test-console-id/proxy/network/integration/v1/sites/{site_id}/clients",
-            payload={"data": [sample_client]},
+            re.compile(
+                rf".*/v1/connector/consoles/test-console-id/network/integration/v1/sites/{site_id}/clients.*"
+            ),
+            payload={"data": [sample_client], "totalCount": 1, "count": 1},
         )
 
         async with UniFiNetworkClient(

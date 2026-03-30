@@ -97,12 +97,9 @@ class TestUniFiProtectClient:
             connection_type=ConnectionType.REMOTE,
             console_id=console_id,
         ) as client:
-            # REMOTE connection includes site_id in path
-            path = client.build_api_path("/cameras", site_id="test-site")
-            expected = (
-                f"/v1/connector/consoles/{console_id}"
-                "/proxy/protect/integration/v1/sites/test-site/cameras"
-            )
+            # REMOTE connection no longer uses site_id
+            path = client.build_api_path("/cameras")
+            expected = f"/v1/connector/consoles/{console_id}" "/protect/integration/v1/cameras"
             assert path == expected
 
 

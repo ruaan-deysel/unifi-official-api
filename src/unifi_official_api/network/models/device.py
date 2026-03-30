@@ -36,6 +36,7 @@ class DeviceState(str, Enum):
     ADOPTING = "adopting"
     PROVISIONING = "provisioning"
     UPGRADING = "upgrading"
+    GETTING_READY = "GETTING_READY"  # API returns during device startup
     UNKNOWN = "unknown"
 
 
@@ -62,7 +63,7 @@ class Device(BaseModel):
     name: str | None = None
     model: str | None = None
     type: DeviceType | str | None = None  # Accept enum or raw string for new types
-    state: DeviceState | None = None
+    state: DeviceState | str | None = None  # Accept enum or raw string for new states
     ip: str | None = None
     firmware_version: str | None = Field(default=None, alias="firmwareVersion")
     uptime: int | None = None
@@ -89,12 +90,14 @@ class PortBytesMetrics(BaseModel):
 
 
 class LegacyPortMetrics(BaseModel):
-    """Normalized per-port metrics from the legacy Network API.
+    """
+    Normalized per-port metrics from the legacy Network API.
 
     Note:
-        Keys in ``poe_ports`` and ``port_bytes`` preserve the port index reported
-        by the legacy API. These keys are not normalized to the 0-based
-        ``port_idx`` numbering expected by ``execute_port_action()``.
+        Keys in ``poe_ports`` and ``port_bytes`` preserve the port index
+        reported by the legacy API. These keys are not normalized to the
+        0-based ``port_idx`` numbering expected by ``execute_port_action()``.
+
     """
 
     poe_total_w: float | None = None

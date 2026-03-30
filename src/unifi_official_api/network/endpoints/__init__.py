@@ -17,8 +17,8 @@ from .wifi import WifiEndpoint
 __all__ = [
     "ACLEndpoint",
     "ClientsEndpoint",
-    "DevicesEndpoint",
     "DNSEndpoint",
+    "DevicesEndpoint",
     "FirewallEndpoint",
     "NetworksEndpoint",
     "ResourcesEndpoint",

@@ -14,21 +14,25 @@ class ApplicationEndpoint:
     """Endpoint for application info and device asset files."""
 
     def __init__(self, client: UniFiProtectClient) -> None:
-        """Initialize the application endpoint.
+        """
+        Initialize the application endpoint.
 
         Args:
             client: The UniFi Protect client.
+
         """
         self._client = client
 
     async def get_info(self, site_id: str | None = None) -> ApplicationInfo:
-        """Get Protect application information.
+        """
+        Get Protect application information.
 
         Args:
             site_id: The site ID (required for REMOTE connections, ignored for LOCAL).
 
         Returns:
             Application information.
+
         """
         path = self._client.build_api_path("/meta/info", site_id)
         response = await self._client._get(path)
@@ -44,7 +48,8 @@ class ApplicationEndpoint:
         file_type: FileType = FileType.ANIMATIONS,
         site_id: str | None = None,
     ) -> list[DeviceFile]:
-        """List device asset files.
+        """
+        List device asset files.
 
         Args:
             file_type: Type of files to list.
@@ -52,6 +57,7 @@ class ApplicationEndpoint:
 
         Returns:
             List of device files.
+
         """
         path = self._client.build_api_path(f"/files/{file_type.value}", site_id)
         response = await self._client._get(path)
@@ -72,7 +78,8 @@ class ApplicationEndpoint:
         file_type: FileType = FileType.ANIMATIONS,
         site_id: str | None = None,
     ) -> DeviceFile:
-        """Upload a device asset file.
+        """
+        Upload a device asset file.
 
         Args:
             file_data: Binary file data (reserved for future multipart support).
@@ -86,6 +93,7 @@ class ApplicationEndpoint:
 
         Note:
             Full multipart file upload support is planned for a future release.
+
         """
         path = self._client.build_api_path(f"/files/{file_type.value}", site_id)
 
@@ -106,7 +114,8 @@ class ApplicationEndpoint:
         trigger_id: str,
         site_id: str | None = None,
     ) -> bool:
-        """Send webhook to alarm manager.
+        """
+        Send webhook to alarm manager.
 
         Args:
             trigger_id: User-defined trigger ID.
@@ -114,6 +123,7 @@ class ApplicationEndpoint:
 
         Returns:
             True if successful.
+
         """
         if not trigger_id:
             raise ValueError("Trigger ID is required")

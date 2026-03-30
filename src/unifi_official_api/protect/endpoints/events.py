@@ -15,10 +15,12 @@ class EventsEndpoint:
     """Endpoint for managing UniFi Protect events."""
 
     def __init__(self, client: UniFiProtectClient) -> None:
-        """Initialize the events endpoint.
+        """
+        Initialize the events endpoint.
 
         Args:
             client: The UniFi Protect client.
+
         """
         self._client = client
 
@@ -32,7 +34,8 @@ class EventsEndpoint:
         limit: int = 100,
         site_id: str | None = None,
     ) -> list[Event]:
-        """List events.
+        """
+        List events.
 
         Args:
             start: Start time filter.
@@ -44,6 +47,7 @@ class EventsEndpoint:
 
         Returns:
             List of events.
+
         """
         path = self._client.build_api_path("/events", site_id)
         params: dict[str, Any] = {"limit": limit}
@@ -68,7 +72,8 @@ class EventsEndpoint:
         return []
 
     async def get(self, event_id: str, site_id: str | None = None) -> Event:
-        """Get a specific event.
+        """
+        Get a specific event.
 
         Args:
             event_id: The event ID.
@@ -76,6 +81,7 @@ class EventsEndpoint:
 
         Returns:
             The event.
+
         """
         path = self._client.build_api_path(f"/events/{event_id}", site_id)
         response = await self._client._get(path)
@@ -95,7 +101,8 @@ class EventsEndpoint:
         height: int | None = None,
         site_id: str | None = None,
     ) -> bytes:
-        """Get event thumbnail image.
+        """
+        Get event thumbnail image.
 
         Args:
             event_id: The event ID.
@@ -105,6 +112,7 @@ class EventsEndpoint:
 
         Returns:
             The thumbnail image bytes.
+
         """
         params: dict[str, Any] = {}
         if width is not None:
@@ -120,7 +128,8 @@ class EventsEndpoint:
         event_id: str,
         site_id: str | None = None,
     ) -> bytes:
-        """Get event heatmap image.
+        """
+        Get event heatmap image.
 
         Args:
             event_id: The event ID.
@@ -128,6 +137,7 @@ class EventsEndpoint:
 
         Returns:
             The heatmap image bytes.
+
         """
         path = self._client.build_api_path(f"/events/{event_id}/heatmap", site_id)
         return await self._client._get_binary(path)
@@ -141,7 +151,8 @@ class EventsEndpoint:
         limit: int = 100,
         site_id: str | None = None,
     ) -> list[Event]:
-        """List motion events.
+        """
+        List motion events.
 
         Args:
             start: Start time filter.
@@ -152,6 +163,7 @@ class EventsEndpoint:
 
         Returns:
             List of motion events.
+
         """
         return await self.get_all(
             start=start,
@@ -171,7 +183,8 @@ class EventsEndpoint:
         limit: int = 100,
         site_id: str | None = None,
     ) -> list[Event]:
-        """List smart detect events.
+        """
+        List smart detect events.
 
         Args:
             start: Start time filter.
@@ -182,6 +195,7 @@ class EventsEndpoint:
 
         Returns:
             List of smart detect events.
+
         """
         return await self.get_all(
             start=start,

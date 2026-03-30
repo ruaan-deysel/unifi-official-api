@@ -14,10 +14,12 @@ class ACLEndpoint:
     """Endpoint for managing ACL (Access Control List) rules."""
 
     def __init__(self, client: UniFiNetworkClient) -> None:
-        """Initialize the ACL endpoint.
+        """
+        Initialize the ACL endpoint.
 
         Args:
             client: The UniFi Network client.
+
         """
         self._client = client
 
@@ -29,7 +31,8 @@ class ACLEndpoint:
         limit: int = 25,
         filter_str: str | None = None,
     ) -> list[ACLRule]:
-        """List all ACL rules.
+        """
+        List all ACL rules.
 
         Args:
             site_id: The site ID.
@@ -40,6 +43,7 @@ class ACLEndpoint:
 
         Returns:
             List of ACL rules.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/acl-rules")
         params: dict[str, Any] = {"offset": offset, "limit": min(limit, 200)}
@@ -57,7 +61,8 @@ class ACLEndpoint:
         return []
 
     async def get(self, site_id: str, rule_id: str) -> ACLRule:
-        """Get a specific ACL rule.
+        """
+        Get a specific ACL rule.
 
         Args:
             site_id: The site ID.
@@ -65,6 +70,7 @@ class ACLEndpoint:
 
         Returns:
             The ACL rule.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/acl-rules/{rule_id}")
         response = await self._client._get(path)
@@ -89,7 +95,8 @@ class ACLEndpoint:
         description: str | None = None,
         **kwargs: Any,
     ) -> ACLRule:
-        """Create a new ACL rule.
+        """
+        Create a new ACL rule.
 
         Args:
             site_id: The site ID.
@@ -103,6 +110,7 @@ class ACLEndpoint:
 
         Returns:
             The created ACL rule.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/acl-rules")
         data: dict[str, Any] = {
@@ -130,7 +138,8 @@ class ACLEndpoint:
         rule_id: str,
         **kwargs: Any,
     ) -> ACLRule:
-        """Update an ACL rule.
+        """
+        Update an ACL rule.
 
         Args:
             site_id: The site ID.
@@ -139,6 +148,7 @@ class ACLEndpoint:
 
         Returns:
             The updated ACL rule.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/acl-rules/{rule_id}")
         response = await self._client._put(path, json_data=kwargs)
@@ -150,7 +160,8 @@ class ACLEndpoint:
         raise ValueError("Failed to update ACL rule")
 
     async def delete(self, site_id: str, rule_id: str) -> bool:
-        """Delete an ACL rule.
+        """
+        Delete an ACL rule.
 
         Only user-defined rules can be deleted.
 
@@ -160,13 +171,15 @@ class ACLEndpoint:
 
         Returns:
             True if successful.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/acl-rules/{rule_id}")
         await self._client._delete(path)
         return True
 
     async def get_ordering(self, site_id: str) -> ACLRuleOrdering:
-        """Get user-defined ACL rule ordering.
+        """
+        Get user-defined ACL rule ordering.
 
         Args:
             site_id: The site ID.
@@ -176,6 +189,7 @@ class ACLEndpoint:
 
         Raises:
             ValueError: If the ordering cannot be retrieved.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/acl-rules/ordering")
         response = await self._client._get(path)
@@ -192,7 +206,8 @@ class ACLEndpoint:
         *,
         ordered_rule_ids: list[str],
     ) -> ACLRuleOrdering:
-        """Reorder user-defined ACL rules.
+        """
+        Reorder user-defined ACL rules.
 
         Args:
             site_id: The site ID.
@@ -203,6 +218,7 @@ class ACLEndpoint:
 
         Raises:
             ValueError: If the reordering fails.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/acl-rules/ordering")
         data: dict[str, Any] = {

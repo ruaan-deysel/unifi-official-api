@@ -31,7 +31,8 @@ from .websocket import ProtectWebSocket
 
 
 class UniFiProtectClient(BaseUniFiClient):
-    """Async client for the UniFi Protect API.
+    """
+    Async client for the UniFi Protect API.
 
     This client provides access to the official UniFi Protect API for managing
     cameras, sensors, lights, chimes, viewers, and NVR settings.
@@ -89,7 +90,8 @@ class UniFiProtectClient(BaseUniFiClient):
         timeout: int = DEFAULT_TIMEOUT,
         connect_timeout: int = DEFAULT_CONNECT_TIMEOUT,
     ) -> None:
-        """Initialize the UniFi Protect client.
+        """
+        Initialize the UniFi Protect client.
 
         Args:
             auth: API key authentication (ApiKeyAuth for cloud, LocalAuth for local).
@@ -103,6 +105,7 @@ class UniFiProtectClient(BaseUniFiClient):
 
         Raises:
             ValueError: If REMOTE connection type is used without console_id.
+
         """
         # Determine base URL
         if base_url is None:
@@ -148,8 +151,9 @@ class UniFiProtectClient(BaseUniFiClient):
         """Return the console ID (for REMOTE connections)."""
         return self._console_id
 
-    def build_api_path(self, endpoint: str, site_id: str | None = None) -> str:
-        """Build the full API path based on connection type.
+    def build_api_path(self, endpoint: str, site_id: str | None = None) -> str:  # noqa: ARG002
+        """
+        Build the full API path based on connection type.
 
         For LOCAL connections, the Protect API does not use site prefixes.
         For REMOTE connections, the site_id is included in the path.
@@ -160,6 +164,7 @@ class UniFiProtectClient(BaseUniFiClient):
 
         Returns:
             Full API path with proper prefix for the connection type.
+
         """
         # Ensure endpoint starts with /
         if not endpoint.startswith("/"):
@@ -169,13 +174,12 @@ class UniFiProtectClient(BaseUniFiClient):
             # Local: /proxy/protect/integration/v1{endpoint}
             # Note: LOCAL Protect API does NOT use /sites/{site_id} prefix
             return f"{PROTECT_INTEGRATION_PATH}{endpoint}"
-        else:
-            # Remote: /v1/connector/consoles/{consoleId}/proxy/protect/...
-            # .../integration/v1/sites/{siteId}{endpoint}
-            if not site_id:
-                raise ValueError("site_id is required for REMOTE connection type")
-            base = f"/v1/connector/consoles/{self._console_id}"
-            return f"{base}{PROTECT_INTEGRATION_PATH}/sites/{site_id}{endpoint}"
+        # Remote: /v1/connector/consoles/{consoleId}/protect/integration/v1{endpoint}
+        # The connector adds /proxy/ when forwarding to the console, so strip it.
+        # Protect API does not use site-scoped paths (unlike Network API).
+        connector_path = PROTECT_INTEGRATION_PATH.removeprefix("/proxy")
+        base = f"/v1/connector/consoles/{self._console_id}"
+        return f"{base}{connector_path}{endpoint}"
 
     @property
     def cameras(self) -> CamerasEndpoint:
@@ -228,7 +232,8 @@ class UniFiProtectClient(BaseUniFiClient):
         return self._websocket
 
     async def validate_connection(self) -> bool:
-        """Validate the connection to the UniFi Protect API.
+        """
+        Validate the connection to the UniFi Protect API.
 
         Makes a simple API call to verify authentication and connectivity.
 
@@ -238,15 +243,18 @@ class UniFiProtectClient(BaseUniFiClient):
         Raises:
             UniFiAuthenticationError: If authentication fails.
             UniFiConnectionError: If connection fails.
+
         """
         response = await self._get(self.build_api_path("/sites"))
         return response is not None
 
     async def get_sites(self) -> list[dict[str, Any]]:
-        """Get list of available sites.
+        """
+        Get list of available sites.
 
         Returns:
             List of site information dictionaries.
+
         """
         response = await self._get(self.build_api_path("/sites"))
         if response is None:
@@ -257,7 +265,8 @@ class UniFiProtectClient(BaseUniFiClient):
         return []
 
     async def get_host_id(self) -> str:
-        """Get the host ID for WebSocket subscriptions.
+        """
+        Get the host ID for WebSocket subscriptions.
 
         The host ID is the NVR ID, which is required for WebSocket subscriptions.
         This is useful for establishing real-time event streams.
@@ -278,6 +287,7 @@ class UniFiProtectClient(BaseUniFiClient):
                 async for event in events:
                     print(f"Event: {event}")
             ```
+
         """
         nvr = await self.nvr.get()
         return nvr.id
@@ -288,7 +298,8 @@ class UniFiProtectClient(BaseUniFiClient):
         *,
         params: dict[str, Any] | None = None,
     ) -> bytes:
-        """Make a GET request that returns binary data.
+        """
+        Make a GET request that returns binary data.
 
         Args:
             path: API path.
@@ -300,8 +311,8 @@ class UniFiProtectClient(BaseUniFiClient):
         Raises:
             UniFiConnectionError: If connection fails.
             UniFiTimeoutError: If request times out.
-        """
 
+        """
         session = await self._ensure_session()
         url = self._build_url(path)
         headers = self._get_headers()

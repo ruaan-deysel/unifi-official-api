@@ -13,11 +13,31 @@ if TYPE_CHECKING:
 class WifiEndpoint:
     """Endpoint for managing WiFi configurations."""
 
+    @staticmethod
+    def _extract_wifi_payload(
+        response: dict[str, Any] | list[Any] | None,
+    ) -> dict[str, Any] | None:
+        """Extract a WiFi broadcast payload from API responses."""
+        if response is None:
+            return None
+
+        data = response.get("data", response) if isinstance(response, dict) else response
+
+        if isinstance(data, dict):
+            return dict(data)
+
+        if isinstance(data, list) and data and isinstance(data[0], dict):
+            return dict(data[0])
+
+        return None
+
     def __init__(self, client: UniFiNetworkClient) -> None:
-        """Initialize the WiFi endpoint.
+        """
+        Initialize the WiFi endpoint.
 
         Args:
             client: The UniFi Network client.
+
         """
         self._client = client
 
@@ -29,7 +49,8 @@ class WifiEndpoint:
         limit: int | None = None,
         filter_str: str | None = None,
     ) -> list[WifiNetwork]:
-        """List all WiFi networks.
+        """
+        List all WiFi networks.
 
         Args:
             site_id: The site ID.
@@ -39,6 +60,7 @@ class WifiEndpoint:
 
         Returns:
             List of WiFi networks.
+
         """
         params: dict[str, Any] = {}
         if offset is not None:
@@ -60,7 +82,8 @@ class WifiEndpoint:
         return []
 
     async def get(self, site_id: str, wifi_id: str) -> WifiNetwork:
-        """Get a specific WiFi network.
+        """
+        Get a specific WiFi network.
 
         Args:
             site_id: The site ID.
@@ -68,16 +91,13 @@ class WifiEndpoint:
 
         Returns:
             The WiFi network.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/wifi/broadcasts/{wifi_id}")
         response = await self._client._get(path)
-
-        if isinstance(response, dict):
-            data = response.get("data", response)
-            if isinstance(data, dict):
-                return WifiNetwork.model_validate(data)
-            if isinstance(data, list) and len(data) > 0:
-                return WifiNetwork.model_validate(data[0])
+        payload = self._extract_wifi_payload(response)
+        if payload is not None:
+            return WifiNetwork.model_validate(payload)
         raise ValueError(f"WiFi network {wifi_id} not found")
 
     async def create(
@@ -92,7 +112,8 @@ class WifiEndpoint:
         hidden: bool = False,
         **kwargs: Any,
     ) -> WifiNetwork:
-        """Create a new WiFi network.
+        """
+        Create a new WiFi network.
 
         Args:
             site_id: The site ID.
@@ -106,6 +127,7 @@ class WifiEndpoint:
 
         Returns:
             The created WiFi network.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/wifi/broadcasts")
         data: dict[str, Any] = {
@@ -133,7 +155,8 @@ class WifiEndpoint:
         wifi_id: str,
         **kwargs: Any,
     ) -> WifiNetwork:
-        """Update a WiFi network.
+        """
+        Update a WiFi network.
 
         Args:
             site_id: The site ID.
@@ -142,18 +165,28 @@ class WifiEndpoint:
 
         Returns:
             The updated WiFi network.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/wifi/broadcasts/{wifi_id}")
-        response = await self._client._patch(path, json_data=kwargs)
+        current_payload = self._extract_wifi_payload(await self._client._get(path))
+        if current_payload is None:
+            raise ValueError(f"WiFi network {wifi_id} not found")
 
-        if isinstance(response, dict):
-            result = response.get("data", response)
-            if isinstance(result, dict):
-                return WifiNetwork.model_validate(result)
-        raise ValueError("Failed to update WiFi network")
+        # UniFi Network expects a full WiFi broadcast document via PUT rather than
+        # a partial PATCH payload for updates on current controller versions.
+        current_payload.pop("id", None)
+        current_payload.pop("metadata", None)
+        current_payload.update(kwargs)
+
+        response = await self._client._put(path, json_data=current_payload)
+        result = self._extract_wifi_payload(response)
+        if result is not None:
+            return WifiNetwork.model_validate(result)
+        return WifiNetwork.model_validate(current_payload)
 
     async def delete(self, site_id: str, wifi_id: str) -> bool:
-        """Delete a WiFi network.
+        """
+        Delete a WiFi network.
 
         Args:
             site_id: The site ID.
@@ -161,6 +194,7 @@ class WifiEndpoint:
 
         Returns:
             True if successful.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/wifi/broadcasts/{wifi_id}")
         await self._client._delete(path)

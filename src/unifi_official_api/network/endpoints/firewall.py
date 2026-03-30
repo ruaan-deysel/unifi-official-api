@@ -15,10 +15,12 @@ class FirewallEndpoint:
     """Endpoint for managing firewall rules and zones."""
 
     def __init__(self, client: UniFiNetworkClient) -> None:
-        """Initialize the firewall endpoint.
+        """
+        Initialize the firewall endpoint.
 
         Args:
             client: The UniFi Network client.
+
         """
         self._client = client
 
@@ -30,7 +32,8 @@ class FirewallEndpoint:
         limit: int | None = None,
         filter_str: str | None = None,
     ) -> list[FirewallZone]:
-        """List all firewall zones.
+        """
+        List all firewall zones.
 
         Args:
             site_id: The site ID.
@@ -41,6 +44,7 @@ class FirewallEndpoint:
 
         Returns:
             List of firewall zones.
+
         """
         params: dict[str, Any] = {}
         if offset is not None:
@@ -62,7 +66,8 @@ class FirewallEndpoint:
         return []
 
     async def get_zone(self, site_id: str, zone_id: str) -> FirewallZone:
-        """Get a specific firewall zone.
+        """
+        Get a specific firewall zone.
 
         Args:
             site_id: The site ID.
@@ -70,6 +75,7 @@ class FirewallEndpoint:
 
         Returns:
             The firewall zone.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/firewall/zones/{zone_id}")
         response = await self._client._get(path)
@@ -89,7 +95,8 @@ class FirewallEndpoint:
         name: str,
         **kwargs: Any,
     ) -> FirewallZone:
-        """Create a custom firewall zone.
+        """
+        Create a custom firewall zone.
 
         Args:
             site_id: The site ID.
@@ -98,6 +105,7 @@ class FirewallEndpoint:
 
         Returns:
             The created firewall zone.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/firewall/zones")
         data: dict[str, Any] = {"name": name}
@@ -116,7 +124,8 @@ class FirewallEndpoint:
         zone_id: str,
         **kwargs: Any,
     ) -> FirewallZone:
-        """Update a firewall zone.
+        """
+        Update a firewall zone.
 
         Args:
             site_id: The site ID.
@@ -125,6 +134,7 @@ class FirewallEndpoint:
 
         Returns:
             The updated firewall zone.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/firewall/zones/{zone_id}")
         response = await self._client._put(path, json_data=kwargs)
@@ -136,7 +146,8 @@ class FirewallEndpoint:
         raise ValueError("Failed to update firewall zone")
 
     async def delete_zone(self, site_id: str, zone_id: str) -> bool:
-        """Delete a custom firewall zone.
+        """
+        Delete a custom firewall zone.
 
         Args:
             site_id: The site ID.
@@ -144,6 +155,7 @@ class FirewallEndpoint:
 
         Returns:
             True if successful.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/firewall/zones/{zone_id}")
         await self._client._delete(path)
@@ -157,7 +169,11 @@ class FirewallEndpoint:
         limit: int | None = None,
         filter_str: str | None = None,
     ) -> list[FirewallRule]:
-        """List all firewall rules.
+        """
+        List all firewall rules.
+
+        When called without explicit offset/limit, automatically paginates
+        to retrieve all rules.
 
         Args:
             site_id: The site ID.
@@ -168,28 +184,58 @@ class FirewallEndpoint:
 
         Returns:
             List of firewall rules.
+
         """
-        params: dict[str, Any] = {}
-        if offset is not None:
-            params["offset"] = offset
-        if limit is not None:
-            params["limit"] = limit
-        if filter_str:
-            params["filter"] = filter_str
-
         path = self._client.build_api_path(f"/sites/{site_id}/firewall/policies")
-        response = await self._client._get(path, params=params if params else None)
 
+        # When caller supplies explicit pagination, honour it as a single request.
+        if offset is not None or limit is not None:
+            params: dict[str, Any] = {}
+            if offset is not None:
+                params["offset"] = offset
+            if limit is not None:
+                params["limit"] = limit
+            if filter_str:
+                params["filter"] = filter_str
+            return self._parse_rules_response(
+                await self._client._get(path, params=params if params else None)
+            )
+
+        # Auto-paginate to retrieve all rules.
+        all_rules: list[FirewallRule] = []
+        current_offset = 0
+        page_size = 200
+
+        while True:
+            params = {"offset": current_offset, "limit": page_size}
+            if filter_str:
+                params["filter"] = filter_str
+
+            response = await self._client._get(path, params=params)
+            rules = self._parse_rules_response(response)
+            all_rules.extend(rules)
+
+            # Check if there are more pages.
+            total = response.get("totalCount") if isinstance(response, dict) else None
+            if total is None or current_offset + page_size >= total:
+                break
+            current_offset += page_size
+
+        return all_rules
+
+    @staticmethod
+    def _parse_rules_response(response: Any) -> list[FirewallRule]:
+        """Parse a firewall policies API response into a list of rules."""
         if response is None:
             return []
-
         data = response.get("data", response) if isinstance(response, dict) else response
         if isinstance(data, list):
             return [FirewallRule.model_validate(item) for item in data]
         return []
 
     async def get_rule(self, site_id: str, rule_id: str) -> FirewallRule:
-        """Get a specific firewall rule.
+        """
+        Get a specific firewall rule.
 
         Args:
             site_id: The site ID.
@@ -197,6 +243,7 @@ class FirewallEndpoint:
 
         Returns:
             The firewall rule.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/firewall/policies/{rule_id}")
         response = await self._client._get(path)
@@ -220,7 +267,8 @@ class FirewallEndpoint:
         destination_zone_id: str | None = None,
         **kwargs: Any,
     ) -> FirewallRule:
-        """Create a new firewall rule.
+        """
+        Create a new firewall rule.
 
         Args:
             site_id: The site ID.
@@ -233,6 +281,7 @@ class FirewallEndpoint:
 
         Returns:
             The created firewall rule.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/firewall/policies")
         data: dict[str, Any] = {
@@ -253,13 +302,35 @@ class FirewallEndpoint:
                 return FirewallRule.model_validate(result)
         raise ValueError("Failed to create firewall rule")
 
+    @staticmethod
+    def _extract_rule_payload(
+        response: dict[str, Any] | list[Any] | None,
+    ) -> dict[str, Any] | None:
+        """Extract a firewall rule payload from API responses."""
+        if response is None:
+            return None
+
+        data = response.get("data", response) if isinstance(response, dict) else response
+
+        if isinstance(data, dict):
+            return dict(data)
+
+        if isinstance(data, list) and data and isinstance(data[0], dict):
+            return dict(data[0])
+
+        return None
+
     async def update_rule(
         self,
         site_id: str,
         rule_id: str,
         **kwargs: Any,
     ) -> FirewallRule:
-        """Update a firewall rule.
+        """
+        Update a firewall rule.
+
+        UniFi Network expects a full policy document via PUT rather than
+        a partial PATCH payload on current controller versions.
 
         Args:
             site_id: The site ID.
@@ -268,18 +339,27 @@ class FirewallEndpoint:
 
         Returns:
             The updated firewall rule.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/firewall/policies/{rule_id}")
-        response = await self._client._patch(path, json_data=kwargs)
+        current_payload = self._extract_rule_payload(await self._client._get(path))
+        if current_payload is None:
+            raise ValueError(f"Firewall rule {rule_id} not found")
 
-        if isinstance(response, dict):
-            result = response.get("data", response)
-            if isinstance(result, dict):
-                return FirewallRule.model_validate(result)
-        raise ValueError("Failed to update firewall rule")
+        # Strip read-only fields that the PUT endpoint rejects.
+        for key in ("id", "index", "metadata"):
+            current_payload.pop(key, None)
+        current_payload.update(kwargs)
+
+        response = await self._client._put(path, json_data=current_payload)
+        result = self._extract_rule_payload(response)
+        if result is not None:
+            return FirewallRule.model_validate(result)
+        return FirewallRule.model_validate(current_payload)
 
     async def delete_rule(self, site_id: str, rule_id: str) -> bool:
-        """Delete a firewall rule.
+        """
+        Delete a firewall rule.
 
         Args:
             site_id: The site ID.
@@ -287,6 +367,7 @@ class FirewallEndpoint:
 
         Returns:
             True if successful.
+
         """
         path = self._client.build_api_path(f"/sites/{site_id}/firewall/policies/{rule_id}")
         await self._client._delete(path)
@@ -298,7 +379,11 @@ class FirewallEndpoint:
         rule_id: str,
         **kwargs: Any,
     ) -> FirewallRule:
-        """Partially update a firewall rule.
+        """
+        Partially update a firewall rule.
+
+        Despite the name, this uses GET+PUT internally because UniFi Network
+        rejects PATCH on current controller versions.
 
         Args:
             site_id: The site ID.
@@ -307,17 +392,9 @@ class FirewallEndpoint:
 
         Returns:
             The updated firewall rule.
-        """
-        path = self._client.build_api_path(f"/sites/{site_id}/firewall/policies/{rule_id}")
-        response = await self._client._patch(path, json_data=kwargs)
 
-        if isinstance(response, dict):
-            data = response.get("data", response)
-            if isinstance(data, dict):
-                return FirewallRule.model_validate(data)
-            if isinstance(data, list) and len(data) > 0:
-                return FirewallRule.model_validate(data[0])
-        raise ValueError(f"Failed to patch firewall rule {rule_id}")
+        """
+        return await self.update_rule(site_id, rule_id, **kwargs)
 
     async def get_policy_ordering(
         self,
@@ -326,7 +403,8 @@ class FirewallEndpoint:
         access_zone_id: str,
         infrastructure_zone_id: str,
     ) -> FirewallPolicyOrdering:
-        """Get firewall policy ordering for a zone pair.
+        """
+        Get firewall policy ordering for a zone pair.
 
         Args:
             site_id: The site ID.
@@ -335,6 +413,7 @@ class FirewallEndpoint:
 
         Returns:
             The policy ordering configuration.
+
         """
         params = {
             "accessZoneId": access_zone_id,
@@ -357,7 +436,8 @@ class FirewallEndpoint:
         infrastructure_zone_id: str,
         ordered_policy_ids: list[str],
     ) -> FirewallPolicyOrdering:
-        """Update firewall policy ordering for a zone pair.
+        """
+        Update firewall policy ordering for a zone pair.
 
         Args:
             site_id: The site ID.
@@ -367,6 +447,7 @@ class FirewallEndpoint:
 
         Returns:
             The updated policy ordering configuration.
+
         """
         params = {
             "accessZoneId": access_zone_id,

@@ -44,7 +44,8 @@ class TalkbackSession(BaseModel):
 
 
 class RTSPSStream(BaseModel):
-    """RTSPS stream configuration.
+    """
+    RTSPS stream configuration.
 
     The API returns quality-specific URLs as separate fields (e.g., 'high', 'medium', 'low').
     Use `extra="allow"` to capture these dynamic fields.
@@ -59,12 +60,14 @@ class RTSPSStream(BaseModel):
     model_config = {"populate_by_name": True, "extra": "allow"}
 
     def get_url(self, quality: str = "high") -> str | None:
-        """Get RTSPS URL for the specified quality.
+        """
+        Get RTSPS URL for the specified quality.
 
         Args:
             quality: Stream quality ("high", "medium", "low").
 
         Returns:
             The RTSPS URL for the quality, or None if not available.
+
         """
         return getattr(self, quality, None)
