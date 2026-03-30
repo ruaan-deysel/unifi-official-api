@@ -81,9 +81,14 @@ class ClientsEndpoint:
             if isinstance(data, list):
                 all_clients.extend(Client.model_validate(item) for item in data)
 
-            total_count = response.get("totalCount")
-            count = response.get("count", 0)
-            if total_count is None or not isinstance(count, int) or count == 0:
+            raw_total = response.get("totalCount")
+            raw_count = response.get("count", 0)
+            try:
+                total_count = int(raw_total)  # type: ignore[arg-type]
+                count = int(raw_count)
+            except (TypeError, ValueError):
+                break
+            if count == 0:
                 break
 
             current_offset += count

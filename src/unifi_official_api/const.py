@@ -33,13 +33,17 @@ PROTECT_API_BASE_URL: Final[str] = "https://api.ui.com"
 NETWORK_API_VERSION: Final[str] = "v1"
 PROTECT_API_VERSION: Final[str] = "v1"
 
-# Network Integration API path prefix (used for both local and remote)
+# Network Integration API path prefix — LOCAL proxy format only.
+# For REMOTE connections the client strips the /proxy prefix at build time
+# to produce /v1/connector/consoles/{consoleId}/network/integration/v1/...
 NETWORK_INTEGRATION_PATH: Final[str] = "/proxy/network/integration/v1"
 
-# Network legacy API path prefix (used for both local and remote)
+# Network legacy API path prefix — LOCAL proxy format only.
+# REMOTE paths are derived by stripping /proxy and prepending the connector prefix.
 NETWORK_LEGACY_PATH: Final[str] = "/proxy/network/api"
 
-# Protect Integration API path prefix (used for both local and remote)
+# Protect Integration API path prefix — LOCAL proxy format only.
+# REMOTE paths are derived by stripping /proxy and prepending the connector prefix.
 PROTECT_INTEGRATION_PATH: Final[str] = "/proxy/protect/integration/v1"
 
 # Default timeouts (in seconds)

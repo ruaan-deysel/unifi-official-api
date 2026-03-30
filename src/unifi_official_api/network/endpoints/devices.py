@@ -287,8 +287,8 @@ class DevicesEndpoint:
 
         Returns:
             Normalized per-port legacy metrics. Port dictionary keys preserve
-            the index reported by the legacy API and are not normalized to the
-            0-based numbering expected by ``execute_port_action()``.
+            the index reported by the legacy API and are not normalized to
+            0-based numbering.
 
         """
         legacy = await self.get_legacy_device_stats(site_name, device_mac)

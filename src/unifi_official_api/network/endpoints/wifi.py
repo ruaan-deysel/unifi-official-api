@@ -182,7 +182,7 @@ class WifiEndpoint:
         result = self._extract_wifi_payload(response)
         if result is not None:
             return WifiNetwork.model_validate(result)
-        return WifiNetwork.model_validate(current_payload)
+        raise ValueError(f"Failed to update WiFi network {wifi_id}")
 
     async def delete(self, site_id: str, wifi_id: str) -> bool:
         """

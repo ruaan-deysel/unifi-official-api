@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **REMOTE URL paths**: Removed `/proxy/` prefix from REMOTE connector URLs — the connector now adds this during forwarding
 - **Lazy console_id validation**: Network client no longer raises at `__init__` when `console_id` is missing for REMOTE connections; validation deferred to when API paths are built, allowing `get_hosts()` without a console_id
 - **`firewall.update_rule()`**: Changed from PATCH to GET+PUT pattern for compatibility with current UniFi controller versions
-- **`firewall.patch_rule()`**: Now delegates to `update_rule()` (GET+PUT)
+- **`firewall.patch_rule()`**: **Breaking behavioral change** — no longer performs an HTTP PATCH / partial update. `patch_rule()` now delegates to `update_rule()`, which fetches the full rule via GET and writes it back via PUT. Fields not included in the call may be overwritten with server defaults. Callers relying on partial-update semantics should switch to `update_rule()` with all desired fields, or implement a custom read-modify-write workflow
 - **`wifi.update()`**: Changed from PATCH to GET+PUT pattern for compatibility with current UniFi controller versions
 - **PoE port metrics**: `get_port_metrics()` now requires `port_poe` flag on port data before including PoE metrics
 
