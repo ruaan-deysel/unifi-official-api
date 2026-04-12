@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- **OWASP A02 – Cryptographic Failures**: Added a `WARNING`-level log message when
+  `LocalAuth.verify_ssl=False` is used, alerting callers that SSL certificate
+  verification has been disabled. This should only be used in trusted local
+  environments with self-signed certificates.
+- **OWASP A06 – Vulnerable and Outdated Components**: Raised the minimum required
+  `aiohttp` version from `3.9.0` to `3.13.3` to ensure the following known CVEs
+  are not present at install time:
+  - Directory traversal (GHSA-xxxx / aiohttp < 3.9.2)
+  - Denial of service on malformed POST requests (aiohttp < 3.9.4)
+  - HTTP Parser `auto_decompress` zip-bomb vulnerability (GHSA-4whm-h6r5-xmjf / aiohttp ≤ 3.13.2, fixed in 3.13.3)
+- **Dependabot**: Added `.github/dependabot.yml` to automatically open weekly
+  pull requests keeping both Python package dependencies and GitHub Actions
+  pinned versions up to date.
+- **OSV.dev scanning**: Added `.github/workflows/security.yml` with three jobs:
+  - Bandit static-analysis security scanner
+  - `google/osv-scanner-action` (powered by osv.dev) for dependency vulnerability
+    scanning
+  - `pip-audit --vulnerability-service osv` for project-scoped dependency audits
+
 ## [1.3.0] - 2026-03-30
 
 ### Added

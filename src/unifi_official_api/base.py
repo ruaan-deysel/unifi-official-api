@@ -109,6 +109,11 @@ class BaseUniFiClient(ABC):
 
         """
         if isinstance(self._auth, LocalAuth):
+            if not self._auth.verify_ssl:
+                _LOGGER.warning(
+                    "SSL certificate verification is disabled. "
+                    "This is insecure and should only be used in trusted local environments."
+                )
             return self._auth.verify_ssl
         return True
 

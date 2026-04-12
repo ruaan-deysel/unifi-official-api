@@ -1,0 +1,84 @@
+name: Security Scanning
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run every Monday at 08:00 UTC
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  # Static analysis with Bandit
+  bandit:
+    name: Bandit static analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Bandit
+        run: pip install "bandit[toml]"
+
+      - name: Run Bandit
+        run: bandit -c pyproject.toml -r src/ -f json -o bandit-report.json
+
+      - name: Upload Bandit report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bandit-report
+          path: bandit-report.json
+
+  # Dependency vulnerability scan via osv.dev
+  osv-scan:
+    name: OSV dependency scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run OSV Scanner
+        uses: google/osv-scanner-action@v2
+        with:
+          scan-args: |-
+            --output=osv-results.json
+            --format=json
+            ./
+
+      - name: Upload OSV results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: osv-results
+          path: osv-results.json
+
+  # pip-audit dependency vulnerability scan via osv.dev
+  pip-audit:
+    name: pip-audit via osv.dev
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Install project dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Run pip-audit (osv.dev backend)
+        run: pip-audit --vulnerability-service osv .
