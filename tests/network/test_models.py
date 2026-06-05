@@ -67,6 +67,24 @@ class TestClientModel:
         assert client.name == "My Phone"
         assert client.type == ClientType.WIRELESS
 
+    def test_create_client_with_vpn_and_teleport_types(self) -> None:
+        """Test creating clients with VPN and TELEPORT types."""
+        vpn_client = Client.model_validate(
+            {
+                "id": "client-vpn",
+                "type": "VPN",
+            }
+        )
+        teleport_client = Client.model_validate(
+            {
+                "id": "client-teleport",
+                "type": "teleport",
+            }
+        )
+
+        assert vpn_client.type == ClientType.VPN
+        assert teleport_client.type == ClientType.TELEPORT
+
     def test_client_display_name(self) -> None:
         """Test client display_name property."""
         # With name

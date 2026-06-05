@@ -12,12 +12,14 @@ class ClientType(str, Enum):
     """
     Types of network clients.
 
-    The API returns either uppercase (WIRED/WIRELESS) or lowercase (wired/wireless).
+    The API returns either uppercase (WIRED/WIRELESS/VPN/TELEPORT) or lowercase variants.
     This enum normalizes both cases to uppercase values for consistent comparisons.
     """
 
     WIRED = "WIRED"
     WIRELESS = "WIRELESS"
+    VPN = "VPN"
+    TELEPORT = "TELEPORT"
 
     @classmethod
     def _missing_(cls, value: object) -> ClientType | None:
