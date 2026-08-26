@@ -43,6 +43,18 @@ from .resources import (
     WANStatus,
 )
 from .site import Site, SiteHealth
+from .switching import (
+    Lag,
+    LagMember,
+    LagPage,
+    LagType,
+    McLagDomain,
+    McLagDomainPage,
+    McLagPeer,
+    SwitchStack,
+    SwitchStackMember,
+    SwitchStackPage,
+)
 from .traffic import (
     Country,
     DPIApplication,
@@ -102,6 +114,17 @@ __all__ = [
     # Site
     "Site",
     "SiteHealth",
+    # Switching
+    "Lag",
+    "LagMember",
+    "LagPage",
+    "LagType",
+    "McLagDomain",
+    "McLagDomainPage",
+    "McLagPeer",
+    "SwitchStack",
+    "SwitchStackMember",
+    "SwitchStackPage",
     # Traffic
     "Country",
     "DPIApplication",

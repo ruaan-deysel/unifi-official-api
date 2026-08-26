@@ -25,6 +25,7 @@ from .endpoints import (
     NetworksEndpoint,
     ResourcesEndpoint,
     SitesEndpoint,
+    SwitchingEndpoint,
     TrafficEndpoint,
     VouchersEndpoint,
     WifiEndpoint,
@@ -134,6 +135,7 @@ class UniFiNetworkClient(BaseUniFiClient):
         self._traffic = TrafficEndpoint(self)
         self._resources = ResourcesEndpoint(self)
         self._dns = DNSEndpoint(self)
+        self._switching = SwitchingEndpoint(self)
 
     @property
     def connection_type(self) -> ConnectionType:
@@ -204,7 +206,7 @@ class UniFiNetworkClient(BaseUniFiClient):
 
         # The connector adds /proxy/ when forwarding to the console, so strip it.
         connector_path = NETWORK_LEGACY_PATH.removeprefix("/proxy")
-        return f"/v1/connector/consoles/{console_id}" f"{connector_path}/s/{site_name}{endpoint}"
+        return f"/v1/connector/consoles/{console_id}{connector_path}/s/{site_name}{endpoint}"
 
     def build_legacy_global_api_path(self, endpoint: str) -> str:
         """
@@ -282,6 +284,11 @@ class UniFiNetworkClient(BaseUniFiClient):
     def dns(self) -> DNSEndpoint:
         """Access DNS policy management endpoints."""
         return self._dns
+
+    @property
+    def switching(self) -> SwitchingEndpoint:
+        """Access switching management endpoints (LAGs, MC-LAG, switch stacks)."""
+        return self._switching
 
     async def validate_connection(self) -> bool:
         """

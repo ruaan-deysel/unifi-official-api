@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class DeviceType(str, Enum):
+class DeviceType(StrEnum):
     """Types of UniFi network devices."""
 
     UGW = "ugw"  # UniFi Gateway
@@ -24,7 +24,7 @@ class DeviceType(str, Enum):
     UNKNOWN = "unknown"  # Fallback for new device types
 
 
-class DeviceState(str, Enum):
+class DeviceState(StrEnum):
     """Device connection states."""
 
     CONNECTED = "connected"

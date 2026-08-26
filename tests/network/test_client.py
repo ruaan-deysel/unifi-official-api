@@ -108,8 +108,7 @@ class TestUniFiNetworkClient:
         ) as client:
             path = client.build_legacy_api_path("default", "/stat/device/aa:bb:cc")
             expected = (
-                "/v1/connector/consoles/test-console-id"
-                "/network/api/s/default/stat/device/aa:bb:cc"
+                "/v1/connector/consoles/test-console-id/network/api/s/default/stat/device/aa:bb:cc"
             )
             assert path == expected
 

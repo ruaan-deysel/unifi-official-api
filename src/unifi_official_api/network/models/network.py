@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 
-class NetworkType(str, Enum):
+class NetworkType(StrEnum):
     """Types of networks."""
 
     CORPORATE = "corporate"
@@ -16,7 +16,7 @@ class NetworkType(str, Enum):
     VPN = "vpn"
 
 
-class NetworkPurpose(str, Enum):
+class NetworkPurpose(StrEnum):
     """Network purposes."""
 
     CORPORATE = "corporate"

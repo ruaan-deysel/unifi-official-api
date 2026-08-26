@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 
-class DNSRecordType(str, Enum):
+class DNSRecordType(StrEnum):
     """DNS record types."""
 
     A_RECORD = "A_RECORD"

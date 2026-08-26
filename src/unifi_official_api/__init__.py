@@ -39,6 +39,7 @@ from __future__ import annotations
 
 from ._version import __version__
 from .auth import ApiKeyAuth, ApiKeyType, LocalAuth
+from .carrier_fabric import UniFiCarrierFabricClient
 from .const import ConnectionType
 from .exceptions import (
     UniFiAuthenticationError,
@@ -50,6 +51,11 @@ from .exceptions import (
     UniFiTimeoutError,
     UniFiValidationError,
 )
+from .innerspace import UniFiInnerSpaceClient
+from .mobility import UniFiMobilityClient
+from .network import UniFiNetworkClient
+from .protect import UniFiProtectClient
+from .site_manager import UniFiSiteManagerClient
 
 __all__ = [
     # Version
@@ -58,6 +64,13 @@ __all__ = [
     "ApiKeyAuth",
     "ApiKeyType",
     "LocalAuth",
+    # Clients
+    "UniFiCarrierFabricClient",
+    "UniFiInnerSpaceClient",
+    "UniFiMobilityClient",
+    "UniFiNetworkClient",
+    "UniFiProtectClient",
+    "UniFiSiteManagerClient",
     # Connection types
     "ConnectionType",
     # Exceptions

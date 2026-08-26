@@ -195,6 +195,9 @@ api_key.txt
 # Claude Code settings (may contain local paths)
 # Keep .claude/settings.local.json tracked if needed for team settings
 
+# AI scratch and temp notes
+.ai-scratch/
+
 # -----------------------------------------------------------------------------
 # Build & Release
 # -----------------------------------------------------------------------------

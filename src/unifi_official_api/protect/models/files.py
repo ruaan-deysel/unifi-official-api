@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 
-class FileType(str, Enum):
+class FileType(StrEnum):
     """Device asset file type."""
 
     ANIMATIONS = "animations"

@@ -2,26 +2,26 @@
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 
-class ACLRuleType(str, Enum):
+class ACLRuleType(StrEnum):
     """ACL rule type."""
 
     IPV4 = "IPV4"
     MAC = "MAC"
 
 
-class ACLAction(str, Enum):
+class ACLAction(StrEnum):
     """ACL action type."""
 
     ALLOW = "ALLOW"
     BLOCK = "BLOCK"
 
 
-class MetadataOrigin(str, Enum):
+class MetadataOrigin(StrEnum):
     """Metadata origin type."""
 
     USER_DEFINED = "USER_DEFINED"

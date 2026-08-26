@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 
-class ViewerState(str, Enum):
+class ViewerState(StrEnum):
     """Viewer connection state."""
 
     CONNECTED = "CONNECTED"

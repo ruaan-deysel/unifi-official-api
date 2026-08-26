@@ -7,6 +7,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-08-26
+
+### Added
+
+#### Full Official UniFi API Coverage (6 Suites)
+
+- **UniFi Network API**:
+  - **Switching**: Complete switching management (`client.switching`)
+    - `get_lags()` / `get_lag()`: List and retrieve Link Aggregation Groups (LAGs)
+    - `get_mc_lag_domains()` / `get_mc_lag_domain()`: List and retrieve Multi-Chassis LAG (MC-LAG) domains
+    - `get_switch_stacks()` / `get_switch_stack()`: List and retrieve Switch Stacks and member units
+    - Models: `Lag`, `LagMember`, `LagType`, `LagPage`, `McLagDomain`, `McLagPeer`, `McLagDomainPage`, `SwitchStack`, `SwitchStackMember`, `SwitchStackPage`
+
+- **UniFi Protect API**:
+  - **Sirens**: `client.sirens` for managing siren devices (`get_all`, `get`, `update`, `play`, `stop`, `test_sound`)
+  - **Key Fobs**: `client.fobs` for managing key fobs (`get_all`, `get`, `update`)
+  - **Relays**: `client.relays` for managing relay devices and output activation (`get_all`, `get`, `update`, `activate_output`)
+  - **Speakers**: `client.speakers` for managing Protect speakers and test sounds (`get_all`, `get`, `update`, `test_sound`)
+  - **Bridges & Link Stations**: `client.bridges` and `client.link_stations` for managing bridges and link stations
+  - **Alarm Hubs & Alarm Manager**: `client.alarm_hubs` for alarm hub devices and output triggers, and `client.alarm_manager` for alarm manager webhook dispatch
+  - **Arm Profiles**: `client.arm_profiles` for arm profile lifecycle, global arm settings, enable, and disable
+  - **Users**: `client.users` for local Protect users and UniFi Identity (ULP) users (`get_users`, `get_user`, `get_ulp_users`, `get_ulp_user`)
+  - **Point of Sale (POS)**: `client.pos` for ingesting POS transactions overlaid onto camera footage (`ingest_transaction`)
+  - Models: `Siren`, `Fob`, `Relay`, `Speaker`, `Bridge`, `LinkStation`, `AlarmHub`, `ArmProfile`, `ArmProfileSettings`, `ProtectUser`, `ULPUser`, `POSTransactionRequest`, `POSLineItem`, `POSLocation`
+
+- **UniFi InnerSpace API (`UniFiInnerSpaceClient`)**:
+  - New dedicated client supporting direct `LOCAL` and cloud `REMOTE` connections
+  - **Project**: `client.project.get()` for full RF geometry, wall types, and attenuation shapes
+  - **Floor Plans**: `client.floor_plans.get_all()` for floor plan definitions and scale
+  - **Placed APs & Switches**: `client.access_points.get_all()` and `client.switches.get_all()` for placed network hardware coordinates
+  - **Inventory**: `client.inventory.get_all()` for unplaced hardware devices
+  - **Blueprint Assets**: `client.assets.download()` for downloading floor plan raster blueprint images
+  - Models: `ProjectData`, `ProjectMeta`, `FloorPlan`, `InnerSpaceAccessPoint`, `InnerSpaceMountType`, `InnerSpaceSwitch`, `InventoryDevice`
+
+- **UniFi Site Manager API (`UniFiSiteManagerClient`)**:
+  - New dedicated client for cloud-level console management via `https://api.ui.com`
+  - **Hosts**: `client.hosts.get_all()`, `client.hosts.get()` for registered console hosts
+  - **Sites**: `client.sites.get_all()` for cross-console site aggregation
+  - **Devices**: `client.devices.get_all()` for cross-console device inventories
+  - **ISP Metrics**: `client.isp_metrics.get_metrics()`, `client.isp_metrics.query()` for WAN performance telemetry
+  - **SD-WAN**: `client.sd_wan.get_configs()`, `client.sd_wan.get_config()`, `client.sd_wan.get_status()` for SD-WAN topologies and tunnel health
+  - **Cloud Connector**: `client.connector.proxy()` for proxying arbitrary HTTP requests to remote consoles
+  - Models: `Host`, `HostUserData`, `HostReportedState`, `HostListResponse`, `SiteManagerSite`, `SiteListResponse`, `SiteManagerDevice`, `SiteManagerHostDevices`, `DeviceListResponse`, `ISPMetric`, `ISPMetricQuery`, `ISPMetricQueryResult`, `SDWanConfig`, `SDWanConfigDetail`, `SDWanStatus`
+
+- **UniFi Mobility API (`UniFiMobilityClient`)**:
+  - New dedicated client for UMR cellular gateway router fleets via `https://api.ui.com`
+  - **Workspaces & Admins**: `client.workspaces.get_all()`, `client.workspaces.get_admins()`
+  - **Device Gateways**: `client.devices.get_all()`, `client.devices.get()`, `client.devices.update_name()` with GPS location coordinates
+  - **Connected Clients**: `client.clients.get_all()` for connected wireless and wired client monitoring
+  - **Remote Network & Wireless**: `client.network.update()` for LAN/DHCP settings and `client.wireless.update()` for WiFi SSIDs/passwords
+  - Models: `WorkspaceSummary`, `AdminSummary`, `AdminPermission`, `MobilityDeviceSummary`, `MobilityDeviceDetail`, `DeviceLocation`, `MobilityDeviceClient`, `UpdateDeviceNameReq`, `UpdateNetworkReq`, `UpdateWirelessReq`
+
+- **UniFi Carrier Fabric API (`UniFiCarrierFabricClient`)**:
+  - New dedicated client for ISP subscriber provisioning via `https://api.ui.com`
+  - **Subscribers**: `client.subscribers.get_all()`, `create()`, `get()`, `update()`, `attach_host()`, `detach_host()`, `assign_plan()`, `suspend()`, `resume()`
+  - **Service Plans**: `client.service_plans.get_all()`, `get()` for bandwidth and QoS plans
+  - Models: `Subscriber`, `SubscriberCreate`, `SubscriberPatch`, `HostLinkResponse`, `SubscriberListResponse`, `ServicePlan`, `ServicePlanListResponse`, `Meta`
+
+### Changed
+
+- Modernized `(str, Enum)` definitions across all network and protect models to standard Python 3.11+ `StrEnum`
+- Exported all 6 official clients (`UniFiNetworkClient`, `UniFiProtectClient`, `UniFiInnerSpaceClient`, `UniFiSiteManagerClient`, `UniFiMobilityClient`, `UniFiCarrierFabricClient`) from root `unifi_official_api` package
+- Updated `pyproject.toml` dependency constraint `aiohttp>=3.9.0,<3.14.0` for `aioresponses` mock compatibility
+- Expanded unit test suite to 657 tests with 96% overall code coverage
+
 ## [1.3.0] - 2026-03-30
 
 ### Added

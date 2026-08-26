@@ -10,6 +10,7 @@ from .firewall import FirewallEndpoint
 from .networks import NetworksEndpoint
 from .resources import ResourcesEndpoint
 from .sites import SitesEndpoint
+from .switching import SwitchingEndpoint
 from .traffic import TrafficEndpoint
 from .vouchers import VouchersEndpoint
 from .wifi import WifiEndpoint
@@ -23,6 +24,7 @@ __all__ = [
     "NetworksEndpoint",
     "ResourcesEndpoint",
     "SitesEndpoint",
+    "SwitchingEndpoint",
     "TrafficEndpoint",
     "VouchersEndpoint",
     "WifiEndpoint",

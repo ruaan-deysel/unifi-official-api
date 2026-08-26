@@ -2,23 +2,23 @@
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 from typing import Final
 
 from ._version import __version__
 
 
-class ConnectionType(str, Enum):
+class ConnectionType(StrEnum):
     """
     Connection type for UniFi API access.
 
     LOCAL: Direct connection to the UniFi console (e.g., https://192.168.1.1)
            - Uses local API key generated on the console
-           - Endpoints: /proxy/network/integration/v1/...
+           - Endpoints: /proxy/{service}/integration/v1/...
 
     REMOTE: Cloud connection via Ubiquiti's API (https://api.ui.com)
             - Uses cloud API key from account.ui.com
-            - Endpoints: /v1/connector/consoles/{consoleId}/network/integration/v1/...
+            - Endpoints: /v1/connector/consoles/{consoleId}/{service}/integration/v1/...
     """
 
     LOCAL = "local"
@@ -28,10 +28,18 @@ class ConnectionType(str, Enum):
 # API Base URLs
 NETWORK_API_BASE_URL: Final[str] = "https://api.ui.com"
 PROTECT_API_BASE_URL: Final[str] = "https://api.ui.com"
+INNERSPACE_API_BASE_URL: Final[str] = "https://api.ui.com"
+SITE_MANAGER_API_BASE_URL: Final[str] = "https://api.ui.com"
+MOBILITY_API_BASE_URL: Final[str] = "https://api.ui.com"
+CARRIER_FABRIC_API_BASE_URL: Final[str] = "https://api.ui.com"
 
 # API Versions
 NETWORK_API_VERSION: Final[str] = "v1"
 PROTECT_API_VERSION: Final[str] = "v1"
+INNERSPACE_API_VERSION: Final[str] = "v1"
+SITE_MANAGER_API_VERSION: Final[str] = "v1"
+MOBILITY_API_VERSION: Final[str] = "v1"
+CARRIER_FABRIC_API_VERSION: Final[str] = "v1"
 
 # Network Integration API path prefix — LOCAL proxy format only.
 # For REMOTE connections the client strips the /proxy prefix at build time
@@ -45,6 +53,10 @@ NETWORK_LEGACY_PATH: Final[str] = "/proxy/network/api"
 # Protect Integration API path prefix — LOCAL proxy format only.
 # REMOTE paths are derived by stripping /proxy and prepending the connector prefix.
 PROTECT_INTEGRATION_PATH: Final[str] = "/proxy/protect/integration/v1"
+
+# InnerSpace Integration API path prefix — LOCAL proxy format only.
+# REMOTE paths are derived by stripping /proxy and prepending the connector prefix.
+INNERSPACE_INTEGRATION_PATH: Final[str] = "/proxy/innerspace/integration/v1"
 
 # Default timeouts (in seconds)
 DEFAULT_TIMEOUT: Final[int] = 30

@@ -5,24 +5,29 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![codecov](https://codecov.io/gh/ruaan-deysel/unifi-official-api/branch/main/graph/badge.svg)](https://codecov.io/gh/ruaan-deysel/unifi-official-api)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ruaan-deysel/unifi-official-api)
+Async Python library for the official UniFi APIs:
 
-Async Python library for the official UniFi Network and Protect APIs.
+- **UniFi Network API** (v10.4.57+)
+- **UniFi Protect API** (v7.2.105+)
+- **UniFi InnerSpace API** (v1.3.23+)
+- **UniFi Site Manager API** (v1.0.0+)
+- **UniFi Mobility API** (v1.0.0+)
+- **UniFi Carrier Fabric API** (v1.0.0+)
 
 ## Features
 
-- **Async-first**: Built with `aiohttp` for efficient async operations
-- **Type-safe**: Full type hints and Pydantic models for all API responses
-- **Official API**: Uses the official UniFi developer API endpoints
-- **Comprehensive**: Supports both UniFi Network and UniFi Protect
-- **Dual Connection Support**: Works with both LOCAL (direct to device) and REMOTE (cloud) connections
-- **Home Assistant ready**: Designed for integration with Home Assistant and other automation platforms
+- **Async-first**: Built with `aiohttp` for efficient non-blocking operations
+- **Strict Typing**: 100% typed, passing `mypy --strict` with Pydantic v2 models
+- **Full Coverage**: Comprehensive support for all 6 official UniFi API suites
+- **Dual Connection Support**: Works locally with direct device consoles or via `api.ui.com` cloud integrations
+- **Home Assistant & Automation Ready**: Designed for clean integration into automation environments
 
 ## Requirements
 
 > **Python 3.11 or higher is required.**
 
 - Python 3.11, 3.12, or 3.13
-- UniFi API Key from [developer.ui.com](https://developer.ui.com) or generated locally on your device
+- UniFi API Key from [developer.ui.com](https://developer.ui.com) or generated locally on your console
 
 ## Installation
 
@@ -30,38 +35,9 @@ Async Python library for the official UniFi Network and Protect APIs.
 pip install unifi-official-api
 ```
 
-### Optional Dependencies
-
-Install with optional dependency groups for development:
-
-```bash
-# Install with test dependencies
-pip install unifi-official-api[test]
-
-# Install with linting/type checking tools
-pip install unifi-official-api[lint]
-
-# Install with documentation tools
-pip install unifi-official-api[docs]
-
-# Install all development dependencies
-pip install unifi-official-api[dev]
-```
-
-## Connection Types
-
-This library supports two connection types:
-
-| Connection Type | Use Case | Base URL | API Key Source |
-|-----------------|----------|----------|----------------|
-| **LOCAL** | Direct connection to your UniFi device (UDM, UDM-Pro, etc.) | Your device IP (e.g., `https://192.168.1.1`) | Generated on device under Settings → Admins & Users → API Keys |
-| **REMOTE** | Cloud connection via Ubiquiti's API | `https://api.ui.com` (default) | Generated at [account.ui.com](https://account.ui.com) |
-
 ## Quick Start
 
-### Local Connection (Direct to Device)
-
-For direct connection to your UniFi device on your local network:
+### 1. UniFi Network Client (Local / Cloud)
 
 ```python
 import asyncio
@@ -70,125 +46,124 @@ from unifi_official_api.network import UniFiNetworkClient
 
 async def main():
     async with UniFiNetworkClient(
-        auth=LocalAuth(
-            api_key="your-local-api-key",
-            verify_ssl=False,  # Disable SSL verification for self-signed certs
-        ),
-        base_url="https://192.168.1.1",  # Your device IP
+        auth=LocalAuth(api_key="your-local-api-key", verify_ssl=False),
+        base_url="https://192.168.1.1",
         connection_type=ConnectionType.LOCAL,
     ) as client:
-        # List all sites
         sites = await client.sites.get_all()
-        site_id = sites[0].id  # Use the actual site ID
-
-        # List all devices
-        devices = await client.devices.get_all(site_id)
-        for device in devices:
-            print(f"Device: {device.name} ({device.mac})")
-
-        # List connected clients
-        clients = await client.clients.get_all(site_id)
-        for client_info in clients:
-            print(f"Client: {client_info.display_name} - {client_info.ip}")
-
-asyncio.run(main())
-```
-
-### Remote Connection (Cloud API)
-
-For cloud connection via Ubiquiti's API:
-
-```python
-import asyncio
-from unifi_official_api import ApiKeyAuth, ConnectionType
-from unifi_official_api.network import UniFiNetworkClient
-
-async def main():
-    async with UniFiNetworkClient(
-        auth=ApiKeyAuth(api_key="your-cloud-api-key"),
-        connection_type=ConnectionType.REMOTE,
-        console_id="your-console-id",  # Required for REMOTE
-    ) as client:
-        # List all sites
-        sites = await client.sites.get_all()
-        site_id = sites[0].id
-
-        # List all devices
-        devices = await client.devices.get_all(site_id)
+        devices = await client.devices.get_all(sites[0].id)
         for device in devices:
             print(f"Device: {device.name} ({device.mac})")
 
 asyncio.run(main())
 ```
 
-### UniFi Protect API
+### 2. UniFi Protect Client (Cameras, Sirens, Chimes, Relays, POS)
 
 ```python
 import asyncio
-from unifi_official_api import ApiKeyAuth
+from unifi_official_api import LocalAuth, ConnectionType
 from unifi_official_api.protect import UniFiProtectClient
 
 async def main():
     async with UniFiProtectClient(
-        auth=ApiKeyAuth(api_key="your-api-key"),
+        auth=LocalAuth(api_key="your-local-api-key", verify_ssl=False),
+        base_url="https://192.168.1.1",
+        connection_type=ConnectionType.LOCAL,
     ) as client:
-        # Get available hosts
-        hosts = await client.get_hosts()
-        host_id = hosts[0]["id"]
-        site_id = "your-site-id"
-
-        # List all cameras
-        cameras = await client.cameras.get_all(host_id, site_id)
-        for camera in cameras:
-            print(f"Camera: {camera.name} - Recording: {camera.is_recording}")
-
-        # Get a camera snapshot
-        if cameras:
-            snapshot = await client.cameras.get_snapshot(
-                host_id, site_id, cameras[0].id
-            )
-            with open("snapshot.jpg", "wb") as f:
-                f.write(snapshot)
-
-        # List recent motion events
-        events = await client.events.list_motion_events(
-            host_id, site_id, limit=10
-        )
+        cameras = await client.cameras.get_all()
+        for cam in cameras:
+            print(f"Camera: {cam.display_name}")
 
 asyncio.run(main())
 ```
 
-## API Coverage
+### 3. UniFi InnerSpace Client (Floor Plans, AP/Switch Placements)
 
-### UniFi Network API
+```python
+import asyncio
+from unifi_official_api import LocalAuth, ConnectionType
+from unifi_official_api.innerspace import UniFiInnerSpaceClient
 
-| Endpoint | Methods |
-|----------|---------|
-| Sites | list, get |
-| Devices | list, get, restart, adopt, forget, locate, get_statistics, execute_action |
-| Clients | list, get, block, unblock, reconnect, forget, execute_action |
-| Networks | list, get, create, update, delete, get_references |
-| WiFi | list, get, create, update, delete |
-| Firewall | list_zones, get_zone, create_zone, update_zone, delete_zone, list_rules, get_rule, create_rule, update_rule, delete_rule |
-| Vouchers | list, get, create, delete, delete_multiple |
-| ACL | list, get, create, update, delete |
-| Traffic | list_matching_lists, create_list, update_list, delete_list, get_dpi_categories, get_dpi_applications, get_countries |
-| Resources | get_wan_interfaces, get_vpn_tunnels, get_vpn_servers, get_radius_profiles, get_device_tags |
+async def main():
+    async with UniFiInnerSpaceClient(
+        auth=LocalAuth(api_key="your-local-api-key", verify_ssl=False),
+        base_url="https://192.168.1.1",
+        connection_type=ConnectionType.LOCAL,
+    ) as client:
+        plans = await client.floor_plans.get_all()
+        aps = await client.access_points.get_all()
+        print(f"Loaded {len(plans)} floor plans and {len(aps)} placed APs")
 
-### UniFi Protect API
+asyncio.run(main())
+```
 
-| Endpoint | Methods |
-|----------|---------|
-| Cameras | list, get, update, get_snapshot, ptz_patrol_start, ptz_patrol_stop, ptz_goto_preset, create_rtsps_stream, delete_rtsps_stream, create_talkback_session |
-| Sensors | list, get, update |
-| Lights | list, get, update |
-| Chimes | list, get, update |
-| NVR | get, update |
-| Live Views | list, get, create, update, delete |
-| Viewers | list, get, update, set_liveview |
-| Events | list, get, get_thumbnail, get_heatmap, list_motion_events, list_smart_detect_events |
-| Application | get_info, get_files, upload_file, trigger_alarm_webhook |
-| WebSocket | subscribe_devices, subscribe_events |
+### 4. UniFi Site Manager Client (Cloud Multi-Site & Telemetry)
+
+```python
+import asyncio
+from unifi_official_api import ApiKeyAuth
+from unifi_official_api.site_manager import UniFiSiteManagerClient
+
+async def main():
+    async with UniFiSiteManagerClient(
+        auth=ApiKeyAuth(api_key="your-cloud-api-key")
+    ) as client:
+        hosts = await client.hosts.get_all()
+        sites = await client.sites.get_all()
+        metrics = await client.isp_metrics.get_metrics("latency", duration="24h")
+        print(f"Monitored {len(hosts.data)} consoles across {len(sites.data)} sites")
+
+asyncio.run(main())
+```
+
+### 5. UniFi Mobility Client (UMR Gateways & Fleets)
+
+```python
+import asyncio
+from unifi_official_api import ApiKeyAuth
+from unifi_official_api.mobility import UniFiMobilityClient
+
+async def main():
+    async with UniFiMobilityClient(
+        auth=ApiKeyAuth(api_key="your-cloud-api-key")
+    ) as client:
+        workspaces = await client.workspaces.get_all()
+        ws_id = workspaces[0].workspace_id
+        devices = await client.devices.get_all(ws_id)
+        print(f"Found {len(devices)} mobility gateways")
+
+asyncio.run(main())
+```
+
+### 6. UniFi Carrier Fabric Client (ISP Subscribers & Plans)
+
+```python
+import asyncio
+from unifi_official_api import ApiKeyAuth
+from unifi_official_api.carrier_fabric import UniFiCarrierFabricClient
+
+async def main():
+    async with UniFiCarrierFabricClient(
+        auth=ApiKeyAuth(api_key="your-cloud-api-key")
+    ) as client:
+        subscribers = await client.subscribers.get_all()
+        plans = await client.service_plans.get_all()
+        print(f"Loaded {len(subscribers.data)} subscribers and {len(plans)} service plans")
+
+asyncio.run(main())
+```
+
+## API Coverage Summary
+
+| Client / API | Endpoints / Resources Covered |
+|--------------|-------------------------------|
+| **UniFiNetworkClient** | Sites, Devices, Clients, Networks, WiFi/SSIDs, Firewall & Zones, Vouchers, ACL Rules, Switching (LAGs, MC-LAG domains, Switch Stacks), Traffic Matching, Resources (WAN, VPN, RADIUS) |
+| **UniFiProtectClient** | Cameras (Streams, Snapshots, PTZ, Talkback), Sirens, Key Fobs, Relays, Speakers, Bridges, Link Stations, Alarm Hubs, Alarm Manager Webhooks, Arm Profiles, Local & Identity Users, POS Transaction Ingestion, Sensors, Lights, Chimes, NVR, LiveViews, Viewers, Real-time WebSockets |
+| **UniFiInnerSpaceClient** | Full Project Data (Shapes, Walls, Attenuation), Floor Plans, Placed Access Points, Placed Switches, Unplaced Inventory, Blueprint Image Assets |
+| **UniFiSiteManagerClient** | Hosts/Consoles, Multi-site Aggregation, Cross-console Devices, ISP Performance Telemetry & Queries, SD-WAN Configs & Health Status, Cloud Connector Arbitrary Proxy |
+| **UniFiMobilityClient** | Workspaces, Workspace Admins, UMR Device Gateways & Location Coordinates, Connected Clients, Remote LAN/DHCP Configuration, Remote Wireless WiFi Configuration |
+| **UniFiCarrierFabricClient** | Subscribers Lifecycle (Create, Update, Suspend, Resume), Gateway Host Attach/Detach, Service Plan Assignment, Bandwidth QoS Service Plans |
 
 ## Error Handling
 
