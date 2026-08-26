@@ -1,0 +1,13 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      uv:
+        patterns:
+          - "*"
+    ignore:
+      - dependency-name: "aiohttp"
+        versions: [">= 3.14.0"]
