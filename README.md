@@ -5,6 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![codecov](https://codecov.io/gh/ruaan-deysel/unifi-official-api/branch/main/graph/badge.svg)](https://codecov.io/gh/ruaan-deysel/unifi-official-api)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ruaan-deysel/unifi-official-api)
+
 Async Python library for the official UniFi APIs:
 
 - **UniFi Network API** (v10.4.57+)
