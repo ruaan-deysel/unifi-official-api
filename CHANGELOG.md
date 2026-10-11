@@ -67,6 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Update repository URLs and documentation references to tinkerologie organization.
+
 - Modernized `(str, Enum)` definitions across all network and protect models to standard Python 3.11+ `StrEnum`
 - Exported all 6 official clients (`UniFiNetworkClient`, `UniFiProtectClient`, `UniFiInnerSpaceClient`, `UniFiSiteManagerClient`, `UniFiMobilityClient`, `UniFiCarrierFabricClient`) from root `unifi_official_api` package
 - Updated `pyproject.toml` dependency constraint `aiohttp>=3.9.0,<3.14.0` for `aioresponses` mock compatibility
@@ -83,6 +85,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Device model**: Added `DeviceState.GETTING_READY` state and flexible `state`/`type` fields accepting raw strings for forward compatibility with new device states
 
 ### Changed
+
+- Update repository URLs and documentation references to tinkerologie organization.
 
 #### Network API
 
@@ -125,6 +129,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `update_ordering()`: Reorder user-defined ACL rules
 
 ### Changed
+
+- Update repository URLs and documentation references to tinkerologie organization.
 
 - `FirewallRule.action` now accepts both dict format (`{"type": "ALLOW", "allowReturnTraffic": true}`) and legacy string format for API v10+ compatibility
 - Added `FirewallActionConfig` model to parse structured firewall action responses from newer API versions
@@ -232,6 +238,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `get_host_id()`: Helper method to get host ID for WebSocket subscriptions
 
 ### Changed
+
+- Update repository URLs and documentation references to tinkerologie organization.
 
 - Renamed `list()` methods to `get_all()` to avoid shadowing Python built-in
 - Standardized filter parameter naming to `filter_str` across all endpoints
