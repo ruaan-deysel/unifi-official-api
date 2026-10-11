@@ -3,8 +3,8 @@
 [![PyPI version](https://badge.fury.io/py/unifi-official-api.svg)](https://badge.fury.io/py/unifi-official-api)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![codecov](https://codecov.io/gh/ruaan-deysel/unifi-official-api/branch/main/graph/badge.svg)](https://codecov.io/gh/ruaan-deysel/unifi-official-api)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ruaan-deysel/unifi-official-api)
+[![codecov](https://codecov.io/gh/tinkerologie/unifi-official-api/branch/main/graph/badge.svg)](https://codecov.io/gh/tinkerologie/unifi-official-api)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/tinkerologie/unifi-official-api)
 
 Async Python library for the official UniFi APIs:
 
@@ -249,7 +249,7 @@ client = UniFiProtectClient(
 
 ```bash
 # Clone the repository
-git clone https://github.com/ruaan-deysel/unifi-official-api.git
+git clone https://github.com/tinkerologie/unifi-official-api.git
 cd unifi-official-api
 
 # Install development dependencies
