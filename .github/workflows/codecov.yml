@@ -8,11 +8,6 @@ on:
 
 permissions:
   contents: read
-  id-token: write
-
-env:
-  # OIDC is unavailable to fork and Dependabot PRs; those fall back to tokenless uploads.
-  CODECOV_OIDC: ${{ !(github.event_name == 'pull_request' && (github.event.pull_request.head.repo.fork || github.event.pull_request.user.login == 'dependabot[bot]')) }}
 
 jobs:
   coverage:
@@ -39,10 +34,39 @@ jobs:
       - name: Run tests with coverage
         run: pytest --cov --cov-branch --cov-report=xml
 
+      - name: Store coverage report
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-${{ matrix.python-version }}
+          path: coverage.xml
+          if-no-files-found: error
+
+  upload:
+    needs: coverage
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    env:
+      # OIDC is unavailable to fork and Dependabot PRs; those fall back to tokenless uploads.
+      CODECOV_OIDC: ${{ !(github.event_name == 'pull_request' && (github.event.pull_request.head.repo.fork || github.event.pull_request.user.login == 'dependabot[bot]')) }}
+
+    # Keep PR code out of this job, which can request an OIDC token.
+    steps:
+      - name: Download coverage report
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage-${{ matrix.python-version }}
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           slug: ${{ github.repository }}
           files: ./coverage.xml
+          disable_search: true
           use_oidc: ${{ env.CODECOV_OIDC == 'true' }}
           fail_ci_if_error: ${{ env.CODECOV_OIDC == 'true' }}
