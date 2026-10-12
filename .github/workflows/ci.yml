@@ -58,7 +58,7 @@ jobs:
         python-version: ['3.11', '3.12', '3.13']
     permissions:
       contents: read # check out the repository
-      id-token: write # trusted publishing (OIDC) to the package registry
+      id-token: write # Codecov OIDC upload
     env:
       # OIDC is unavailable to fork and Dependabot PRs; those fall back to tokenless uploads.
       CODECOV_OIDC: ${{ !(github.event_name == 'pull_request' && (github.event.pull_request.head.repo.fork || github.event.pull_request.user.login == 'dependabot[bot]')) }}
