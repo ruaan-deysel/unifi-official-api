@@ -1,7 +1,8 @@
 # Dependabot (tinkerologie standard: see STANDARDS.md in tinkerologie/.github)
 version: 2
 updates:
-  - package-ecosystem: pip
+  # uv: Dependabot updates pyproject.toml and uv.lock together, for version and security updates.
+  - package-ecosystem: uv
     directory: /
     schedule:
       interval: weekly
