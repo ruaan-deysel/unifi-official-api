@@ -1,13 +1,37 @@
+# Dependabot (tinkerologie standard: see STANDARDS.md in tinkerologie/.github)
 version: 2
 updates:
-  - package-ecosystem: "pip"
-    directory: "/"
+  - package-ecosystem: pip
+    directory: /
     schedule:
-      interval: "weekly"
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    commit-message:
+      prefix: chore(deps)
     groups:
       uv:
         patterns:
-          - "*"
+          - '*'
     ignore:
-      - dependency-name: "aiohttp"
-        versions: [">= 3.14.0"]
+      - dependency-name: aiohttp
+        versions: ['>= 3.14.0']
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    labels:
+      - dependencies
+    commit-message:
+      prefix: chore(deps)
+    groups:
+      github-actions-minor-patch:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
