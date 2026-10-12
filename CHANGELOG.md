@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+- Requires aiohttp 3.14.3 or later (was capped below 3.14.0), fixing the aiohttp advisories that affected every version the old range allowed. The lock file also moves to multidict 7.1.0, urllib3 2.8.0 and virtualenv 21.14.7, clearing their advisories. Home Assistant core already ships aiohttp 3.14.5.
+- The test suite works with aiohttp 3.14 through a small shim for aioresponses 0.7.9, whose response builder does not pass aiohttp 3.14's new `stream_writer` argument (pnuckowski/aioresponses#288). The Dependabot rule that ignored aiohttp 3.14 is removed.
+
 ### Changed
 - Release workflows hardened (least-privilege job permissions, no expressions in shell scripts, no persisted checkout credentials, no dependency caches); scheduled workflows run on Australia/Brisbane time. Relicensed from MIT to the Apache License 2.0; NOTICE retains the MIT notice for earlier releases.
 - Tinkerologie-Bot governance report updated to v1.4.3: an older run can no longer post a stale report after a newer run passed. Workflow formatting tidied.

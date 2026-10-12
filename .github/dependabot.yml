@@ -15,9 +15,6 @@ updates:
       uv:
         patterns:
           - '*'
-    ignore:
-      - dependency-name: aiohttp
-        versions: ['>= 3.14.0']
   - package-ecosystem: github-actions
     directory: /
     schedule:
