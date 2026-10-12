@@ -2,15 +2,33 @@
 
 from __future__ import annotations
 
+import inspect
 from typing import Any
+from unittest.mock import Mock
 
+import aioresponses.core as aioresponses_core
 import pytest
+from aiohttp import ClientResponse
 from aioresponses import aioresponses
 
 from unifi_official_api import ApiKeyAuth, LocalAuth
 from unifi_official_api.const import ConnectionType
 from unifi_official_api.network import UniFiNetworkClient
 from unifi_official_api.protect import UniFiProtectClient
+
+# aiohttp 3.14 added a required keyword-only ``stream_writer`` argument to
+# ``ClientResponse.__init__``, which aioresponses 0.7.9 (the latest release) does
+# not pass. The argument is only read for its ``output_size``, so a mock is enough.
+# Remove this shim once aioresponses ships the upstream fix
+# (pnuckowski/aioresponses#288).
+if "stream_writer" in inspect.signature(ClientResponse).parameters:
+
+    class _ClientResponse(ClientResponse):
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
+            kwargs.setdefault("stream_writer", Mock(output_size=0))
+            super().__init__(*args, **kwargs)
+
+    setattr(aioresponses_core, "ClientResponse", _ClientResponse)  # noqa: B010
 
 
 @pytest.fixture
